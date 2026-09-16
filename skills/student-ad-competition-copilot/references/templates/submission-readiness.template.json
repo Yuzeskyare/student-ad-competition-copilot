@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1.0",
+  "run_id": "replace-me",
+  "track": "print-ad",
+  "competition": "daguangsai",
+  "method_scope": "method-only",
+  "rule_verification": {"status": "not-required-for-method", "source_url": null, "checked_at": null, "evidence_path": null},
+  "rights_clearance": {"status": "incomplete", "evidence_path": null, "open_items": ["replace-me"], "rationale": null},
+  "citations": {"status": "not-applicable", "evidence_path": null, "open_items": [], "rationale": "No external claims in the final work."},
+  "aigc": {"used": "unknown", "status": "incomplete", "record_path": null, "rationale": null},
+  "content_quality": {"status": "not-run", "evidence_path": null},
+  "technical_validation": {"status": "not-run", "evidence_path": null},
+  "submission": {"submission_ready": false, "registration_fields_verified": false, "uploaded": false, "receipt_path": null},
+  "readiness_boundaries": ["replace-me"]
+}

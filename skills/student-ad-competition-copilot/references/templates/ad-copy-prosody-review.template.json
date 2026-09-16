@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "semantic_logic_first": true,
+  "parallelism_checked": true,
+  "parallel_pattern": "主体+动作+对象 / 主体+动作+对象",
+  "syllable_pattern": "6 / 6",
+  "rhythm_read_aloud_checked": true,
+  "stress_and_pause_notes": "记录停顿与重音是否自然",
+  "rhyme_checked": true,
+  "rhyme_notes": "记录韵脚及其是否帮助记忆",
+  "forced_rhyme": false,
+  "natural_language_pass": true
+}

@@ -1,0 +1,2 @@
+# Preserve release-package bytes so version.json hashes remain reproducible.
+* -text

@@ -1,0 +1,364 @@
+{
+  "schema_version": "0.2.0",
+  "skill_name": "student-ad-competition-copilot",
+  "skill_version": "0.2.1",
+  "status": "stable-release",
+  "built_at": "2026-09-16",
+  "stable_release": "0.2.0",
+  "runtime_scope": [
+    "print-ad",
+    "ad-copy",
+    "marketing-plan",
+    "evidence-gated-case-retrieval",
+    "structured-quality-gates",
+    "conditional-aigc-disclosure",
+    "submission-readiness-contract"
+  ],
+  "knowledge_manifest": {
+    "path": "references/case-library/v0.2.1/manifest.json",
+    "bytes": 2778,
+    "sha256": "1230b8784d204d492ece69efd76f03e9831a9b29bac4314596068888f7cc3bdc"
+  },
+  "source_corpus": {
+    "completion_audit_sha256": "5838875bff648f69a433cb84a3de5699d5ddc66b26673a04f892375647775482",
+    "counting_contract_sha256": "1948da43b744899f22b00f9341eb99ab9910fa088fe82de16d1b3d6a0c86b437",
+    "counting_equation": "189 + 7806 + 95 = 8090",
+    "deep_annotations": 8090,
+    "eligible_annotations": 4400,
+    "excluded_open_annotations": 0,
+    "excluded_unclassified_annotations": 3690,
+    "official_case_universe": 8090
+  },
+  "files": [
+    {
+      "path": "SKILL.md",
+      "bytes": 12312,
+      "sha256": "da0d72c7b0d75df7a506e6dfa9aa0ede00e28f3695a532166de7deadb2abf88d"
+    },
+    {
+      "path": "agents/openai.yaml",
+      "bytes": 331,
+      "sha256": "9c1ae4a63d921d34a7b23c5d829040dedff7ddc747c1cdf13cf5e5e9bb53f598"
+    },
+    {
+      "path": "references/case-library/v0.2.1/case-cards.jsonl",
+      "bytes": 99606,
+      "sha256": "4e775fb965525ad6321a6c101f22f9a005e1410a8dc8147244ba2474450e5c4d"
+    },
+    {
+      "path": "references/case-library/v0.2.1/compliance-boundaries.jsonl",
+      "bytes": 113920,
+      "sha256": "41774596830450f59f729e52cd4442f8d77597af32d27dd52d97d6e1149cad12"
+    },
+    {
+      "path": "references/case-library/v0.2.1/eligibility.json",
+      "bytes": 207178,
+      "sha256": "ede8b7ccfb560be87a33f2583a2ef1ee5c64aa0f6c6ec2b4d50cbb5c13f7b152"
+    },
+    {
+      "path": "references/case-library/v0.2.1/failure-patterns.jsonl",
+      "bytes": 141373,
+      "sha256": "0afed74af139e42d4cf056eae776b255d818d4bee41e1592406d7f4df508ca36"
+    },
+    {
+      "path": "references/case-library/v0.2.1/manifest.json",
+      "bytes": 2778,
+      "sha256": "1230b8784d204d492ece69efd76f03e9831a9b29bac4314596068888f7cc3bdc"
+    },
+    {
+      "path": "references/case-library/v0.2.1/method-cards.jsonl",
+      "bytes": 4345942,
+      "sha256": "306f56129490b48cd8c5bf4cbf91aede21ddc317c0963666f933663cedd85495"
+    },
+    {
+      "path": "references/case-library/v0.2.1/taxonomy.json",
+      "bytes": 901,
+      "sha256": "e6580c90734d9b56cca8f10c8140cb7a47f76520fda46a8b75916f9b60e52ac2"
+    },
+    {
+      "path": "references/competitions/academy-award.md",
+      "bytes": 4122,
+      "sha256": "cc2b66a479b1d268143a04cdd2c8875a113a3fd9fabf962b3278462b811ad0ba"
+    },
+    {
+      "path": "references/competitions/ad-copy-profiles.json",
+      "bytes": 2918,
+      "sha256": "11de18a9454710b833347f2a400065a0f6b31095707359f604ca476ed27f9a9a"
+    },
+    {
+      "path": "references/competitions/daguangsai.md",
+      "bytes": 3616,
+      "sha256": "f8502563aec691080e5fd5591c8213f0f2fa763ed46b9181a1e624d0fa7d8306"
+    },
+    {
+      "path": "references/competitions/marketing-plan-profiles.json",
+      "bytes": 2574,
+      "sha256": "6e62b64744ed9a18fe545be37eb3c53b38283a6c05b97b39253ff7cd5e1a6f69"
+    },
+    {
+      "path": "references/competitions/submission-profiles.json",
+      "bytes": 1490,
+      "sha256": "22d5213c296f318257f7dac68ee766bfa7cdb38c212c7bf9d3a9f1375525028a"
+    },
+    {
+      "path": "references/deliverables/ad-copy.md",
+      "bytes": 2539,
+      "sha256": "9102279701fe26aa7b1ed5fe43684be9f42bdce257e9ccb71689f0606b0caa01"
+    },
+    {
+      "path": "references/deliverables/marketing-plan.md",
+      "bytes": 2705,
+      "sha256": "8c52786588f9ba28b41fd5140745785e565353fb1969a5755c7bd404436353aa"
+    },
+    {
+      "path": "references/deliverables/print-ad.md",
+      "bytes": 2382,
+      "sha256": "d09a83e67ca2709470436999de48c037256624284587ece2532cab3e19b52248"
+    },
+    {
+      "path": "references/schemas/ad-copy-brief-constraints.schema.json",
+      "bytes": 2348,
+      "sha256": "dffe85e07aa665d48695fe1d95d013d96a5f4601c6ab4badf83263c7b92161f6"
+    },
+    {
+      "path": "references/schemas/ad-copy-run-manifest.schema.json",
+      "bytes": 2816,
+      "sha256": "e3a5cb6a7ee55ff73f798fd5c89e292eae2d4d41c835722db960062544d0f1d8"
+    },
+    {
+      "path": "references/schemas/case-record.schema.json",
+      "bytes": 7298,
+      "sha256": "0aadb6f34e68aed501fa5b46a2750c07aed0c2d87c34fc47cc059b059c81cbc1"
+    },
+    {
+      "path": "references/schemas/marketing-plan-brief-constraints.schema.json",
+      "bytes": 1783,
+      "sha256": "281bacad45af99636872c1dc2415aa4c43403d00e372177c6845982ab2626161"
+    },
+    {
+      "path": "references/schemas/marketing-plan-delivery-manifest.schema.json",
+      "bytes": 4107,
+      "sha256": "f9a30f6a6a8eb29fd5184cee6e61a62c99596a5cbc7402aaafa4bbbe3493a1f5"
+    },
+    {
+      "path": "references/schemas/marketing-plan-run-manifest.schema.json",
+      "bytes": 3161,
+      "sha256": "153e255c71f0306b75821452ebae01ecc5efc62a288200df72bd67a0541f977d"
+    },
+    {
+      "path": "references/schemas/print-ad-run-manifest.schema.json",
+      "bytes": 2686,
+      "sha256": "a15fb1335b9b7eec35db73abf268204a065e5d734d554604af813d06258c7acf"
+    },
+    {
+      "path": "references/schemas/submission-readiness.schema.json",
+      "bytes": 3229,
+      "sha256": "b64dfa76e6ed451496cc90e3ede2bc6a7aac65274368d02e987bff2555f77fc7"
+    },
+    {
+      "path": "references/schemas/taxonomy.json",
+      "bytes": 2939,
+      "sha256": "4ea8c24ffb110838f9ddaf3dd22b74f14defae8c612f7e0dd2abd11c06dbb258"
+    },
+    {
+      "path": "references/schemas/track-quality-gates.schema.json",
+      "bytes": 8658,
+      "sha256": "3bbb62c66671e64d28c8172c84da82519c9ecf714f1bdd1fdbf35e3c5ef04db9"
+    },
+    {
+      "path": "references/templates/ad-copy-direction-card.template.md",
+      "bytes": 443,
+      "sha256": "0e370506ae91e5d91512668548ea0b66e311627847380ed565e8d0ac64861dc8"
+    },
+    {
+      "path": "references/templates/ad-copy-prosody-review.template.json",
+      "bytes": 430,
+      "sha256": "17231e1ee12eaf98db56c0f8e7aaaedb8036a8bda73b9ac72a383b746f27e8ee"
+    },
+    {
+      "path": "references/templates/ad-copy-run-manifest.template.json",
+      "bytes": 1648,
+      "sha256": "1f282ead09a4e29c25892ae222b9bb3afaa2f0f51d3920e6c8e761b47cce1424"
+    },
+    {
+      "path": "references/templates/marketing-plan-delivery-manifest.template.json",
+      "bytes": 700,
+      "sha256": "14d4696425838bb1de5214bcd3d2499397ee054d845406d52ab2334c96747716"
+    },
+    {
+      "path": "references/templates/marketing-plan-direction-card.template.md",
+      "bytes": 608,
+      "sha256": "4b86929eff8d5ecfa8e23150d165dd94c8bbb1bd29df281cbb902d0be9d6ac8a"
+    },
+    {
+      "path": "references/templates/marketing-plan-page-blueprint.template.md",
+      "bytes": 643,
+      "sha256": "cb17928653ec757fe624a6d6dc6ea94e62f5803c7e3dab422c4a0fabd7cf5d07"
+    },
+    {
+      "path": "references/templates/marketing-plan-run-manifest.template.json",
+      "bytes": 1923,
+      "sha256": "233be09d0c31379640fe2e371e4f921f994024dd075cd42a801e1582a3e9f8e6"
+    },
+    {
+      "path": "references/templates/print-ad-run-manifest.template.json",
+      "bytes": 586,
+      "sha256": "3e50a72c369ad5611867c52e1e7bcb0145281f12085b9c8406675aeea0cc6ee0"
+    },
+    {
+      "path": "references/templates/submission-readiness.template.json",
+      "bytes": 931,
+      "sha256": "3b4ea34dedd62cc8d2ec22b50f57a87f9f63c488d56f48ca8d3341ccaddb70ce"
+    },
+    {
+      "path": "references/tracks/ad-copy/playbook.md",
+      "bytes": 12784,
+      "sha256": "8b5771342a5d5015b8b39bff88f1aa2cda89ac46fd9496eaffdf4ba1b261ddf0"
+    },
+    {
+      "path": "references/tracks/ad-copy/quality-gates.json",
+      "bytes": 14706,
+      "sha256": "ad87ddbeebe049aa84ee20b6026c3b061aba9dbda6d0683fda5ed27ee22c4bb2"
+    },
+    {
+      "path": "references/tracks/marketing-plan/playbook.md",
+      "bytes": 23352,
+      "sha256": "38eedb108b0316aef85597d868d2f9968002a0cc8c3720533d61a95edd3d3d70"
+    },
+    {
+      "path": "references/tracks/marketing-plan/quality-gates.json",
+      "bytes": 19123,
+      "sha256": "8d49b41d4865021ca6571fceef7f743446b9e617fd6e16ef7a1f44aa74f88859"
+    },
+    {
+      "path": "references/tracks/print-ad/playbook.md",
+      "bytes": 14826,
+      "sha256": "44b48defaa5908f45f34c2c8422f1bf64ad616bdfc66aebc6be5e7ff24460635"
+    },
+    {
+      "path": "references/tracks/print-ad/quality-gates.json",
+      "bytes": 14542,
+      "sha256": "1e259e94dbf1fc3988ce78841f9cb6bd7d2adeb081366f466f99ae1429bbda84"
+    },
+    {
+      "path": "references/validation/v0.2.1-acceptance.json",
+      "bytes": 1701,
+      "sha256": "13fee7efb39a7fadd5bbf9845e6a9ce086e0f6779df66b2d05c36daf78dd3e5a"
+    },
+    {
+      "path": "references/validation/v0.2.1-ugw001-resume-contract-acceptance.json",
+      "bytes": 1378,
+      "sha256": "aa9aa970c4b6898d034de7e366c3198502e14000455f14077aafae16cee9fe02"
+    },
+    {
+      "path": "references/validation/v0.2.1-ugw002-minimum-input-contract-acceptance.json",
+      "bytes": 1938,
+      "sha256": "e4beda2b0cf329134987f4e6f2beb161b39fa08097544a7f8f93549907ad5a9e"
+    },
+    {
+      "path": "references/validation/v0.2.1-ugw003-low-burden-human-review-acceptance.json",
+      "bytes": 2342,
+      "sha256": "cb81a474f0cd6c33247e14df98c4af9e3879f4799d44d0fb6a636185b527f39e"
+    },
+    {
+      "path": "references/validation/v0.2.1-ugw004-stage-receipt-acceptance.json",
+      "bytes": 2294,
+      "sha256": "7696f2a89f624b7919f03d8d38a82d5b6c82576470595be075d667b0aff34c2a"
+    },
+    {
+      "path": "references/validation/v0.2.1-ugw005-execution-to-scope-acceptance.json",
+      "bytes": 2941,
+      "sha256": "64deee095feb9c183fb500bbd8acbf7475e57ce936949c6fcee449d9a8b5da24"
+    },
+    {
+      "path": "references/validation/v0.2.1-workflow-contract-hotfix-acceptance.json",
+      "bytes": 1398,
+      "sha256": "9a835db007864b7d244f4feb319a96cee78a8b835c5a046eba5acc87e3b4275a"
+    },
+    {
+      "path": "references/workflow/case-proposition-evidence-gate.md",
+      "bytes": 2847,
+      "sha256": "0a47f21ef8a2939e39719b0935832f6b06c1344a8de0c55442a7f7937bd63da2"
+    },
+    {
+      "path": "references/workflow/common-competition-kernel.md",
+      "bytes": 11756,
+      "sha256": "1f99d532e3b0baa18bacb6dd024e067bb64a00783802c2b96cc1b5a1d3162316"
+    },
+    {
+      "path": "references/workflow/execution-to-requested-scope.md",
+      "bytes": 3837,
+      "sha256": "4ea1305d8f63d50b963fb8c2089161c13d2a7c6ca96d02e2d067ab8c25e9bb60"
+    },
+    {
+      "path": "references/workflow/user-review-checkpoints.md",
+      "bytes": 2662,
+      "sha256": "b5cda39f9dce88de4d8d40cb6ded638b8f3dc5d57b52e017b7cbcf4f079be01f"
+    },
+    {
+      "path": "references/workflow/user-stage-receipts.md",
+      "bytes": 3342,
+      "sha256": "39e7055530d0dfaa0a4a1078499b7351bdb133acc3a0564f6123155f93389c08"
+    },
+    {
+      "path": "scripts/knowledge_pack_contract.py",
+      "bytes": 18802,
+      "sha256": "b8b50e4d3eb103ad4943e69f5189dff41a1de609c2d937b2b3698dacb69edd75"
+    },
+    {
+      "path": "scripts/quality_gate_contract.py",
+      "bytes": 8662,
+      "sha256": "4167ea34666d5b4ea8ec255a07e3985ffc0745bdfeba2678b37ac8e363719b0a"
+    },
+    {
+      "path": "scripts/query_case_library.py",
+      "bytes": 8909,
+      "sha256": "534a29a96e45a8e24ff61ba87a4efffcade2563a3db92985d6352b32314143f5"
+    },
+    {
+      "path": "scripts/validate_ad_copy.py",
+      "bytes": 19485,
+      "sha256": "b5bb9672507ed7b673fa7c94fe1fcc2786690779433bde2a3d54668a197721f3"
+    },
+    {
+      "path": "scripts/validate_ad_copy_run.py",
+      "bytes": 14679,
+      "sha256": "e96e0f02bd24d7423d8863e73d13bc7f1c3b0316fabdf9899eab4514ef9270eb"
+    },
+    {
+      "path": "scripts/validate_knowledge_pack.py",
+      "bytes": 910,
+      "sha256": "ea7438431ed6156ae728dde8a66af5c9e77279190d6672056a77abe4f2a3d59a"
+    },
+    {
+      "path": "scripts/validate_marketing_plan.py",
+      "bytes": 29106,
+      "sha256": "b4ebeb154530299fe67c6077e1503d3639a7889fd87bcbd01c86d50f1618a639"
+    },
+    {
+      "path": "scripts/validate_marketing_plan_run.py",
+      "bytes": 15318,
+      "sha256": "52e871204b0c5b2a0da258ad4a38ee4080f7b77c4c09de464daffff9fe929874"
+    },
+    {
+      "path": "scripts/validate_print_ad_run.py",
+      "bytes": 8038,
+      "sha256": "0325672cfc111392d9f633a3b7389029fd6b7e858696e1c693bb42a2b6baa185"
+    },
+    {
+      "path": "scripts/validate_submission.py",
+      "bytes": 11681,
+      "sha256": "67800d7601b6832c0f6098d678f04b8ed770bb5c12ac5cc661bd3fbb20e84b52"
+    },
+    {
+      "path": "scripts/validate_submission_readiness.py",
+      "bytes": 6573,
+      "sha256": "e97221c39cafa232fd343dfe38804eabc431fa458ea2a26f7a9753b97a416aba"
+    }
+  ],
+  "internal_verification": {
+    "path": "references/validation/v0.2.1-ugw005-execution-to-scope-acceptance.json",
+    "bytes": 2941,
+    "sha256": "64deee095feb9c183fb500bbd8acbf7475e57ce936949c6fcee449d9a8b5da24"
+  }
+}

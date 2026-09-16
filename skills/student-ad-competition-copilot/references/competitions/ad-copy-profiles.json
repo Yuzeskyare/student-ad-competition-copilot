@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.1.0",
+  "count_contract": {
+    "contract_id": "zh-copy-content-codepoints-v1",
+    "encoding": "UTF-8",
+    "strip_initial_bom": true,
+    "unicode_normalization": "NFC",
+    "line_ending_normalization": "LF",
+    "length_metric": "Unicode code points after normalization, excluding Unicode whitespace",
+    "punctuation_counted": true,
+    "whitespace_counted": false,
+    "newlines_counted": false,
+    "leading_or_trailing_whitespace": "error",
+    "tabs_controls_and_zero_width_characters": "error",
+    "note": "This is the Skill's reproducible validation contract. Recheck the official platform counter before a real submission when the platform defines a different rule."
+  },
+  "profiles": {
+    "daguangsai": {
+      "snapshot": "第18届（2026）",
+      "source_url": "https://www.sun-ada.net/about_intrs2.html",
+      "checked_at": "2026-09-07",
+      "publication_status": "published-snapshot",
+      "raw_category": "G 文案类",
+      "normalized_category": "ad-copy",
+      "allowed_subtypes": ["long-copy", "seeding-copy"],
+      "brief_constraints_required": false,
+      "brief_constraints_required_for_real_submission": true,
+      "default_length": {
+        "minimum": 100,
+        "maximum": 500,
+        "unit": "content-codepoints",
+        "punctuation_included": true
+      },
+      "text_only": true,
+      "embedded_images": "forbidden",
+      "tables": "forbidden",
+      "html": "forbidden",
+      "emoji": "forbidden",
+      "creator_markers": "forbidden",
+      "allowed_input_extensions": [".txt", ".md"],
+      "max_input_bytes": 1048576,
+      "aigc_record_required_when_used": true,
+      "refresh_before_real_submission": true,
+      "platform_count_recheck_before_real_submission": true
+    },
+    "academy-award": {
+      "snapshot": "2026秋季官方细则页（2026-09-09更新）",
+      "source_url": "https://www.5iidea.com/contents/32332",
+      "checked_at": "2026-09-16",
+      "publication_status": "published-page-snapshot",
+      "raw_category": "广告文案",
+      "normalized_category": "ad-copy",
+      "allowed_subtypes": ["slogan", "short-copy", "long-copy", "brand-story", "script", "social-copy"],
+      "brief_constraints_required": true,
+      "brief_constraints_required_for_real_submission": true,
+      "default_length": null,
+      "text_only": true,
+      "embedded_images": "forbidden",
+      "tables": "forbidden",
+      "html": "forbidden",
+      "emoji": "brief-dependent-warning",
+      "creator_markers": "forbidden",
+      "allowed_input_extensions": [".txt", ".md"],
+      "max_input_bytes": 1048576,
+      "aigc_record_required_when_used": true,
+      "refresh_before_real_submission": true,
+      "platform_count_recheck_before_real_submission": true
+    }
+  },
+  "creator_marker_patterns": [
+    "(?m)^\\s*(?:作者|姓名|参赛者|学校|院校|院系|学院|学号|指导教师|指导老师)\\s*[:：]"
+  ]
+}

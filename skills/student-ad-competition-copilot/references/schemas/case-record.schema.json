@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.student-ad-competition-copilot/schemas/case-record.schema.json",
+  "title": "Student advertising competition case record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "case_id",
+    "title",
+    "competition",
+    "category",
+    "proposition",
+    "award",
+    "creators",
+    "sources",
+    "rights",
+    "evidence",
+    "content",
+    "analysis",
+    "confidence",
+    "workflow"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "case_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "minLength": 8,
+      "maxLength": 160
+    },
+    "title": {"type": "string", "minLength": 1, "maxLength": 300},
+    "competition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "name", "year", "season", "edition", "official_event_id"],
+      "properties": {
+        "key": {"enum": ["daguangsai", "academy-award"]},
+        "name": {"type": "string", "minLength": 1},
+        "year": {"type": "integer", "minimum": 2000, "maximum": 2100},
+        "season": {"type": ["string", "null"], "enum": ["spring", "summer", "autumn", "winter", null]},
+        "edition": {"type": ["integer", "null"], "minimum": 1},
+        "official_event_id": {"type": ["string", "null"], "maxLength": 100}
+      }
+    },
+    "category": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raw_name", "raw_id", "normalized", "copy_subtype"],
+      "properties": {
+        "raw_name": {"type": "string", "minLength": 1},
+        "raw_id": {"type": ["string", "null"], "maxLength": 50},
+        "normalized": {"enum": ["print-ad", "marketing-plan", "ad-copy", "graphic-copy"]},
+        "copy_subtype": {
+          "type": ["string", "null"],
+          "enum": ["slogan", "short-copy", "long-copy", "seeding-copy", "brand-story", "script", "social-copy", "unknown", null]
+        }
+      }
+    },
+    "proposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["brand", "official_title"],
+      "properties": {
+        "brand": {"type": ["string", "null"], "maxLength": 200},
+        "official_title": {"type": "string", "minLength": 1, "maxLength": 300}
+      }
+    },
+    "award": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "raw_name", "level", "status", "region"],
+      "properties": {
+        "scope": {"enum": ["national", "provincial", "school", "competition", "unknown"]},
+        "raw_name": {"type": "string", "minLength": 1, "maxLength": 100},
+        "level": {"enum": ["grand", "gold", "silver", "bronze", "first", "second", "third", "excellence", "shortlisted", "unknown"]},
+        "status": {"enum": ["claimed", "proposed", "officially_confirmed"]},
+        "region": {"type": ["string", "null"], "maxLength": 100}
+      }
+    },
+    "creators": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["students", "school", "department", "instructors"],
+      "properties": {
+        "students": {"type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 100}, "uniqueItems": true},
+        "school": {"type": ["string", "null"], "maxLength": 200},
+        "department": {"type": ["string", "null"], "maxLength": 200},
+        "instructors": {"type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 100}, "uniqueItems": true}
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["platform", "url", "accessed_at", "source_type", "evidence_level", "roles", "record_id"],
+        "properties": {
+          "platform": {"enum": ["official", "xiaohongshu", "douyin", "university", "portfolio", "other"]},
+          "url": {"type": "string", "pattern": "^https://"},
+          "accessed_at": {"type": "string", "format": "date"},
+          "source_type": {"enum": ["primary", "secondary", "repost"]},
+          "evidence_level": {"enum": ["A", "B", "C", "D"]},
+          "roles": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"enum": ["competition", "proposition", "category", "award", "creator", "work", "analysis"]}
+          },
+          "record_id": {"type": ["string", "null"], "maxLength": 120}
+        }
+      }
+    },
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner_known", "reuse_permission", "local_copy_allowed"],
+      "properties": {
+        "owner_known": {"type": "boolean"},
+        "reuse_permission": {"enum": ["link-only", "analysis-only", "permitted", "unknown"]},
+        "local_copy_allowed": {"type": "boolean"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observed", "author_claims", "official_facts"],
+      "properties": {
+        "observed": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "author_claims": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "official_facts": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["public_text", "text_length", "media_urls"],
+      "properties": {
+        "public_text": {"type": ["string", "null"]},
+        "text_length": {"type": ["integer", "null"], "minimum": 0},
+        "media_urls": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^https://"},
+          "uniqueItems": true
+        }
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["creative_mechanisms", "strategy_patterns", "copy_mechanisms", "transferable_principles", "anti_copy_notes"],
+      "properties": {
+        "creative_mechanisms": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "strategy_patterns": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "copy_mechanisms": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "transferable_principles": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "anti_copy_notes": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["award", "work_identity", "analysis"],
+      "properties": {
+        "award": {"enum": ["low", "medium", "high"]},
+        "work_identity": {"enum": ["low", "medium", "high"]},
+        "analysis": {"enum": ["low", "medium", "high"]}
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_stage", "dataset_split", "reviewed_by_human"],
+      "properties": {
+        "record_stage": {"enum": ["index", "deep-analysis", "evaluation"]},
+        "dataset_split": {"enum": ["development", "evaluation", "none"]},
+        "reviewed_by_human": {"type": "boolean"}
+      }
+    }
+  }
+}

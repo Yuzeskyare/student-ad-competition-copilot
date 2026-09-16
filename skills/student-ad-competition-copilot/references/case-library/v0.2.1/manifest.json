@@ -1,0 +1,80 @@
+{
+  "built_at": "2026-09-16",
+  "content_policy": {
+    "eligibility_input_fingerprint": "dcd5bedd99acdcb7fd6fad0e3a49ad65f939a70efc0a440ac6c35e20c44b5bf0",
+    "eligibility_state_fingerprint": "32bcc13e50831676f47ccdb64a188f8a851e1d95fcc7e1c74dd54d1b4d12da60",
+    "excluded_retrieval_statuses": [
+      "v0.2-remediation-quarantine",
+      "unclassified",
+      "unreviewed-machine-candidate"
+    ],
+    "personal_information_included": false,
+    "raw_media_included": false,
+    "reuse_level": "principle-only"
+  },
+  "files": [
+    {
+      "bytes": 99606,
+      "path": "case-cards.jsonl",
+      "records": 79,
+      "sha256": "4e775fb965525ad6321a6c101f22f9a005e1410a8dc8147244ba2474450e5c4d"
+    },
+    {
+      "bytes": 113920,
+      "path": "compliance-boundaries.jsonl",
+      "records": 200,
+      "sha256": "41774596830450f59f729e52cd4442f8d77597af32d27dd52d97d6e1149cad12"
+    },
+    {
+      "bytes": 207178,
+      "path": "eligibility.json",
+      "records": null,
+      "sha256": "ede8b7ccfb560be87a33f2583a2ef1ee5c64aa0f6c6ec2b4d50cbb5c13f7b152"
+    },
+    {
+      "bytes": 141373,
+      "path": "failure-patterns.jsonl",
+      "records": 251,
+      "sha256": "0afed74af139e42d4cf056eae776b255d818d4bee41e1592406d7f4df508ca36"
+    },
+    {
+      "bytes": 4345942,
+      "path": "method-cards.jsonl",
+      "records": 32,
+      "sha256": "306f56129490b48cd8c5bf4cbf91aede21ddc317c0963666f933663cedd85495"
+    },
+    {
+      "bytes": 901,
+      "path": "taxonomy.json",
+      "records": null,
+      "sha256": "e6580c90734d9b56cca8f10c8140cb7a47f76520fda46a8b75916f9b60e52ac2"
+    }
+  ],
+  "knowledge_pack_version": "v0.2.1",
+  "schema_version": "0.2.0",
+  "selection_summary": {
+    "annotation_records_used": 4400,
+    "method_cards_included": 32,
+    "raw_media_files_distributed": 0,
+    "raw_source_case_records_distributed": 0,
+    "review_contexts": {
+      "academy-award-2025-autumn-licheng-ad-copy": 12,
+      "academy-award-2025-spring-centaine-marketing-plan": 9,
+      "daguangsai-2026-langsheng-ad-copy": 20,
+      "daguangsai-2026-langsheng-marketing-plan": 20,
+      "daguangsai-2026-langsheng-print-ad": 18
+    },
+    "reviewed_case_cards_included": 79,
+    "source_cases_without_runtime_case_card": 8011
+  },
+  "source_corpus": {
+    "completion_audit_sha256": "5838875bff648f69a433cb84a3de5699d5ddc66b26673a04f892375647775482",
+    "counting_contract_sha256": "1948da43b744899f22b00f9341eb99ab9910fa088fe82de16d1b3d6a0c86b437",
+    "counting_equation": "189 + 7806 + 95 = 8090",
+    "deep_annotations": 8090,
+    "eligible_annotations": 4400,
+    "excluded_open_annotations": 0,
+    "excluded_unclassified_annotations": 3690,
+    "official_case_universe": 8090
+  }
+}

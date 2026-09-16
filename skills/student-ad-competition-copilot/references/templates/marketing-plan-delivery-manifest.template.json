@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1.0",
+  "plan_id": "<run-id>",
+  "competition": "<daguangsai|academy-award>",
+  "proposition_id": "<official-proposition-id>",
+  "selected_page_shape": "<16:9|A4>",
+  "artifacts": [],
+  "pages": [],
+  "sections": ["problem", "insight", "strategy", "core-creative", "execution", "schedule", "measurement", "risk"],
+  "submission_fields": {},
+  "evidence_status": "registered",
+  "evidence_register": [],
+  "rights_review": {"status": "pending", "borrowed_assets": []},
+  "budget": {"status": "open-decision", "currency": null, "line_items": [], "declared_total": null},
+  "kpi": {"status": "open-decision", "metrics": []},
+  "aigc": {"used": "unknown", "record_path": null}
+}

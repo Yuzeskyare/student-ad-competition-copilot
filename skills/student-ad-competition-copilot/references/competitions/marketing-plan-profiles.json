@@ -1,0 +1,76 @@
+{
+  "schema_version": "0.1.0",
+  "profiles": {
+    "daguangsai": {
+      "snapshot": "第18届（2026）",
+      "source_url": "https://www.sun-ada.net/about_intrs2.html",
+      "checked_at": "2026-09-08",
+      "publication_status": "published-snapshot",
+      "raw_category": "F 策划案类",
+      "normalized_category": "marketing-plan",
+      "online_delivery": {
+        "mode": "single-pdf",
+        "allowed_extensions": [".pdf"],
+        "max_file_bytes": 104857600,
+        "allowed_page_shapes": ["16:9", "A4"],
+        "shape_ratio_tolerance": 0.03,
+        "a4_size_tolerance_points": 6.0,
+        "body_roles": ["cover", "body", "back-cover"],
+        "body_minimum": null,
+        "body_maximum": 30,
+        "appendix_roles": ["appendix"],
+        "appendix_maximum": 10,
+        "excluded_roles": []
+      },
+      "required_submission_fields": [],
+      "source_citations_required_when_claimed": true,
+      "borrowed_asset_rights_review_required": true,
+      "aigc_record_required_when_used": true,
+      "refresh_before_real_submission": true
+    },
+    "academy-award": {
+      "snapshot": "2026秋季官方细则页（2026-09-09更新）",
+      "source_url": "https://www.5iidea.com/contents/32332",
+      "checked_at": "2026-09-16",
+      "publication_status": "published-page-snapshot",
+      "raw_category": "策划类",
+      "normalized_category": "marketing-plan",
+      "online_delivery": {
+        "mode": "page-images",
+        "allowed_extensions": [".jpg", ".jpeg"],
+        "max_file_bytes": 20971520,
+        "allowed_page_shapes": ["A4"],
+        "shape_ratio_tolerance": 0.02,
+        "a4_physical_tolerance_inches": 0.12,
+        "minimum_dpi": 300,
+        "color_mode": "RGB",
+        "counted_roles": ["body", "appendix"],
+        "content_minimum": 10,
+        "content_maximum": 30,
+        "excluded_roles": ["cover", "toc", "back-cover"]
+      },
+      "required_submission_fields": [
+        "summary",
+        "core_claim",
+        "target_audience",
+        "core_scenes_and_media",
+        "creative_highlights"
+      ],
+      "source_citations_required_when_claimed": true,
+      "borrowed_asset_rights_review_required": true,
+      "aigc_record_required_when_used": true,
+      "refresh_before_real_submission": true
+    }
+  },
+  "page_shapes": {
+    "16:9": 1.7777777778,
+    "A4": 1.4142857143
+  },
+  "a4": {
+    "short_side_points": 595.28,
+    "long_side_points": 841.89,
+    "short_side_inches": 8.2677,
+    "long_side_inches": 11.6929
+  },
+  "role_vocabulary": ["cover", "toc", "body", "appendix", "back-cover"]
+}

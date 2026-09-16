@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "release_version": "0.2.1",
+  "finding": "UGW-001",
+  "status": "passed",
+  "validated_at": "2026-09-16",
+  "contract": {
+    "new_or_resume_decision": true,
+    "resume_intents": ["继续", "接着做", "推进下一步", "沿用上次"],
+    "resume_reads": ["run manifest", "run-status.json", "quality-gate-results.json", "latest stage artifacts"],
+    "next_action_order": ["failed or blocked return stage", "first incomplete gate with satisfied dependencies", "next run scope", "requested scope complete"],
+    "completed_stage_rerun_conditions": ["input drift", "official-rule drift", "user-requirement drift", "referenced-asset drift", "explicit user request"],
+    "ambiguous_runs_are_not_merged": true
+  },
+  "forward_walkthroughs": [
+    {
+      "request": "继续做上次的营销策划",
+      "expected": "read the matching run state and continue the nearest failed or first incomplete gate"
+    },
+    {
+      "request": "推进下一步",
+      "expected": "do not restart completed research when its inputs are unchanged"
+    },
+    {
+      "request": "沿用上次的文案继续完善",
+      "expected": "resume the matching ad-copy run and preserve completed gates"
+    }
+  ],
+  "scope_exclusions": ["minimum-input questioning", "low-burden review format", "user-visible stage receipt", "execution-until-target contract"]
+}

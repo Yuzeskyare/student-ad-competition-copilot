@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "release_version": "0.2.1",
+  "finding": "UGW-003",
+  "status": "passed",
+  "validated_at": "2026-09-16",
+  "contract": {
+    "machine_prepares_before_human_review": true,
+    "same_stage_checks_are_bundled": true,
+    "backend_forms_are_not_given_to_user": true,
+    "required_checkpoint_types": [
+      "materially different direction selection",
+      "representative content before high-cost expansion",
+      "final content confirmation before content_pass"
+    ],
+    "default_direction_limit": 3,
+    "default_same_screen_item_limit": 5,
+    "minimum_valid_replies": ["通过", "选B", "一个可观察问题"],
+    "sample_pass_does_not_imply_full_scope_pass": true,
+    "delegation_does_not_imply_content_pass": true,
+    "prior_same-version_same-scope_decision_is_reused": true
+  },
+  "forward_walkthroughs": [
+    {
+      "case": "twelve raw print directions exist",
+      "expected": "the assistant self-reviews and narrows them to at most three materially different directions, gives a recommendation, and asks for one direction decision"
+    },
+    {
+      "case": "the user already said the current B direction passes",
+      "expected": "the assistant records the decision for that version and scope and does not ask an equivalent checklist again"
+    },
+    {
+      "case": "four ad-copy finalists require a human choice",
+      "expected": "the assistant presents the finalists with observable differences and accepts a reply such as 选B without asking the user to fill gate fields"
+    },
+    {
+      "case": "a five-page marketing-plan sample passes",
+      "expected": "the pass authorizes full-deck expansion only; unseen pages and the later final deck do not inherit content_pass"
+    },
+    {
+      "case": "twenty final items need review",
+      "expected": "the assistant uses coverage-tracked batches of no more than five items per comparison and never projects sampled approval onto unseen items"
+    },
+    {
+      "case": "the user delegates creative selection to the assistant",
+      "expected": "the assistant may continue reversible work using its recommendation while content_pass remains pending until real human confirmation"
+    }
+  ],
+  "scope_exclusions": [
+    "user-visible stage receipt and unique next action",
+    "execution-until-requested-scope contract"
+  ]
+}

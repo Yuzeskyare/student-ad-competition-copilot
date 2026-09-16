@@ -1,0 +1,7 @@
+interface:
+  display_name: "学生广告赛事创作助手"
+  short_description: "大广赛与学院奖平面、广告文案创作及营销策划受控校验"
+  default_prompt: "使用 $student-ad-competition-copilot 解析这个命题，并按对应类别推进创作或规则校验。"
+
+policy:
+  allow_implicit_invocation: true

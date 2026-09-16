@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.2.0",
+  "run_id": "competition-season-brand-marketing-plan",
+  "competition": "daguangsai",
+  "category": "marketing-plan",
+  "proposition_id": "official-proposition-id",
+  "selected_direction": "MP-01",
+  "run_scope": "delivery-candidate",
+  "aigc_used": "no",
+  "method_cards_used": ["mp-evidence-to-strategy"],
+  "method_cards_rejected": [],
+  "directions": [
+    {"direction_id": "MP-01", "one_line_strategy": "replace with a specific strategy", "status": "selected"},
+    {"direction_id": "MP-02", "one_line_strategy": "replace with a structurally different strategy", "status": "rejected"},
+    {"direction_id": "MP-03", "one_line_strategy": "replace with a third strategy", "status": "rejected"}
+  ],
+  "final_artifact": {
+    "path": "06-delivery/full-deck-candidates/final-plan.pptx",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "slide_count": 1,
+    "authoring_mode": "native-editable-pptx"
+  },
+  "artifacts": {
+    "brief_evidence": "01-brief/brief-evidence.md",
+    "brief_constraints": "01-brief/marketing-plan-brief-constraints.json",
+    "research_synthesis": "02-research/research-synthesis.md",
+    "evidence_register": "02-research/evidence-register.md",
+    "reference_review": "02-research/reference-review/approved-reference-pack.jsonl",
+    "direction_cards": "03-concepts/direction-cards.md",
+    "method_application": "03-concepts/method-card-application.md",
+    "concept_gate": "03-concepts/selected-direction.json",
+    "page_blueprint": "04-production/page-blueprint.md",
+    "budget_kpi": "04-production/budget-and-kpi-contract.json",
+    "sample_review": "05-reviews/sample-quality-gate.md",
+    "full_deck_review": "05-reviews/full-deck-human-approval.md",
+    "technical_validation": "05-reviews/technical-validation.json",
+    "quality_gate_results": "quality-gate-results.json",
+    "run_status": "run-status.json"
+  }
+}

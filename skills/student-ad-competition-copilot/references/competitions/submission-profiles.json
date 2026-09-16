@@ -1,0 +1,41 @@
+{
+  "schema_version": "0.1.1",
+  "profiles": {
+    "daguangsai": {
+      "snapshot": "第18届（2026）",
+      "source_url": "https://www.sun-ada.net/about_intrs2.html",
+      "checked_at": "2026-09-07",
+      "publication_status": "published-snapshot",
+      "allowed_formats": ["JPEG"],
+      "allowed_extensions": [".jpg", ".jpeg"],
+      "allowed_modes_by_format": {"JPEG": ["RGB"]},
+      "canvas_mm": [297, 420],
+      "canvas_tolerance_mm": 1.0,
+      "effective_dpi_tolerance_ratio": 0.01,
+      "min_dpi": 300,
+      "require_dpi_metadata": true,
+      "max_files": 3,
+      "max_bytes_per_file": 5242880,
+      "aigc_record_required_when_used": true,
+      "refresh_before_real_submission": true
+    },
+    "academy-award": {
+      "snapshot": "2026秋季官方细则页（2026-09-09更新）",
+      "source_url": "https://www.5iidea.com/contents/32332",
+      "checked_at": "2026-09-16",
+      "publication_status": "published-page-snapshot",
+      "allowed_formats": ["JPEG", "PNG", "GIF"],
+      "allowed_extensions": [".jpg", ".jpeg", ".png", ".gif"],
+      "allowed_modes_by_format": {"JPEG": ["RGB"], "PNG": ["RGB"], "GIF": ["P", "RGB"]},
+      "canvas_mm": [297, 420],
+      "canvas_tolerance_mm": 1.0,
+      "effective_dpi_tolerance_ratio": 0.01,
+      "min_dpi": 120,
+      "require_dpi_metadata": false,
+      "max_files": 3,
+      "max_bytes_per_file": 20971520,
+      "aigc_record_required_when_used": true,
+      "refresh_before_real_submission": true
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "release_version": "0.2.1",
+  "status": "passed",
+  "validated_at": "2026-09-16",
+  "scope": "three-track lifecycle scopes, authoritative marketing-plan quality gates, and conditional print-ad method-validation evidence",
+  "findings_closed": ["TW-001", "TW-002", "TW-003"],
+  "behavior": {
+    "ad_copy_scopes": ["concept-only", "production-candidate", "delivery-candidate"],
+    "marketing_plan_scopes": ["concept-only", "production-candidate", "delivery-candidate"],
+    "downstream_gate_state": "not-run",
+    "marketing_plan_gate_authority": "quality-gate-results.json",
+    "print_method_evidence_required_when": "method_validation_status=method-validated",
+    "legacy_manifest_compatibility": "0.1.0 manifests are interpreted as delivery-candidate; new manifests use 0.2.0"
+  },
+  "validation": {
+    "full_test_pattern": "test_v02*.py",
+    "tests_run": 282,
+    "tests_passed": 248,
+    "tests_skipped": 34,
+    "tests_failed": 0,
+    "tests_errored": 0,
+    "new_lifecycle_contract_tests": 5,
+    "ad_copy_acceptance_checks": 17,
+    "marketing_plan_acceptance_tests": 13,
+    "validator_self_checks": 3,
+    "skill_creator_quick_validate": "passed-structural-only",
+    "source_installed_byte_identity": true
+  },
+  "boundaries": {
+    "annotation_records_modified": 0,
+    "method_card_content_modified": 0,
+    "storage_cleanup_executed": false
+  }
+}

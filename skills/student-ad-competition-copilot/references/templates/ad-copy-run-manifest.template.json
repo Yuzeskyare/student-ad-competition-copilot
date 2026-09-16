@@ -1,0 +1,33 @@
+{
+  "schema_version": "0.2.0",
+  "run_id": "competition-season-brand-ad-copy",
+  "competition": "academy-award",
+  "category": "ad-copy",
+  "subtype": "long-copy",
+  "brief_id": "official-brief-id",
+  "selected_direction": "AC-02",
+  "run_scope": "delivery-candidate",
+  "selected_candidate_id": "AC-02",
+  "aigc_used": "no",
+  "method_cards_used": ["mc-brief-constraint-deconstruction"],
+  "method_cards_rejected": [],
+  "candidates": [
+    {"candidate_id": "AC-01", "path": "04-production/candidates-v0.1/AC-01.txt", "sha256": "0000000000000000000000000000000000000000000000000000000000000000"},
+    {"candidate_id": "AC-02", "path": "04-production/candidates-v0.1/AC-02.txt", "sha256": "0000000000000000000000000000000000000000000000000000000000000000"},
+    {"candidate_id": "AC-03", "path": "04-production/candidates-v0.1/AC-03.txt", "sha256": "0000000000000000000000000000000000000000000000000000000000000000"}
+  ],
+  "artifacts": {
+    "brief_evidence": "01-brief/brief-evidence.md",
+    "brief_constraints": "01-brief/brief-constraints.json",
+    "research_notes": "02-research/research-notes.md",
+    "method_query": "02-research/method-query-v0.1.json",
+    "direction_cards": "03-concepts/direction-cards-v0.1.md",
+    "method_application": "03-concepts/method-card-application-v0.1.md",
+    "concept_gate": "03-concepts/concept-gate-v0.1.json",
+    "candidate_review": "05-reviews/candidate-review-v0.1.json",
+    "final_copy": "06-delivery/final-copy-v0.1.txt",
+    "technical_validation": "06-delivery/technical-validation-v0.1.json",
+    "quality_gate_results": "quality-gate-results.json",
+    "run_status": "run-status.json"
+  }
+}

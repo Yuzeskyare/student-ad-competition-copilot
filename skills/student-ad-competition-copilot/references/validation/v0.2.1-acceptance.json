@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_version": "0.2.1",
+  "status": "release-tests-passed-awaiting-activation",
+  "scope": "method case-evidence source reconciliation, two omitted materialized proposals, count semantics, and one build-source phrase alignment",
+  "method_evidence": {
+    "canonical_relations": 16605,
+    "runtime_relations": 8856,
+    "runtime_method_codings": 8840,
+    "runtime_emergent_proposals": 16,
+    "added_relations": [
+      {
+        "method_id": "mc-single-core-concept-thread",
+        "annotation_id": "da-academy-22041-machine-corpus-897-v0-1",
+        "proposal_id": "mp1",
+        "evidence_kind": "emergent-proposal"
+      },
+      {
+        "method_id": "mc-visual-symbol-translation",
+        "annotation_id": "da-academy-12212-machine-form-1084-v0-1",
+        "proposal_id": "mp1",
+        "evidence_kind": "emergent-proposal"
+      }
+    ],
+    "removed_relations": 0,
+    "shared_relation_content_changes": 0,
+    "count_error_methods": []
+  },
+  "published_v0_2_0_mutated": false,
+  "installed_skill_mutated": false,
+  "validation": {
+    "checks_passed": 6,
+    "checks_total": 6,
+    "full_canonical_validator_errors": 0,
+    "knowledge_pack_validation": "passed",
+    "skill_creator_quick_validate": "passed-structural-only",
+    "runtime_behavior": "passed",
+    "method_reconciliation_regression_tests": 3,
+    "runtime_count_error_methods": 0,
+    "active_knowledge_packs": 1,
+    "cache_files": 0
+  },
+  "installation_gate": {
+    "status": "not-executed",
+    "requirement": "Activate atomically, preserve a v0.2.0 backup, verify source/install byte identity, and run post-install checks."
+  }
+}

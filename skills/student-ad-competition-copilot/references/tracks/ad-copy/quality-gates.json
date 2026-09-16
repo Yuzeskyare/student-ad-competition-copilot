@@ -1,0 +1,151 @@
+{
+  "$schema": "../../schemas/track-quality-gates.schema.json",
+  "document_type": "gate-definitions",
+  "schema_version": "0.1.0",
+  "definition_set_id": "ad-copy.0.1.0",
+  "track": "ad-copy",
+  "playbook": "playbook.md",
+  "gates": [
+    {
+      "gate_id": "ad-copy.brief-claim",
+      "order": 10,
+      "stage": "brief",
+      "gate_type": "hybrid",
+      "purpose": "确认类别授权、命题任务、产品事实、必用/禁用项和主张边界。",
+      "applicability": {"mode": "always"},
+      "required_inputs": ["official-rules", "official-brief", "product-evidence"],
+      "required_outputs": ["brief-evidence", "brief-constraints", "claim-boundary"],
+      "checks": [
+        {"check_id": "identity-and-authorization", "assessment": "machine", "question": "赛事、命题、原始类别和允许文案形态是否登记？", "pass_condition": "必需身份与授权字段存在且非空。", "failure_severity": "hard-stop", "return_to_stage": "brief", "evidence_required": true},
+        {"check_id": "claim-evidence", "assessment": "human", "question": "核心产品主张及普通受众可能理解到的暗示是否有证据？", "pass_condition": "主张可用、需限定和禁用边界明确。", "failure_severity": "hard-stop", "return_to_stage": "brief", "evidence_required": true},
+        {"check_id": "required-and-prohibited-language", "assessment": "machine", "question": "必用词、至少命中组和禁用词是否可确定检查？", "pass_condition": "命题约束字段完整，语义判断仍留给人工。", "failure_severity": "return-on-observed-failure", "return_to_stage": "brief", "evidence_required": true}
+      ],
+      "hard_stops": [
+        {"stop_id": "unauthorized-category", "condition": "具体命题没有授权所要求的广告文案形态。", "return_to_stage": "brief", "required_resolution": "取得官方授权依据或停止该形态。"},
+        {"stop_id": "unsupported-core-claim", "condition": "核心功效、安全、价格、时效或绝对化主张没有证据。", "return_to_stage": "brief", "required_resolution": "删除、限定或补充官方证据。"}
+      ],
+      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "on_pass": "ad-copy.subtype"
+    },
+    {
+      "gate_id": "ad-copy.subtype",
+      "order": 20,
+      "stage": "subtype",
+      "gate_type": "hybrid",
+      "purpose": "确定官方类别与内部工作子类型，并正确处理开放长度。",
+      "applicability": {"mode": "always"},
+      "required_inputs": ["brief-constraints"],
+      "required_outputs": ["working-subtype", "length-status"],
+      "checks": [
+        {"check_id": "subtype-basis", "assessment": "human", "question": "工作子类型来自命题明确要求还是宽类别下的合理工作分类？", "pass_condition": "依据已记录，且没有把内部分类说成官方新增限制。", "failure_severity": "return-on-observed-failure", "return_to_stage": "subtype", "evidence_required": true},
+        {"check_id": "length-state", "assessment": "machine", "question": "长度状态是否为specified、not-specified、not-applicable或conflict之一？", "pass_condition": "指定长度有数值；未规定或不适用使用null；冲突被阻塞。", "failure_severity": "return-on-observed-failure", "return_to_stage": "subtype", "evidence_required": true},
+        {"check_id": "open-length-nonblocking", "assessment": "human", "question": "未规定长度是否只作为非阻塞边界，而非被误报为缺失？", "pass_condition": "研究、方向和内容评审可继续，真实报名计数保持待核对。", "failure_severity": "return-on-observed-failure", "return_to_stage": "subtype", "evidence_required": true}
+      ],
+      "hard_stops": [
+        {"stop_id": "rule-conflict", "condition": "多个官方来源对类别或长度给出无法消解的冲突。", "return_to_stage": "subtype", "required_resolution": "保留原文与来源并完成规则裁定。"}
+      ],
+      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "on_pass": "ad-copy.direction-distinctness"
+    },
+    {
+      "gate_id": "ad-copy.direction-distinctness",
+      "order": 30,
+      "stage": "directions",
+      "gate_type": "human",
+      "purpose": "确保方向使用不同说服路径，而不是同义改写。",
+      "applicability": {"mode": "always"},
+      "required_inputs": ["language-task", "research-notes", "method-query"],
+      "required_outputs": ["direction-cards", "selected-direction", "rejected-direction-reasons"],
+      "checks": [
+        {"check_id": "mechanism-distinctness", "assessment": "human", "question": "方向是否在视角、信息顺序、语言机制或说服路径上不同？", "pass_condition": "每个方向可以用不同机制句描述，不是换词。", "failure_severity": "return-on-observed-failure", "return_to_stage": "directions", "evidence_required": true},
+        {"check_id": "brand-and-product-role", "assessment": "human", "question": "每个方向是否说明品牌为什么有资格说、产品事实如何进入？", "pass_condition": "品牌不是结尾署名，产品不是无依据修辞。", "failure_severity": "return-on-observed-failure", "return_to_stage": "directions", "evidence_required": true},
+        {"check_id": "selection-rationale", "assessment": "human", "question": "选择是否同时考虑命题响应、人性张力、品牌归属、清晰度和风险？", "pass_condition": "至少一个被拒方向及具体理由被保留。", "failure_severity": "return-on-observed-failure", "return_to_stage": "directions", "evidence_required": true}
+      ],
+      "hard_stops": [
+        {"stop_id": "synonym-only-directions", "condition": "所有方向只改变近义词、修辞或语气。", "return_to_stage": "directions", "required_resolution": "重做不同说服机制。"}
+      ],
+      "waiver_policy": {"allowed": true, "reason_required": true, "allowed_when": ["任务极窄且少于三个方向仍能证明没有同义凑数。"]},
+      "on_pass": "ad-copy.semantic-brand"
+    },
+    {
+      "gate_id": "ad-copy.semantic-brand",
+      "order": 40,
+      "stage": "candidate-review",
+      "gate_type": "human",
+      "purpose": "在声音和技术优化前确认语义、事实、人群和品牌角色成立。",
+      "applicability": {"mode": "always"},
+      "required_inputs": ["candidate-copies", "claim-boundary", "selected-direction"],
+      "required_outputs": ["candidate-semantic-review", "selected-candidate"],
+      "checks": [
+        {"check_id": "semantic-completeness", "assessment": "human", "question": "第一次阅读是否能理解字面判断，不依赖外部解释？", "pass_condition": "主张、动作、关系和落点完整清楚。", "failure_severity": "return-on-observed-failure", "return_to_stage": "candidate-production", "evidence_required": true},
+        {"check_id": "fact-and-implication", "assessment": "human", "question": "字面及常见理解是否超出产品与品牌证据？", "pass_condition": "没有无依据的确定性或绝对化承诺。", "failure_severity": "hard-stop", "return_to_stage": "candidate-production", "evidence_required": true},
+        {"check_id": "brand-replacement", "assessment": "human", "question": "换成竞品或通用品类后，文案是否仍无损成立？", "pass_condition": "品牌角色、产品锚或语言资产产生专属意义。", "failure_severity": "return-on-observed-failure", "return_to_stage": "directions", "evidence_required": true},
+        {"check_id": "natural-language", "assessment": "human", "question": "表达是否像自然中文，而非为了工整、谐音或高级感扭曲语序？", "pass_condition": "朗读和阅读都不需要反向解码。", "failure_severity": "return-on-observed-failure", "return_to_stage": "candidate-production", "evidence_required": true}
+      ],
+      "hard_stops": [
+        {"stop_id": "explanation-dependent", "condition": "候选必须依赖作者解释才能得到主判断。", "return_to_stage": "candidate-production", "required_resolution": "重写语义骨架。"},
+        {"stop_id": "brand-replaceable", "condition": "删除或替换品牌后文案意义无损。", "return_to_stage": "directions", "required_resolution": "重建品牌角色与产品锚。"}
+      ],
+      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "on_pass": "ad-copy.subtype-quality"
+    },
+    {
+      "gate_id": "ad-copy.subtype-quality",
+      "order": 50,
+      "stage": "content-review",
+      "gate_type": "human",
+      "purpose": "根据slogan、长文案、脚本或社媒等具体文体启用对应质量检查。",
+      "applicability": {"mode": "always"},
+      "required_inputs": ["selected-candidate", "working-subtype"],
+      "required_outputs": ["subtype-content-review"],
+      "checks": [
+        {"check_id": "slogan-short-structure", "assessment": "human", "question": "slogan/short-copy是否完成语义压缩、记忆结构和品牌落点检查？", "pass_condition": "结果明确记录。", "applies_when": "工作子类型为slogan或short-copy。", "failure_severity": "return-on-observed-failure", "return_to_stage": "candidate-production", "evidence_required": true},
+        {"check_id": "long-copy-causality", "assessment": "human", "question": "长文案/品牌故事是否有叙事因果、信息推进和品牌回收？", "pass_condition": "没有情绪空转和结尾硬转。", "applies_when": "工作子类型为long-copy或brand-story。", "failure_severity": "return-on-observed-failure", "return_to_stage": "candidate-production", "evidence_required": true},
+        {"check_id": "script-performability", "assessment": "human", "question": "脚本是否可在规定媒介和时长内被拍、演或听见？", "pass_condition": "声画动作各有职责。", "applies_when": "工作子类型为script。", "failure_severity": "return-on-observed-failure", "return_to_stage": "candidate-production", "evidence_required": true},
+        {"check_id": "social-authenticity", "assessment": "human", "question": "社媒/种草文案是否有平台语态、真实细节、披露边界和行动承接？", "pass_condition": "不伪装无条件个人体验。", "applies_when": "工作子类型为social-copy或seeding-copy。", "failure_severity": "return-on-observed-failure", "return_to_stage": "candidate-production", "evidence_required": true}
+      ],
+      "hard_stops": [],
+      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "on_pass": "ad-copy.voice-prosody"
+    },
+    {
+      "gate_id": "ad-copy.voice-prosody",
+      "order": 60,
+      "stage": "voice-review",
+      "gate_type": "human",
+      "purpose": "验证广告语和短文案的语法槽位、节拍、停顿、重音、韵脚和口语自然度。",
+      "applicability": {"mode": "conditional", "when": "工作子类型为slogan或short-copy。"},
+      "required_inputs": ["selected-candidate", "semantic-brand-review"],
+      "required_outputs": ["prosody-review", "read-aloud-record"],
+      "checks": [
+        {"check_id": "grammar-slots", "assessment": "human", "question": "并列或对照句的主体、动作、对象和时间槽位是否对应？", "pass_condition": "结构平衡或有意破格被明确说明。", "failure_severity": "return-on-observed-failure", "return_to_stage": "candidate-production", "evidence_required": true},
+        {"check_id": "syllable-pause-stress", "assessment": "human", "question": "音节数、自然停顿和重音是否形成可说的节奏？", "pass_condition": "没有无意词长失衡、吞音或歧义。", "failure_severity": "return-on-observed-failure", "return_to_stage": "candidate-production", "evidence_required": true},
+        {"check_id": "rhyme-without-force", "assessment": "human", "question": "韵脚是否自然，是否为了押韵破坏真实动作、语序或品牌任务？", "pass_condition": "强押为否，或删除押韵后表达更自然。", "failure_severity": "hard-stop", "return_to_stage": "candidate-production", "evidence_required": true},
+        {"check_id": "read-aloud", "assessment": "human", "question": "是否完成实际朗读并记录第一次自然停顿和异常重读？", "pass_condition": "朗读结果和限制可追溯。", "failure_severity": "return-on-observed-failure", "return_to_stage": "voice-review", "evidence_required": true}
+      ],
+      "hard_stops": [
+        {"stop_id": "forced-rhyme", "condition": "押韵破坏自然语序、真实动作、信息准确或品牌任务。", "return_to_stage": "candidate-production", "required_resolution": "去除强押并以语义优先重写。"}
+      ],
+      "waiver_policy": {"allowed": true, "reason_required": true, "allowed_when": ["工作子类型不是slogan或short-copy。"]},
+      "on_pass": "ad-copy.technical-text"
+    },
+    {
+      "gate_id": "ad-copy.technical-text",
+      "order": 70,
+      "stage": "technical-review",
+      "gate_type": "machine",
+      "purpose": "验证纯文本、计数、字面约束、AIGC使用声明、必要记录、哈希和运行路径。",
+      "applicability": {"mode": "always"},
+      "required_inputs": ["final-copy", "brief-constraints", "aigc-use-declaration"],
+      "required_outputs": ["technical-validation", "run-manifest"],
+      "checks": [
+        {"check_id": "text-and-count", "assessment": "machine", "question": "编码、纯文本、不可见字符和适用长度边界是否通过？", "pass_condition": "所有适用技术项通过；开放长度只产生边界提醒。", "failure_severity": "return-on-observed-failure", "return_to_stage": "technical-review", "evidence_required": true},
+        {"check_id": "literal-constraints", "assessment": "machine", "question": "必用词、命中组、禁用词和子类型白名单是否通过？", "pass_condition": "所有确定性字面检查通过。", "failure_severity": "return-on-observed-failure", "return_to_stage": "technical-review", "evidence_required": true},
+        {"check_id": "run-integrity", "assessment": "machine", "question": "入选候选、最终文本、哈希、AIGC使用声明、必要记录和运行路径是否一致？", "pass_condition": "使用声明为yes或no；yes时记录存在；运行清单引用完整且路径未逃出运行目录。", "failure_severity": "return-on-observed-failure", "return_to_stage": "technical-review", "evidence_required": true}
+      ],
+      "hard_stops": [],
+      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "on_pass": null
+    }
+  ]
+}

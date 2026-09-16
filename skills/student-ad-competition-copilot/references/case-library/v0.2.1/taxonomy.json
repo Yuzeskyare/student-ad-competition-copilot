@@ -1,0 +1,35 @@
+{
+  "allowed_case_review_statuses": [
+    "targeted-semantic-review-passed"
+  ],
+  "allowed_reuse_levels": [
+    "principle-only"
+  ],
+  "case_reference_roles": {
+    "approved-limited-reference": 28,
+    "approved-method-reference": 14,
+    "counterexample-only": 37
+  },
+  "compliance_boundaries": 200,
+  "failure_patterns": 251,
+  "method_evidence_maturities": {
+    "M2-supported": 1,
+    "M3-corroborated": 9,
+    "not-rated": 22
+  },
+  "method_evidence_statuses": {
+    "provisional-quarantined": 8,
+    "supported-by-independent-sources": 12,
+    "supported-by-independent-sources-and-eligible-cases": 12
+  },
+  "method_families": {
+    "audience-insight": 2,
+    "brief-analysis": 2,
+    "copy-concept": 11,
+    "evaluation-iteration": 3,
+    "execution-design": 1,
+    "strategy-architecture": 2,
+    "visual-concept": 11
+  },
+  "schema_version": "0.2.0"
+}

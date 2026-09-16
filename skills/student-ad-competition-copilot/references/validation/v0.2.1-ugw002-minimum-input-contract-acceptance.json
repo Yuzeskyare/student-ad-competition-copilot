@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "release_version": "0.2.1",
+  "finding": "UGW-002",
+  "status": "passed",
+  "validated_at": "2026-09-16",
+  "contract": {
+    "extract_before_asking": ["user text", "attachments", "provided link content", "current workspace materials"],
+    "minimum_identity": ["competition and season", "official category", "proposition or brand", "requested deliverable", "target run scope"],
+    "ask_only_when_missing_changes": ["track", "proposition identity", "core fact or claim", "requested completion scope", "irreversible high-cost production"],
+    "complete_independent_work_before_question": true,
+    "question_style": "one concise bundled blocker question with a few clear options when possible",
+    "reversible_assumption_fields": ["assumption", "basis", "affected_scope", "reversal_trigger", "validation_point"],
+    "unknown_official_facts_are_never_assumed": true,
+    "missing_fidelity_assets_allow": "bounded concept-only exploration"
+  },
+  "forward_walkthroughs": [
+    {
+      "request": "附件里是完整命题，先帮我想平面创意",
+      "expected": "extract identity from the attachment, avoid repeating known questions, and begin bounded concept work"
+    },
+    {
+      "request": "给这个品牌写广告语，命题没有规定语气",
+      "expected": "choose a reversible working tone, record it as an open assumption, and continue without blocking"
+    },
+    {
+      "request": "只有品牌名，没有赛事、类别或命题",
+      "expected": "finish any independent material organization, then ask one concise question covering only routing blockers"
+    },
+    {
+      "request": "没有官方包装图，先做概念",
+      "expected": "keep asset status unknown, continue concept-only, and block only affected production and delivery"
+    }
+  ],
+  "scope_exclusions": ["low-burden review format", "user-visible stage receipt", "execution-until-target contract"]
+}

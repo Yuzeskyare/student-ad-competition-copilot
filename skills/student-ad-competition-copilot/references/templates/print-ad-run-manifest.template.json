@@ -1,0 +1,18 @@
+{
+  "schema_version": "0.2.0",
+  "run_id": "competition-season-brand-print-ad",
+  "competition": "daguangsai",
+  "category": "print-ad",
+  "brief_id": "official-brief-id",
+  "selected_direction": "PA-01",
+  "series_mode": "series",
+  "run_scope": "concept-only",
+  "method_validation_status": "not-claimed",
+  "artifacts": {
+    "brief_evidence": "01-brief/brief-evidence.md",
+    "direction_cards": "03-concepts/direction-cards.md",
+    "concept_gate": "03-concepts/concept-gate.json",
+    "quality_gate_results": "quality-gate-results.json",
+    "run_status": "run-status.json"
+  }
+}

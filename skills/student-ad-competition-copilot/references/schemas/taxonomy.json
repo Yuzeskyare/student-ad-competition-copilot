@@ -1,0 +1,66 @@
+{
+  "taxonomy_version": "0.1.0",
+  "normalized_categories": ["print-ad", "marketing-plan", "ad-copy", "graphic-copy"],
+  "copy_subtypes": ["slogan", "short-copy", "long-copy", "seeding-copy", "brand-story", "script", "social-copy", "unknown"],
+  "competition_names": {
+    "daguangsai": "全国大学生广告艺术大赛",
+    "academy-award": "大学生广告艺术节学院奖"
+  },
+  "category_mappings": {
+    "daguangsai": {
+      "Aa 平面广告": "print-ad",
+      "F 策划案类": "marketing-plan",
+      "G 文案类": "ad-copy"
+    },
+    "academy-award": {
+      "平面作品": "print-ad",
+      "平面广告": "print-ad",
+      "营销策划": "marketing-plan",
+      "文案作品": "ad-copy",
+      "广告文案": "ad-copy",
+      "图文类": "graphic-copy"
+    }
+  },
+  "award_mappings": {
+    "daguangsai": {
+      "一等奖": {"scope": "national", "level": "first", "status": "officially_confirmed"},
+      "二等奖": {"scope": "national", "level": "second", "status": "officially_confirmed"},
+      "三等奖": {"scope": "national", "level": "third", "status": "officially_confirmed"},
+      "优秀奖": {"scope": "national", "level": "excellence", "status": "officially_confirmed"},
+      "全国一等奖": {"scope": "national", "level": "first", "status": "officially_confirmed"},
+      "全国二等奖": {"scope": "national", "level": "second", "status": "officially_confirmed"},
+      "全国三等奖": {"scope": "national", "level": "third", "status": "officially_confirmed"},
+      "全国优秀奖": {"scope": "national", "level": "excellence", "status": "officially_confirmed"},
+      "拟定全国奖": {"scope": "national", "level": "unknown", "status": "proposed"}
+    },
+    "academy-award": {
+      "全场大奖": {"scope": "competition", "level": "grand", "status": "officially_confirmed"},
+      "营销策划全场大奖": {"scope": "competition", "level": "grand", "status": "officially_confirmed"},
+      "金级类": {"scope": "competition", "level": "gold", "status": "officially_confirmed"},
+      "银级类": {"scope": "competition", "level": "silver", "status": "officially_confirmed"},
+      "铜级类": {"scope": "competition", "level": "bronze", "status": "officially_confirmed"},
+      "优秀类": {"scope": "competition", "level": "excellence", "status": "officially_confirmed"},
+      "入围类": {"scope": "competition", "level": "shortlisted", "status": "officially_confirmed"}
+    }
+  },
+  "unmapped_award_fallback": {
+    "academy-award": {"scope": "competition", "level": "unknown", "status": "officially_confirmed"}
+  },
+  "sensitive_key_fragments": [
+    "idcard",
+    "identitycard",
+    "certificatenumber",
+    "mobile",
+    "phone",
+    "telephone",
+    "qq",
+    "email",
+    "openid",
+    "signature",
+    "userid",
+    "accountid",
+    "wechat",
+    "address"
+  ],
+  "forbidden_metric_key_fragments": ["fictitious", "browsenum", "likednum", "collectsnum"]
+}

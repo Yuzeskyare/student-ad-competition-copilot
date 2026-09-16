@@ -1,0 +1,152 @@
+{
+  "$schema": "../../schemas/track-quality-gates.schema.json",
+  "document_type": "gate-definitions",
+  "schema_version": "0.1.0",
+  "definition_set_id": "print-ad.0.1.0",
+  "track": "print-ad",
+  "playbook": "playbook.md",
+  "gates": [
+    {
+      "gate_id": "print-ad.brief-evidence",
+      "order": 10,
+      "stage": "brief",
+      "gate_type": "hybrid",
+      "purpose": "确认传播任务、官方事实、赛事边界和保真资产足以支持方向探索。",
+      "applicability": {"mode": "always"},
+      "required_inputs": ["official-rules", "official-brief", "official-assets"],
+      "required_outputs": ["brief-evidence", "single-communication-task", "official-asset-manifest"],
+      "checks": [
+        {"check_id": "identity-and-category", "assessment": "machine", "question": "赛事、届次、类别、命题和产品身份是否已登记？", "pass_condition": "必需身份字段存在且非空。", "failure_severity": "hard-stop", "return_to_stage": "brief", "evidence_required": true},
+        {"check_id": "single-task", "assessment": "human", "question": "是否只有一个主要传播判断，并明确人群、场景和可见关系？", "pass_condition": "任务可以用一句话复述且主次明确。", "failure_severity": "return-on-observed-failure", "return_to_stage": "brief", "evidence_required": true},
+        {"check_id": "asset-production-readiness", "assessment": "human", "question": "官方产品、Logo、包装和必备文字是否足以支持拟定构图？", "pass_condition": "保真资产来源、用途和限制明确，方向不依赖伪造几何或标签。", "applies_when": "准备从概念探索进入高分辨率生产时。", "failure_severity": "hard-stop", "return_to_stage": "brief", "evidence_required": true}
+      ],
+      "hard_stops": [
+        {"stop_id": "missing-core-identity", "condition": "核心品牌、产品或命题身份没有官方证据。", "return_to_stage": "brief", "required_resolution": "取得官方证据或停止高清生产。"},
+        {"stop_id": "missing-fidelity-asset", "condition": "创意依赖必须保真的产品、Logo或包装，但无可用官方资产。", "return_to_stage": "brief", "required_resolution": "补资产或改为不依赖缺失资产的方向。"}
+      ],
+      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "on_pass": "print-ad.direction-distinctness"
+    },
+    {
+      "gate_id": "print-ad.direction-distinctness",
+      "order": 20,
+      "stage": "directions",
+      "gate_type": "human",
+      "purpose": "确保候选方向在洞察、因果或视觉机制上真正不同。",
+      "applicability": {"mode": "always"},
+      "required_inputs": ["brief-evidence", "visual-territory-research"],
+      "required_outputs": ["direction-cards", "selected-direction", "rejected-direction-reasons"],
+      "checks": [
+        {"check_id": "mechanism-distinctness", "assessment": "human", "question": "方向差异是否来自对象关系、因果、转换或洞察，而非风格和颜色？", "pass_condition": "各方向可用不同的视觉机制句描述。", "failure_severity": "return-on-observed-failure", "return_to_stage": "directions", "evidence_required": true},
+        {"check_id": "product-role", "assessment": "human", "question": "每个方向中产品是否参与意义形成？", "pass_condition": "产品作用可见且不是后贴角标。", "failure_severity": "return-on-observed-failure", "return_to_stage": "directions", "evidence_required": true},
+        {"check_id": "selection-rationale", "assessment": "human", "question": "采用与拒绝理由是否包含可理解、品牌归属、风险和可制作性？", "pass_condition": "至少一个拒绝方向及具体理由被保留。", "failure_severity": "return-on-observed-failure", "return_to_stage": "directions", "evidence_required": true}
+      ],
+      "hard_stops": [
+        {"stop_id": "style-only-directions", "condition": "所有方向只更换风格、背景、配色或标题。", "return_to_stage": "directions", "required_resolution": "重做视觉因果和对象关系。"}
+      ],
+      "waiver_policy": {"allowed": true, "reason_required": true, "allowed_when": ["命题极窄且继续增加方向只会产生可证明的同义变化。"]},
+      "on_pass": "print-ad.visual-relation-prototype"
+    },
+    {
+      "gate_id": "print-ad.visual-relation-prototype",
+      "order": 30,
+      "stage": "prototype",
+      "gate_type": "human",
+      "purpose": "在高清生产前验证动作、因果、产品作用和短时理解。",
+      "applicability": {"mode": "always"},
+      "required_inputs": ["selected-direction"],
+      "required_outputs": ["low-cost-prototype", "visual-only-test", "thumbnail-test", "misread-risk"],
+      "checks": [
+        {"check_id": "visual-only-meaning", "assessment": "human", "question": "遮住标题和说明后，核心动作或因果是否仍可识别？", "pass_condition": "陌生观看者能描述主要对象关系。", "failure_severity": "return-on-observed-failure", "return_to_stage": "prototype", "evidence_required": true},
+        {"check_id": "product-in-relation", "assessment": "human", "question": "产品在视觉关系中做了什么？", "pass_condition": "产品作用能通过画面而非说明复述。", "failure_severity": "return-on-observed-failure", "return_to_stage": "prototype", "evidence_required": true},
+        {"check_id": "thumbnail-hierarchy", "assessment": "human", "question": "缩略图下主焦点、动作与品牌确认路径是否清楚？", "pass_condition": "主阅读顺序在目标浏览尺度保持。", "failure_severity": "return-on-observed-failure", "return_to_stage": "prototype", "evidence_required": true}
+      ],
+      "hard_stops": [
+        {"stop_id": "explanation-dependent", "condition": "画面必须依赖大段创意说明才能理解。", "return_to_stage": "prototype", "required_resolution": "重做视觉关系，不增加解释性小字。"},
+        {"stop_id": "abstract-action", "condition": "形式隐喻存在，但看不出谁对谁做了什么。", "return_to_stage": "prototype", "required_resolution": "显化动作、对象、方向或结果。"}
+      ],
+      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "on_pass": "print-ad.official-asset-fidelity"
+    },
+    {
+      "gate_id": "print-ad.official-asset-fidelity",
+      "order": 40,
+      "stage": "production",
+      "gate_type": "hybrid",
+      "purpose": "保证生成层、官方资产和确定性文字各自承担正确职责。",
+      "applicability": {"mode": "always"},
+      "required_inputs": ["low-cost-prototype", "official-asset-manifest", "production-source-manifest"],
+      "required_outputs": ["composite-candidate", "asset-fidelity-review", "aigc-use-declaration"],
+      "checks": [
+        {"check_id": "source-traceability", "assessment": "machine", "question": "最终产品、Logo和包装资产是否可追溯到登记来源？", "pass_condition": "来源路径和用途字段存在。", "failure_severity": "hard-stop", "return_to_stage": "production", "evidence_required": true},
+        {"check_id": "aigc-disclosure", "assessment": "machine", "question": "是否已声明生成式AI使用情况，并在使用时提供记录？", "pass_condition": "声明为yes或no；yes时AIGC记录存在，no时不要求记录。", "failure_severity": "return-on-observed-failure", "return_to_stage": "production", "evidence_required": true},
+        {"check_id": "visual-integration", "assessment": "human", "question": "产品光线、透视、边缘、阴影、景深和比例是否属于当前空间？", "pass_condition": "产品既保真又参与构图，不像后贴角标。", "failure_severity": "return-on-observed-failure", "return_to_stage": "production", "evidence_required": true},
+        {"check_id": "generated-artifact-scan", "assessment": "human", "question": "是否存在假字、假Logo、伪包装、伪透明、人体或物理错误？", "pass_condition": "最终候选没有将生成错误作为真实品牌或产品元素。", "failure_severity": "hard-stop", "return_to_stage": "production", "evidence_required": true}
+      ],
+      "hard_stops": [
+        {"stop_id": "generated-brand-fidelity", "condition": "最终产品、Logo、包装文字或品牌证明由模型伪造。", "return_to_stage": "production", "required_resolution": "删除伪造元素并使用官方资产或确定性对象。"}
+      ],
+      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "on_pass": "print-ad.series-increment"
+    },
+    {
+      "gate_id": "print-ad.series-increment",
+      "order": 50,
+      "stage": "series",
+      "gate_type": "human",
+      "purpose": "验证系列同时具有共同机制、真实变量、信息增量和单幅成立能力。",
+      "applicability": {"mode": "conditional", "when": "作品以系列形式生产或赛事要求多幅作品。"},
+      "required_inputs": ["composite-candidates"],
+      "required_outputs": ["series-invariant-variable-increment-matrix", "series-contact-sheet"],
+      "checks": [
+        {"check_id": "shared-mechanism", "assessment": "human", "question": "各幅是否共享传播判断、视觉机制和品牌规则？", "pass_condition": "共同机制可识别，且不是只靠统一底色维持。", "failure_severity": "return-on-observed-failure", "return_to_stage": "series", "evidence_required": true},
+        {"check_id": "real-variation", "assessment": "human", "question": "各幅是否在场景、动作、视角、证据或叙事步骤上真实变化？", "pass_condition": "不是同背景只换标题，也不是完全异构。", "failure_severity": "return-on-observed-failure", "return_to_stage": "series", "evidence_required": true},
+        {"check_id": "information-increment", "assessment": "human", "question": "每幅为整体增加了什么？", "pass_condition": "矩阵中每幅都有独立信息增量且单幅可理解。", "failure_severity": "return-on-observed-failure", "return_to_stage": "series", "evidence_required": true}
+      ],
+      "hard_stops": [
+        {"stop_id": "copy-swap-series", "condition": "系列仅更换文案或背景，没有视觉信息增量。", "return_to_stage": "series", "required_resolution": "重做变量、动作和递进。"}
+      ],
+      "waiver_policy": {"allowed": true, "reason_required": true, "allowed_when": ["命题和交付明确为单幅作品。"]},
+      "on_pass": "print-ad.human-visual-quality"
+    },
+    {
+      "gate_id": "print-ad.human-visual-quality",
+      "order": 60,
+      "stage": "content-review",
+      "gate_type": "human",
+      "purpose": "用三秒、品牌替换、缩略图和全尺寸检查判断作品是否真正成立。",
+      "applicability": {"mode": "always"},
+      "required_inputs": ["final-visual-candidates", "review-board"],
+      "required_outputs": ["three-second-review", "brand-replacement-review", "full-size-review", "human-decision"],
+      "checks": [
+        {"check_id": "three-second-meaning", "assessment": "human", "question": "短时观看后能否说出发生了什么和主要判断？", "pass_condition": "回答不依赖创作者解释。", "failure_severity": "return-on-observed-failure", "return_to_stage": "prototype", "evidence_required": true},
+        {"check_id": "brand-specific-meaning", "assessment": "human", "question": "恢复品牌后是否增加专属意义，换竞品后是否出现明显损失？", "pass_condition": "品牌和产品不是可替换署名。", "failure_severity": "return-on-observed-failure", "return_to_stage": "directions", "evidence_required": true},
+        {"check_id": "local-legibility", "assessment": "human", "question": "文字、对比和修复是否只针对实际问题，没有形成全局噪音？", "pass_condition": "缩略与全尺寸都可读，局部补丁未机械复制。", "failure_severity": "return-on-observed-failure", "return_to_stage": "production", "evidence_required": true},
+        {"check_id": "copy-natural-and-supporting", "assessment": "human", "question": "标题、对白或正文是否像目标场景中的真实语言，并与视觉分工？", "pass_condition": "语言自然可说，补充视觉判断而非使用流程术语或替画面解释。", "failure_severity": "return-on-observed-failure", "return_to_stage": "production", "evidence_required": true}
+      ],
+      "hard_stops": [
+        {"stop_id": "brand-replaceable", "condition": "换成其他品牌或产品后创意无损成立。", "return_to_stage": "directions", "required_resolution": "重建产品机制与品牌资产作用。"}
+      ],
+      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "on_pass": "print-ad.technical-delivery"
+    },
+    {
+      "gate_id": "print-ad.technical-delivery",
+      "order": 70,
+      "stage": "technical-review",
+      "gate_type": "machine",
+      "purpose": "验证实际提交文件的客观规格、数量、记录和哈希。",
+      "applicability": {"mode": "always"},
+      "required_inputs": ["final-files", "delivery-manifest", "aigc-use-declaration", "submission-profile"],
+      "required_outputs": ["technical-validation"],
+      "checks": [
+        {"check_id": "file-specification", "assessment": "machine", "question": "格式、尺寸、方向、分辨率、颜色模式和大小是否满足当前profile？", "pass_condition": "所有适用技术项通过。", "failure_severity": "return-on-observed-failure", "return_to_stage": "technical-review", "evidence_required": true},
+        {"check_id": "submission-file-scope", "assessment": "machine", "question": "验证范围是否只包含实际提交文件？", "pass_condition": "联系表和预览图没有被计入作品数量。", "failure_severity": "return-on-observed-failure", "return_to_stage": "technical-review", "evidence_required": true},
+        {"check_id": "manifest-and-aigc", "assessment": "machine", "question": "manifest、哈希、AIGC使用声明和必要记录是否完整？", "pass_condition": "路径受控、哈希一致；AI使用声明已解析为yes或no，且yes时记录存在。", "failure_severity": "return-on-observed-failure", "return_to_stage": "technical-review", "evidence_required": true}
+      ],
+      "hard_stops": [],
+      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "on_pass": null
+    }
+  ]
+}

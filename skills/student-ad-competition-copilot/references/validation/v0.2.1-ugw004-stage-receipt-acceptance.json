@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "release_version": "0.2.1",
+  "finding": "UGW-004",
+  "status": "passed",
+  "validated_at": "2026-09-16",
+  "contract": {
+    "receipt_triggers": ["stage completion", "failed or blocked gate", "required user decision", "resume landing", "requested scope completion"],
+    "required_fields": ["stage and scope", "verified evidence or artifacts", "current status and open boundaries", "single next action"],
+    "state_dimensions_are_separate": ["technical_pass", "content_pass", "method_validated", "submission_ready"],
+    "one_primary_next_action": true,
+    "receipt_must_derive_from_saved_state": true,
+    "microstep_receipt_spam_forbidden": true,
+    "scope_completion_phrase": "无，当前请求范围已完成"
+  },
+  "forward_walkthroughs": [
+    {
+      "case": "a concept stage passes while the requested production scope remains incomplete",
+      "expected": "the receipt names the concept scope and evidence, avoids claiming project completion, and identifies the first dependency-satisfied production action"
+    },
+    {
+      "case": "a stage passes with an unresolved fidelity-asset boundary",
+      "expected": "the receipt states passed-with-boundaries, identifies the affected production scope, and gives acquisition of the blocking asset as the single next action"
+    },
+    {
+      "case": "an observed content failure has a declared return stage",
+      "expected": "the receipt names the observable failure and gives repair at the nearest responsible stage as the single next action"
+    },
+    {
+      "case": "technical validation passes but final human content review is pending",
+      "expected": "the receipt keeps technical_pass and content_pass separate and makes the low-burden human checkpoint the single next action"
+    },
+    {
+      "case": "a saved run is resumed after its earlier receipt became stale",
+      "expected": "the assistant recomputes the receipt from current run status and does not repeat the stale next action"
+    },
+    {
+      "case": "the user-requested run scope is complete",
+      "expected": "the receipt says the requested scope is complete and sets the next action to none without inventing a required extension"
+    }
+  ],
+  "scope_exclusions": ["execution-until-requested-scope contract"]
+}
