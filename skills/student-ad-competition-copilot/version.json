@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.1",
+  "skill_version": "0.2.2",
   "status": "stable-release",
-  "built_at": "2026-09-16",
-  "stable_release": "0.2.0",
+  "built_at": "2026-09-18",
+  "stable_release": "0.2.1",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -30,11 +30,6 @@
     "official_case_universe": 8090
   },
   "files": [
-    {
-      "path": "SKILL.md",
-      "bytes": 12312,
-      "sha256": "da0d72c7b0d75df7a506e6dfa9aa0ede00e28f3695a532166de7deadb2abf88d"
-    },
     {
       "path": "agents/openai.yaml",
       "bytes": 331,
@@ -241,11 +236,6 @@
       "sha256": "1e259e94dbf1fc3988ce78841f9cb6bd7d2adeb081366f466f99ae1429bbda84"
     },
     {
-      "path": "references/validation/v0.2.1-acceptance.json",
-      "bytes": 1701,
-      "sha256": "13fee7efb39a7fadd5bbf9845e6a9ce086e0f6779df66b2d05c36daf78dd3e5a"
-    },
-    {
       "path": "references/validation/v0.2.1-ugw001-resume-contract-acceptance.json",
       "bytes": 1378,
       "sha256": "aa9aa970c4b6898d034de7e366c3198502e14000455f14077aafae16cee9fe02"
@@ -274,6 +264,11 @@
       "path": "references/validation/v0.2.1-workflow-contract-hotfix-acceptance.json",
       "bytes": 1398,
       "sha256": "9a835db007864b7d244f4feb319a96cee78a8b835c5a046eba5acc87e3b4275a"
+    },
+    {
+      "path": "references/validation/v0.2.2-acceptance.json",
+      "bytes": 1332,
+      "sha256": "36b20ee6b98113bd4f8429f8b4fe9020a58058798413eef4f01f84e54502a09c"
     },
     {
       "path": "references/workflow/case-proposition-evidence-gate.md",
@@ -354,11 +349,16 @@
       "path": "scripts/validate_submission_readiness.py",
       "bytes": 6573,
       "sha256": "e97221c39cafa232fd343dfe38804eabc431fa458ea2a26f7a9753b97a416aba"
+    },
+    {
+      "path": "SKILL.md",
+      "bytes": 12312,
+      "sha256": "da0d72c7b0d75df7a506e6dfa9aa0ede00e28f3695a532166de7deadb2abf88d"
     }
   ],
   "internal_verification": {
-    "path": "references/validation/v0.2.1-ugw005-execution-to-scope-acceptance.json",
-    "bytes": 2941,
-    "sha256": "64deee095feb9c183fb500bbd8acbf7475e57ce936949c6fcee449d9a8b5da24"
+    "path": "references/validation/v0.2.2-acceptance.json",
+    "bytes": 1332,
+    "sha256": "36b20ee6b98113bd4f8429f8b4fe9020a58058798413eef4f01f84e54502a09c"
   }
 }

@@ -5,7 +5,8 @@ Private distribution repository for the `student-ad-competition-copilot` Codex s
 ## Package
 
 - Skill path: `skills/student-ad-competition-copilot`
-- Current version: `0.2.1`
+- Current packaged version: `0.2.2` (local metadata-correction release; repository publication pending)
+- Latest published tag: `v0.2.1`
 - Release status: `stable-release`
 - Supported tracks: print advertising, ad copy, and marketing plans for 大广赛 and 学院奖
 
@@ -17,7 +18,7 @@ Ask Codex to use `$skill-installer` with:
 
 - Repository: `Yuzeskyare/student-ad-competition-copilot`
 - Path: `skills/student-ad-competition-copilot`
-- Ref: `v0.2.1`
+- Ref: `v0.2.1` until the `v0.2.2` repository release is published
 
 Access to this private repository is required. The installer can use existing Git credentials or `GH_TOKEN`/`GITHUB_TOKEN`.
 

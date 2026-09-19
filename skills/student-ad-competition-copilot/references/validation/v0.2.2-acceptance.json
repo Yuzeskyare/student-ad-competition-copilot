@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "release_version": "0.2.2",
+  "status": "stable-release-installed-verified",
+  "scope": "release-state metadata correction only; runtime behavior and knowledge content are unchanged",
+  "supersedes": {
+    "release_version": "0.2.1",
+    "removed_record": "references/validation/v0.2.1-acceptance.json",
+    "reason": "The removed candidate record remained at awaiting-activation after v0.2.1 had been installed and verified."
+  },
+  "runtime_change": "none",
+  "knowledge_pack": {
+    "version": "v0.2.1",
+    "content_changed": false
+  },
+  "release_evidence": {
+    "base_release": "0.2.1",
+    "base_release_status": "stable-release",
+    "base_source_installed_equal": true,
+    "base_rollback_backup_verified": true,
+    "metadata_patch_source_distribution_installed_equal": true
+  },
+  "validation": {
+    "skill_creator_quick_validate": "passed",
+    "runtime_self_checks": 8,
+    "full_regression": {
+      "run": 284,
+      "passed": 250,
+      "skipped": 34,
+      "failed": 0,
+      "errored": 0
+    },
+    "manifest_integrity": "passed",
+    "stale_release_state_records": 0
+  },
+  "installation_gate": {
+    "status": "executed-verified",
+    "installed_version": "0.2.2",
+    "rollback_version": "0.2.1",
+    "source_installed_equal": true,
+    "rollback_backup_verified": true
+  }
+}
