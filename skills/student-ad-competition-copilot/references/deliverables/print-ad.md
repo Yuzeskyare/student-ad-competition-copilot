@@ -6,11 +6,13 @@
 
 `print-ad-run-manifest.json`符合[平面运行Schema](../schemas/print-ad-run-manifest.schema.json)，并声明：
 
+- `visual_generation_capability`：当前会话实际可调用的生图提供方、操作范围、检查依据与缺失时的用户决定；
 - `concept-only`：命题、方向、概念门、质量门结果和运行状态；
 - `production-candidate`：另含官方资产、生产来源、人工视觉、技术结果和`aigc_used`声明；仅当声明为`yes`时要求AIGC记录；
 - `delivery-candidate`：再含最终交付manifest。
 
 概念范围因官方资产缺失而正确停止，不等于运行损坏；但后续关必须保持`not-run`，不得宣称成稿或投稿就绪。
+生图能力为`unavailable`或`unknown`时，只有用户明确接受并记录受限模式才可完成`concept-only`；生产和交付候选必须为`available`且操作包含`generate`。
 
 ## 最终文件
 

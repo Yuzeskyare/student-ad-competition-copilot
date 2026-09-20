@@ -14,9 +14,9 @@ metadata:
 1. 读取[公共内核](references/workflow/common-competition-kernel.md)，建立命题、证据、资产、前后台语言与状态边界；检索或解释受控历史案例时，再读取[历史案例命题关联门](references/workflow/case-proposition-evidence-gate.md)。
 2. 大广赛读取[大广赛适配器](references/competitions/daguangsai.md)；学院奖读取[学院奖适配器](references/competitions/academy-award.md)。
 3. 只读取当前赛道：
-   - 平面广告：[Playbook](references/tracks/print-ad/playbook.md) → [质量门](references/tracks/print-ad/quality-gates.json) → [交付规范](references/deliverables/print-ad.md)；
+   - 平面广告：[视觉生成能力前检](references/workflow/visual-generation-capability-gate.md) → [Playbook](references/tracks/print-ad/playbook.md) → [质量门](references/tracks/print-ad/quality-gates.json) → [交付规范](references/deliverables/print-ad.md)；
    - 广告文案：[Playbook](references/tracks/ad-copy/playbook.md) → [质量门](references/tracks/ad-copy/quality-gates.json) → [交付规范](references/deliverables/ad-copy.md)；
-   - 营销策划：[Playbook](references/tracks/marketing-plan/playbook.md) → [质量门](references/tracks/marketing-plan/quality-gates.json) → [交付规范](references/deliverables/marketing-plan.md)。
+   - 营销策划：[视觉生成能力前检](references/workflow/visual-generation-capability-gate.md) → [Playbook](references/tracks/marketing-plan/playbook.md) → [质量门](references/tracks/marketing-plan/quality-gates.json) → [交付规范](references/deliverables/marketing-plan.md)。
 4. 再读取对应提交 profile 和命题官方素材。具体命题可以缩小赛事通用范围，不能静默扩大。
 
 不属于上述三个赛道的类别保留官方名称，并说明当前没有已验证的专用 Playbook，不套用近似流程。
@@ -43,6 +43,14 @@ metadata:
 不影响上述决定的开放项，由模型作可撤销工作假设并继续。每项假设记录`assumption`、`basis`、`affected_scope`、`reversal_trigger`和`validation_point`；在进入受影响的高成本生产或最终交付前核对。用户补充材料后，从受影响的最近阶段更新，不重做无关阶段。
 
 官方规则、类别授权、品牌或产品身份、核心产品事实、强制资产和许可状态属于待核对事实，缺失时保持`unknown`，不得用工作假设补造。缺保真资产时可以继续有边界的`concept-only`探索；只有受影响的生产与交付保持阻塞。
+
+## 视觉生成能力硬前检
+
+平面广告或营销策划在确定赛道后、给出方向或承诺产出质量前，必须检查当前会话是否存在实际可调用的位图生图能力。`gpt-image`、OpenAI `image_gen`、Nano Banana/Gemini 图像生成或等价工具都可以；图片搜索、截图、查看图片、图表、HTML/SVG、提示词能力、仅有 Skill/文档或未连接插件都不算。不要根据模型名称猜测能力。
+
+把提供方、`generate`/`edit`操作范围、检查依据和时间记录到`visual_generation_capability`。若能力为`unavailable`或`unknown`，必须立刻向用户说明这是严重质量缺口：平面广告无法完成高质量视觉生产，营销策划无法可靠完成关键视觉、样机与高保真样页；然后只问一个最小选择——启用/切换到有生图能力的环境，或明确接受仅文字、线框和低保真占位的`concept-only`受限模式。用户只说“继续”不代表接受降级，不得静默用图库、占位图或纯排版冒充正常质量。
+
+没有可调用生图能力时，`production-candidate`和`delivery-candidate`保持阻塞；只有用户明确选择`accept-limited-mode`并确认影响后，才可继续受限概念工作。完整判断、话术和状态映射见[视觉生成能力前检](references/workflow/visual-generation-capability-gate.md)。
 
 ## 低负担人工审核
 

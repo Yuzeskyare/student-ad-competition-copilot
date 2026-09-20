@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from quality_gate_contract import validate_quality_gate_results
+from visual_generation_capability_contract import validate_visual_generation_capability
 
 sys.dont_write_bytecode = True
 
@@ -73,10 +74,11 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
     except Exception as exc:
         return {"schema_version": "0.1.0", "status": "failed", "checks": [], "errors": [str(exc)]}
 
-    checks.append(check("manifest-schema", manifest.get("schema_version") in {"0.1.0", "0.2.0"}, manifest.get("schema_version")))
+    checks.append(check("manifest-schema", manifest.get("schema_version") in {"0.1.0", "0.2.0", "0.3.0"}, manifest.get("schema_version")))
     checks.append(check("category-print-ad", manifest.get("category") == "print-ad", manifest.get("category")))
     run_scope = manifest.get("run_scope")
     checks.append(check("run-scope", run_scope in RUN_SCOPE_ARTIFACTS, run_scope))
+    checks.extend(validate_visual_generation_capability(manifest, run_scope))
     checks.append(check("identity-fields", all(isinstance(manifest.get(key), str) and manifest[key] for key in ("run_id", "competition", "brief_id", "selected_direction", "series_mode")), {key: manifest.get(key) for key in ("run_id", "competition", "brief_id", "selected_direction")}))
     method_status = manifest.get("method_validation_status", "not-claimed")
     checks.append(check("method-validation-status", method_status in {"not-claimed", "method-validated"}, method_status))

@@ -11,6 +11,8 @@
 
 具体命题必须建立`marketing-plan-brief-constraints.json`，可收窄通用范围，不能静默扩大。PPTX是可编辑母版；PDF和逐页JPG是赛事导出，不代替原生表格、品牌屋、路线、预算与KPI对象。
 
+`marketing-plan-run-manifest.json`必须记录`visual_generation_capability`。没有可调用生图能力时，只有用户明确接受并记录受限模式才可继续`concept-only`研究、策略与线框；`production-candidate`和`delivery-candidate`必须为`available`且操作包含`generate`，不能用占位图或纯排版冒充高保真策划生产。
+
 ## 页面与交付manifest
 
 `marketing-plan-delivery-manifest.json`符合[交付Schema](../schemas/marketing-plan-delivery-manifest.schema.json)，按最终顺序记录：

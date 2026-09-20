@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.3",
+  "status": "stable-release-installed-verified",
+  "completed_at": "2026-09-20T08:40:26Z",
+  "change_id": "visual-generation-capability-gate",
+  "problem": "Print-ad and marketing-plan runs could silently continue when the current environment had no callable raster image-generation capability, hiding a production-critical quality limitation from the user.",
+  "behavior_contract": {
+    "tracks": ["print-ad", "marketing-plan"],
+    "accepted_capability": "A currently callable raster generator whose operations include generate; provider names such as gpt-image, OpenAI image_gen, and Nano Banana are examples rather than an allowlist.",
+    "false_proxies": ["image search", "screenshots", "image viewing", "charts", "HTML or SVG", "prompt-only output", "an installed skill or disconnected plugin"],
+    "missing_or_unknown": "Disclose the severe quality impact and ask the user to enable or switch environment, or explicitly accept limited concept-only mode.",
+    "silent_degradation_allowed": false,
+    "continue_means_accept_degradation": false,
+    "limited_mode": "Text, wireframe, and low-fidelity placeholder concept work only after explicit impact acknowledgement.",
+    "production_and_delivery_requirement": "Capability status available, a named callable provider, generate in operations, and use-available-capability decision."
+  },
+  "runtime_contract": {
+    "manifest_schema_version": "0.3.0",
+    "record": "visual_generation_capability",
+    "validator": "scripts/visual_generation_capability_contract.py",
+    "legacy_manifest_schemas_remain_readable": true
+  },
+  "validation": {
+    "focused_tests_run": 12,
+    "focused_tests_passed": 12,
+    "skill_creator_quick_validate": "passed-with-python-utf8-mode",
+    "print_run_self_check": "passed",
+    "marketing_plan_run_self_check": "passed",
+    "full_regression_expected": 454,
+    "full_regression_skipped_expected": 0
+  },
+  "installation_gate": {
+    "status": "executed-verified",
+    "source_distribution_installed_equal": true,
+    "expected_package_files": 69
+  },
+  "remote_publication": {
+    "status": "pending-separate-authorization",
+    "latest_remote_tag": "v0.2.2"
+  }
+}

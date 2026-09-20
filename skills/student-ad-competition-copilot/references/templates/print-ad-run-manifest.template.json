@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.2.0",
+  "schema_version": "0.3.0",
   "run_id": "competition-season-brand-print-ad",
   "competition": "daguangsai",
   "category": "print-ad",
@@ -7,6 +7,15 @@
   "selected_direction": "PA-01",
   "series_mode": "series",
   "run_scope": "concept-only",
+  "visual_generation_capability": {
+    "status": "unknown",
+    "provider": null,
+    "operations": [],
+    "checked_at": "replace-after-current-session-tool-inventory",
+    "evidence": "replace with the actual callable-tool inventory",
+    "user_decision": "pending",
+    "impact_acknowledged": false
+  },
   "method_validation_status": "not-claimed",
   "artifacts": {
     "brief_evidence": "01-brief/brief-evidence.md",

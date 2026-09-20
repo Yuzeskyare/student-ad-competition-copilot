@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.2",
+  "skill_version": "0.2.3",
   "status": "stable-release",
-  "built_at": "2026-09-18",
-  "stable_release": "0.2.1",
+  "built_at": "2026-09-20",
+  "stable_release": "0.2.2",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -12,7 +12,8 @@
     "evidence-gated-case-retrieval",
     "structured-quality-gates",
     "conditional-aigc-disclosure",
-    "submission-readiness-contract"
+    "submission-readiness-contract",
+    "mandatory-visual-generation-capability-gate"
   ],
   "knowledge_manifest": {
     "path": "references/case-library/v0.2.1/manifest.json",
@@ -102,13 +103,13 @@
     },
     {
       "path": "references/deliverables/marketing-plan.md",
-      "bytes": 2705,
-      "sha256": "8c52786588f9ba28b41fd5140745785e565353fb1969a5755c7bd404436353aa"
+      "bytes": 3070,
+      "sha256": "9142724e9a47d05ff0427788e0a682b42ac506bc0082dce1fad109a6710f2d37"
     },
     {
       "path": "references/deliverables/print-ad.md",
-      "bytes": 2382,
-      "sha256": "d09a83e67ca2709470436999de48c037256624284587ece2532cab3e19b52248"
+      "bytes": 2713,
+      "sha256": "c6e0cb00a199cc9c4690750ca6078c942d2d31f8a1de9371d334e87053eb1317"
     },
     {
       "path": "references/schemas/ad-copy-brief-constraints.schema.json",
@@ -137,13 +138,13 @@
     },
     {
       "path": "references/schemas/marketing-plan-run-manifest.schema.json",
-      "bytes": 3161,
-      "sha256": "153e255c71f0306b75821452ebae01ecc5efc62a288200df72bd67a0541f977d"
+      "bytes": 4515,
+      "sha256": "0f1c71cce77fa65cca9878449038af0ef70272f60948c65290b06fcf649052df"
     },
     {
       "path": "references/schemas/print-ad-run-manifest.schema.json",
-      "bytes": 2686,
-      "sha256": "a15fb1335b9b7eec35db73abf268204a065e5d734d554604af813d06258c7acf"
+      "bytes": 4020,
+      "sha256": "9b68040ac34d4093363b938ae61751c6320e8dbac6a8eb4721e2112176738ea5"
     },
     {
       "path": "references/schemas/submission-readiness.schema.json",
@@ -192,13 +193,13 @@
     },
     {
       "path": "references/templates/marketing-plan-run-manifest.template.json",
-      "bytes": 1923,
-      "sha256": "233be09d0c31379640fe2e371e4f921f994024dd075cd42a801e1582a3e9f8e6"
+      "bytes": 2225,
+      "sha256": "13f5b951aef39bd1115b44c5c6ea26cb00230516df678e7389af85964e839395"
     },
     {
       "path": "references/templates/print-ad-run-manifest.template.json",
-      "bytes": 586,
-      "sha256": "3e50a72c369ad5611867c52e1e7bcb0145281f12085b9c8406675aeea0cc6ee0"
+      "bytes": 894,
+      "sha256": "58ae7adab112482f786d9cef736d4a75254a21fe5fc0731dc43e88e987c985f2"
     },
     {
       "path": "references/templates/submission-readiness.template.json",
@@ -217,8 +218,8 @@
     },
     {
       "path": "references/tracks/marketing-plan/playbook.md",
-      "bytes": 23352,
-      "sha256": "38eedb108b0316aef85597d868d2f9968002a0cc8c3720533d61a95edd3d3d70"
+      "bytes": 24272,
+      "sha256": "e0ca51f798996a1ed56573847fe4ce86ccbed300e0124a3a104fa237d2efbce2"
     },
     {
       "path": "references/tracks/marketing-plan/quality-gates.json",
@@ -227,8 +228,8 @@
     },
     {
       "path": "references/tracks/print-ad/playbook.md",
-      "bytes": 14826,
-      "sha256": "44b48defaa5908f45f34c2c8422f1bf64ad616bdfc66aebc6be5e7ff24460635"
+      "bytes": 15700,
+      "sha256": "d099e3a47440394dbc1da259be541fa90b6f375625182b7f9fb34adbd8391ced"
     },
     {
       "path": "references/tracks/print-ad/quality-gates.json",
@@ -271,14 +272,19 @@
       "sha256": "36b20ee6b98113bd4f8429f8b4fe9020a58058798413eef4f01f84e54502a09c"
     },
     {
+      "path": "references/validation/v0.2.3-acceptance.json",
+      "bytes": 2222,
+      "sha256": "7b2834262b1716a721caf250b46244b4909b0c51a21a8c36a69f16fded2f2ebd"
+    },
+    {
       "path": "references/workflow/case-proposition-evidence-gate.md",
       "bytes": 2847,
       "sha256": "0a47f21ef8a2939e39719b0935832f6b06c1344a8de0c55442a7f7937bd63da2"
     },
     {
       "path": "references/workflow/common-competition-kernel.md",
-      "bytes": 11756,
-      "sha256": "1f99d532e3b0baa18bacb6dd024e067bb64a00783802c2b96cc1b5a1d3162316"
+      "bytes": 12371,
+      "sha256": "d191988fa5246de3e78b1010ec8386969f5f4491170d9ab97aca5958b7d84eb8"
     },
     {
       "path": "references/workflow/execution-to-requested-scope.md",
@@ -294,6 +300,11 @@
       "path": "references/workflow/user-stage-receipts.md",
       "bytes": 3342,
       "sha256": "39e7055530d0dfaa0a4a1078499b7351bdb133acc3a0564f6123155f93389c08"
+    },
+    {
+      "path": "references/workflow/visual-generation-capability-gate.md",
+      "bytes": 3783,
+      "sha256": "9c21f89583990e37d03de7564d1d7ba8d78f4d8865d99d1ee036f007ee8979e8"
     },
     {
       "path": "scripts/knowledge_pack_contract.py",
@@ -332,13 +343,13 @@
     },
     {
       "path": "scripts/validate_marketing_plan_run.py",
-      "bytes": 15318,
-      "sha256": "52e871204b0c5b2a0da258ad4a38ee4080f7b77c4c09de464daffff9fe929874"
+      "bytes": 15493,
+      "sha256": "78182d4885b53a765dc8876e6334727b969d630c1d0c4394709f2f7fe90ad5f7"
     },
     {
       "path": "scripts/validate_print_ad_run.py",
-      "bytes": 8038,
-      "sha256": "0325672cfc111392d9f633a3b7389029fd6b7e858696e1c693bb42a2b6baa185"
+      "bytes": 8213,
+      "sha256": "5c6aa8e9cdc87b3391a317813e72094248a7214e268aadcbd3be12edc162f5aa"
     },
     {
       "path": "scripts/validate_submission.py",
@@ -351,14 +362,20 @@
       "sha256": "e97221c39cafa232fd343dfe38804eabc431fa458ea2a26f7a9753b97a416aba"
     },
     {
+      "path": "scripts/visual_generation_capability_contract.py",
+      "bytes": 3004,
+      "sha256": "d3b042d20973fb6f7165eb2e29c2a9ee804d5f0eaff0083426116c2d8948f5f9"
+    },
+    {
       "path": "SKILL.md",
-      "bytes": 12312,
-      "sha256": "da0d72c7b0d75df7a506e6dfa9aa0ede00e28f3695a532166de7deadb2abf88d"
+      "bytes": 13866,
+      "sha256": "68222fc1d5ab7b2df216613edb0280c3062fa13f5706c0048113bdb24bf5cc24"
     }
   ],
   "internal_verification": {
-    "path": "references/validation/v0.2.2-acceptance.json",
-    "bytes": 1332,
-    "sha256": "36b20ee6b98113bd4f8429f8b4fe9020a58058798413eef4f01f84e54502a09c"
-  }
+    "path": "references/validation/v0.2.3-acceptance.json",
+    "bytes": 2222,
+    "sha256": "7b2834262b1716a721caf250b46244b4909b0c51a21a8c36a69f16fded2f2ebd"
+  },
+  "milestone": "visual-generation-capability-gate"
 }

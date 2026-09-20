@@ -1,11 +1,20 @@
 {
-  "schema_version": "0.2.0",
+  "schema_version": "0.3.0",
   "run_id": "competition-season-brand-marketing-plan",
   "competition": "daguangsai",
   "category": "marketing-plan",
   "proposition_id": "official-proposition-id",
   "selected_direction": "MP-01",
-  "run_scope": "delivery-candidate",
+  "run_scope": "concept-only",
+  "visual_generation_capability": {
+    "status": "unknown",
+    "provider": null,
+    "operations": [],
+    "checked_at": "replace-after-current-session-tool-inventory",
+    "evidence": "replace with the actual callable-tool inventory",
+    "user_decision": "pending",
+    "impact_acknowledged": false
+  },
   "aigc_used": "no",
   "method_cards_used": ["mp-evidence-to-strategy"],
   "method_cards_rejected": [],
