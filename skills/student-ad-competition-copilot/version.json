@@ -17,8 +17,8 @@
   ],
   "knowledge_manifest": {
     "path": "references/case-library/v0.2.1/manifest.json",
-    "bytes": 2778,
-    "sha256": "1230b8784d204d492ece69efd76f03e9831a9b29bac4314596068888f7cc3bdc"
+    "bytes": 2776,
+    "sha256": "e0f3d22071072240f6fcd336952d6ae71a8017a051f0c49e2cb6b36d0facff47"
   },
   "source_corpus": {
     "completion_audit_sha256": "5838875bff648f69a433cb84a3de5699d5ddc66b26673a04f892375647775482",
@@ -43,8 +43,8 @@
     },
     {
       "path": "references/case-library/v0.2.1/compliance-boundaries.jsonl",
-      "bytes": 113920,
-      "sha256": "41774596830450f59f729e52cd4442f8d77597af32d27dd52d97d6e1149cad12"
+      "bytes": 113918,
+      "sha256": "a50cd56f02b5007071555d0bb335f55caeba6931d25d5458468824b51b7778bf"
     },
     {
       "path": "references/case-library/v0.2.1/eligibility.json",
@@ -58,8 +58,8 @@
     },
     {
       "path": "references/case-library/v0.2.1/manifest.json",
-      "bytes": 2778,
-      "sha256": "1230b8784d204d492ece69efd76f03e9831a9b29bac4314596068888f7cc3bdc"
+      "bytes": 2776,
+      "sha256": "e0f3d22071072240f6fcd336952d6ae71a8017a051f0c49e2cb6b36d0facff47"
     },
     {
       "path": "references/case-library/v0.2.1/method-cards.jsonl",
