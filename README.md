@@ -5,8 +5,8 @@ Private distribution repository for the `student-ad-competition-copilot` Codex s
 ## Package
 
 - Skill path: `skills/student-ad-competition-copilot`
-- Current packaged version: `0.2.2` (local metadata-correction release; repository publication pending)
-- Latest published tag: `v0.2.1`
+- Current packaged version: `0.2.4`
+- Release tag: `v0.2.4`
 - Release status: `stable-release`
 - Supported tracks: print advertising, ad copy, and marketing plans for 大广赛 and 学院奖
 
@@ -18,7 +18,7 @@ Ask Codex to use `$skill-installer` with:
 
 - Repository: `Yuzeskyare/student-ad-competition-copilot`
 - Path: `skills/student-ad-competition-copilot`
-- Ref: `v0.2.1` until the `v0.2.2` repository release is published
+- Ref: `v0.2.4`
 
 Access to this private repository is required. The installer can use existing Git credentials or `GH_TOKEN`/`GITHUB_TOKEN`.
 
@@ -26,7 +26,9 @@ The skill becomes available on the next Codex turn after installation.
 
 ## Integrity
 
-`skills/student-ad-competition-copilot/version.json` records the release version and SHA-256 hashes for the other 65 runtime files. The complete installed package contains 66 files including `version.json` itself.
+`skills/student-ad-competition-copilot/version.json` records the release version and SHA-256 hashes for the other 70 runtime files. The complete installed package contains 71 files including `version.json` itself.
+
+The project release regression verifies that this README's packaged version, release tag, installation ref, manifest-entry count, and complete package count match `version.json`. A release cannot pass while these values are stale.
 
 ## Update policy
 
