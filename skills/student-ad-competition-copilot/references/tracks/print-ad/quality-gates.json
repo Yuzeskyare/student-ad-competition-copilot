@@ -59,11 +59,12 @@
       "checks": [
         {"check_id": "visual-only-meaning", "assessment": "human", "question": "遮住标题和说明后，核心动作或因果是否仍可识别？", "pass_condition": "陌生观看者能描述主要对象关系。", "failure_severity": "return-on-observed-failure", "return_to_stage": "prototype", "evidence_required": true},
         {"check_id": "product-in-relation", "assessment": "human", "question": "产品在视觉关系中做了什么？", "pass_condition": "产品作用能通过画面而非说明复述。", "failure_severity": "return-on-observed-failure", "return_to_stage": "prototype", "evidence_required": true},
-        {"check_id": "thumbnail-hierarchy", "assessment": "human", "question": "缩略图下主焦点、动作与品牌确认路径是否清楚？", "pass_condition": "主阅读顺序在目标浏览尺度保持。", "failure_severity": "return-on-observed-failure", "return_to_stage": "prototype", "evidence_required": true}
+        {"check_id": "thumbnail-hierarchy", "assessment": "human", "question": "缩略图下主焦点、动作与品牌确认路径是否清楚，且构图不依赖无语义卡片、UI面板或仪表盘骨架？", "pass_condition": "主阅读顺序在目标浏览尺度保持；局部卡片具有真实对象或内容关系依据，并有例外记录。", "failure_severity": "hard-stop", "return_to_stage": "prototype", "evidence_required": true}
       ],
       "hard_stops": [
         {"stop_id": "explanation-dependent", "condition": "画面必须依赖大段创意说明才能理解。", "return_to_stage": "prototype", "required_resolution": "重做视觉关系，不增加解释性小字。"},
-        {"stop_id": "abstract-action", "condition": "形式隐喻存在，但看不出谁对谁做了什么。", "return_to_stage": "prototype", "required_resolution": "显化动作、对象、方向或结果。"}
+        {"stop_id": "abstract-action", "condition": "形式隐喻存在，但看不出谁对谁做了什么。", "return_to_stage": "prototype", "required_resolution": "显化动作、对象、方向或结果。"},
+        {"stop_id": "generic-card-shell", "condition": "主要构图依赖重复圆角卡片、网页UI面板或仪表盘外壳，且不能证明真实对象或内容关系语义。", "return_to_stage": "prototype", "required_resolution": "移除模板骨架，按视觉动作和空间关系重建；确有语义的局部例外须记录并复核。"}
       ],
       "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
       "on_pass": "print-ad.official-asset-fidelity"
@@ -121,7 +122,7 @@
       "checks": [
         {"check_id": "three-second-meaning", "assessment": "human", "question": "短时观看后能否说出发生了什么和主要判断？", "pass_condition": "回答不依赖创作者解释。", "failure_severity": "return-on-observed-failure", "return_to_stage": "prototype", "evidence_required": true},
         {"check_id": "brand-specific-meaning", "assessment": "human", "question": "恢复品牌后是否增加专属意义，换竞品后是否出现明显损失？", "pass_condition": "品牌和产品不是可替换署名。", "failure_severity": "return-on-observed-failure", "return_to_stage": "directions", "evidence_required": true},
-        {"check_id": "local-legibility", "assessment": "human", "question": "文字、对比和修复是否只针对实际问题，没有形成全局噪音？", "pass_condition": "缩略与全尺寸都可读，局部补丁未机械复制。", "failure_severity": "return-on-observed-failure", "return_to_stage": "production", "evidence_required": true},
+        {"check_id": "local-legibility", "assessment": "human", "question": "文字、对比和修复是否只针对实际问题，没有形成全局噪音或网页卡片式通用外壳？", "pass_condition": "缩略与全尺寸都可读，局部补丁未机械复制；任何卡片均有语义、范围、替代方案和评审证据。", "failure_severity": "return-on-observed-failure", "return_to_stage": "production", "evidence_required": true},
         {"check_id": "copy-natural-and-supporting", "assessment": "human", "question": "标题、对白或正文是否像目标场景中的真实语言，并与视觉分工？", "pass_condition": "语言自然可说，补充视觉判断而非使用流程术语或替画面解释。", "failure_severity": "return-on-observed-failure", "return_to_stage": "production", "evidence_required": true}
       ],
       "hard_stops": [

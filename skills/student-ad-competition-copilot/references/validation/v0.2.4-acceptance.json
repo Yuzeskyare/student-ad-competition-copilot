@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.4",
+  "status": "stable-release-installed-verified",
+  "completed_at": "2026-09-20T09:26:06Z",
+  "change_id": "content-shaped-layout-gate",
+  "problem": "Print-ad and marketing-plan generation could still default to web-style cards, dashboards, rounded panels, or repeated containers even when those structures did not express the content relationship.",
+  "behavior_contract": {
+    "tracks": [
+      "print-ad",
+      "marketing-plan"
+    ],
+    "default_rule": "Derive composition from causal, hierarchical, process, spatial, temporal, comparative, or visual-action relationships before choosing containers.",
+    "rejected_default": "Generic web cards, dashboards, floating panels, pill labels, glassmorphism, and repeated rounded containers may not serve as an unexplained universal layout shell.",
+    "allowed_exception": "A local card may remain when it represents a real interface or object, or a necessary discrete peer, boundary, ownership, or interaction state.",
+    "exception_evidence": [
+      "semantic_role",
+      "scope",
+      "non_card_alternative",
+      "review_evidence"
+    ],
+    "failure_behavior": "Return to the nearest direction, prototype, page-blueprint, or content-prototype stage; content_pass remains unavailable until repair and human review.",
+    "backend_card_names_authorize_frontstage_cards": false
+  },
+  "compatibility": {
+    "quality_gate_definition_ids_preserved": true,
+    "existing_check_ids_preserved": true,
+    "new_requirements_bound_to_existing_human_checks": true,
+    "historical_run_records_invalidated_by_structure_only": false
+  },
+  "validation": {
+    "focused_tests_run": 36,
+    "focused_tests_passed": 36,
+    "skill_creator_quick_validate": "passed-with-workspace-python",
+    "knowledge_pack_validation": "passed",
+    "print_submission_self_check": "passed-with-workspace-python",
+    "marketing_plan_self_check": "passed-with-workspace-python",
+    "full_regression_run": 460,
+    "full_regression_passed": 460,
+    "full_regression_skipped": 0,
+    "full_regression_failed": 0,
+    "full_regression_errors": 0,
+    "full_regression_duration_seconds": 74.222
+  },
+  "installation_gate": {
+    "status": "executed-verified",
+    "source_distribution_installed_equal": true,
+    "expected_package_files": 71
+  },
+  "remote_publication": {
+    "status": "pending-separate-authorization",
+    "latest_remote_tag": "v0.2.2"
+  }
+}

@@ -84,13 +84,14 @@
       "checks": [
         {"check_id": "creative-mechanism-six-questions", "assessment": "human", "question": "Big Idea是否回答品牌独占、产品利益、品牌资产、参与、传播和购买闭环？", "pass_condition": "六个问题都有机制性答案，不只是一句主题。", "failure_severity": "return-on-observed-failure", "return_to_stage": "mechanism", "evidence_required": true},
         {"check_id": "activity-granularity", "assessment": "human", "question": "核心活动是否达到可运营、可估价和可度量的颗粒度？", "pass_condition": "规则、界面/空间、人员、内容资产、风险、渠道、预算和KPI可审查。", "failure_severity": "return-on-observed-failure", "return_to_stage": "mechanism", "evidence_required": true},
-        {"check_id": "layout-role-diversity", "assessment": "human", "question": "五页是否使用与内容关系匹配的不同结构？", "pass_condition": "统一品牌系统但不是同一模板换文案。", "failure_severity": "return-on-observed-failure", "return_to_stage": "content-prototype", "evidence_required": true},
+        {"check_id": "layout-role-diversity", "assessment": "human", "question": "五页是否使用与数据、因果、流程、空间、时间、对比或视觉任务匹配的不同结构，而非统一卡片骨架？", "pass_condition": "统一品牌系统但不是同一模板换文案；无语义网页卡片、仪表盘或重复圆角容器不作为默认骨架，局部例外有记录。", "failure_severity": "hard-stop", "return_to_stage": "content-prototype", "evidence_required": true},
         {"check_id": "asset-integration", "assessment": "human", "question": "官方资产是否经过场景、景别、光色和层级整合？", "pass_condition": "产品和品牌不是角标或原始陈列图。", "failure_severity": "return-on-observed-failure", "return_to_stage": "content-prototype", "evidence_required": true},
         {"check_id": "projected-legibility", "assessment": "human", "question": "投屏和缩略图下，标题、模型层级、字体、换行、背景和连接线是否清楚？", "pass_condition": "没有小字、溢出、不自然换行、背景抢字或线条混乱。", "failure_severity": "return-on-observed-failure", "return_to_stage": "content-prototype", "evidence_required": true}
       ],
       "hard_stops": [
         {"stop_id": "full-deck-before-content-pass", "condition": "五页内容门未通过即开始全量排版。", "return_to_stage": "content-prototype", "required_resolution": "停止全稿，完成五页整改和人工决定。"},
-        {"stop_id": "brand-replaceable-big-idea", "condition": "Big Idea换品牌后仍完整成立。", "return_to_stage": "strategy", "required_resolution": "重建品牌角色、产品RTB和创意机制。"}
+        {"stop_id": "brand-replaceable-big-idea", "condition": "Big Idea换品牌后仍完整成立。", "return_to_stage": "strategy", "required_resolution": "重建品牌角色、产品RTB和创意机制。"},
+        {"stop_id": "generic-card-template", "condition": "五页以网页卡片、仪表盘面板或重复圆角容器作为默认骨架，且没有真实对象或内容关系语义。", "return_to_stage": "content-prototype", "required_resolution": "按各页任务和关系重建不同结构；确有语义的局部例外须记录并复核。"}
       ],
       "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
       "on_pass": "marketing-plan.execution-engineering"
@@ -130,7 +131,7 @@
         {"check_id": "page-blueprint-contract", "assessment": "human", "question": "每页是否有唯一任务、证据输入、具体内容、结论和前后页交接？", "pass_condition": "页面连续推进，不靠章节页、空白页和重复总结凑页数。", "failure_severity": "return-on-observed-failure", "return_to_stage": "full-deck", "evidence_required": true},
         {"check_id": "body-appendix-separation", "assessment": "human", "question": "正文是否只保留决策必要输出，完整方法、样本和题项进入附录？", "pass_condition": "研究可复核但不打断正文说服。", "failure_severity": "return-on-observed-failure", "return_to_stage": "full-deck", "evidence_required": true},
         {"check_id": "frontstage-language", "assessment": "human", "question": "正文是否清除命题校正、核对时间、开发记录、方法编号和AI工作语言？", "pass_condition": "参赛前台只保留专业策划正文。", "failure_severity": "hard-stop", "return_to_stage": "full-deck", "evidence_required": true},
-        {"check_id": "layout-and-density", "assessment": "human", "question": "数据、模型、路线、活动、空间、预算等页面是否使用内容对应结构和适当密度？", "pass_condition": "没有全稿卡片化、内容稀薄或装饰性空白。", "failure_severity": "return-on-observed-failure", "return_to_stage": "full-deck", "evidence_required": true},
+        {"check_id": "layout-and-density", "assessment": "human", "question": "数据、模型、路线、活动、空间、预算等页面是否使用内容对应结构和适当密度，并避免网页卡片、悬浮面板、胶囊标签或仪表盘式统一模板？", "pass_condition": "没有全稿卡片化、内容稀薄或装饰性空白；局部卡片有语义、范围、替代方案和评审证据。", "failure_severity": "return-on-observed-failure", "return_to_stage": "full-deck", "evidence_required": true},
         {"check_id": "typography-and-lines", "assessment": "human", "question": "字号、换行、背景对比、连接线和对象位置是否在联系表与投屏下正确？", "pass_condition": "没有溢出、错位、背景消失/抢字或线条混乱。", "failure_severity": "return-on-observed-failure", "return_to_stage": "full-deck", "evidence_required": true},
         {"check_id": "end-to-end-closure", "assessment": "human", "question": "品牌、产品、内容、活动、媒介、购买、预算和验证是否贯穿全案？", "pass_condition": "没有只在末页补品牌、产品或KPI。", "failure_severity": "return-on-observed-failure", "return_to_stage": "full-deck", "evidence_required": true}
       ],

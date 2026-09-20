@@ -13,6 +13,8 @@
 
 `marketing-plan-run-manifest.json`必须记录`visual_generation_capability`。没有可调用生图能力时，只有用户明确接受并记录受限模式才可继续`concept-only`研究、策略与线框；`production-candidate`和`delivery-candidate`必须为`available`且操作包含`generate`，不能用占位图或纯排版冒充高保真策划生产。
 
+五页样稿和整本`content_pass`必须通过反卡片化人工检查：页面结构由数据、因果、流程、空间、时间、对比或视觉任务决定，不能把网页卡片、仪表盘和重复圆角容器当作统一模板；真实界面/物件或内容关系需要的局部例外须有理由与评审证据。
+
 ## 页面与交付manifest
 
 `marketing-plan-delivery-manifest.json`符合[交付Schema](../schemas/marketing-plan-delivery-manifest.schema.json)，按最终顺序记录：

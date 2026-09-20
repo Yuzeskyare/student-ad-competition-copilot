@@ -14,9 +14,9 @@ metadata:
 1. 读取[公共内核](references/workflow/common-competition-kernel.md)，建立命题、证据、资产、前后台语言与状态边界；检索或解释受控历史案例时，再读取[历史案例命题关联门](references/workflow/case-proposition-evidence-gate.md)。
 2. 大广赛读取[大广赛适配器](references/competitions/daguangsai.md)；学院奖读取[学院奖适配器](references/competitions/academy-award.md)。
 3. 只读取当前赛道：
-   - 平面广告：[视觉生成能力前检](references/workflow/visual-generation-capability-gate.md) → [Playbook](references/tracks/print-ad/playbook.md) → [质量门](references/tracks/print-ad/quality-gates.json) → [交付规范](references/deliverables/print-ad.md)；
+   - 平面广告：[视觉生成能力前检](references/workflow/visual-generation-capability-gate.md) → [反卡片化设计门](references/workflow/content-shaped-layout-gate.md) → [Playbook](references/tracks/print-ad/playbook.md) → [质量门](references/tracks/print-ad/quality-gates.json) → [交付规范](references/deliverables/print-ad.md)；
    - 广告文案：[Playbook](references/tracks/ad-copy/playbook.md) → [质量门](references/tracks/ad-copy/quality-gates.json) → [交付规范](references/deliverables/ad-copy.md)；
-   - 营销策划：[视觉生成能力前检](references/workflow/visual-generation-capability-gate.md) → [Playbook](references/tracks/marketing-plan/playbook.md) → [质量门](references/tracks/marketing-plan/quality-gates.json) → [交付规范](references/deliverables/marketing-plan.md)。
+   - 营销策划：[视觉生成能力前检](references/workflow/visual-generation-capability-gate.md) → [反卡片化设计门](references/workflow/content-shaped-layout-gate.md) → [Playbook](references/tracks/marketing-plan/playbook.md) → [质量门](references/tracks/marketing-plan/quality-gates.json) → [交付规范](references/deliverables/marketing-plan.md)。
 4. 再读取对应提交 profile 和命题官方素材。具体命题可以缩小赛事通用范围，不能静默扩大。
 
 不属于上述三个赛道的类别保留官方名称，并说明当前没有已验证的专用 Playbook，不套用近似流程。
@@ -51,6 +51,14 @@ metadata:
 把提供方、`generate`/`edit`操作范围、检查依据和时间记录到`visual_generation_capability`。若能力为`unavailable`或`unknown`，必须立刻向用户说明这是严重质量缺口：平面广告无法完成高质量视觉生产，营销策划无法可靠完成关键视觉、样机与高保真样页；然后只问一个最小选择——启用/切换到有生图能力的环境，或明确接受仅文字、线框和低保真占位的`concept-only`受限模式。用户只说“继续”不代表接受降级，不得静默用图库、占位图或纯排版冒充正常质量。
 
 没有可调用生图能力时，`production-candidate`和`delivery-candidate`保持阻塞；只有用户明确选择`accept-limited-mode`并确认影响后，才可继续受限概念工作。完整判断、话术和状态映射见[视觉生成能力前检](references/workflow/visual-generation-capability-gate.md)。
+
+## 反卡片化设计硬约束
+
+平面广告和营销策划必须从内容关系与视觉任务推导结构，不得默认使用网页 UI、仪表盘、圆角信息盒、悬浮面板或整齐卡片网格作为通用设计与排版骨架。先给内容建立因果、层级、流程、空间、时间、对比或视觉动作，再选择对应结构；不得先搭卡片再逐格填内容。
+
+真实界面、票券、商品卡等作品对象，或确需表达离散同级项目、边界与交互状态时，可以局部使用卡片，但必须能说明其`semantic_role`、使用范围、非卡片替代方案和评审证据。“更整齐”“科技感”“方便排版”不是理由。观察到无语义卡片骨架、全稿统一卡片模板或用卡片掩盖内容不足时，必须在高清/全稿生产前退回最近的方向、原型或页面蓝图阶段，`content_pass`保持未通过。完整边界见[内容形态驱动与反卡片化设计门](references/workflow/content-shaped-layout-gate.md)。
+
+后台的`direction-cards`、方法卡和案例卡只是记录名称，不构成前台卡片式排版许可。
 
 ## 低负担人工审核
 
