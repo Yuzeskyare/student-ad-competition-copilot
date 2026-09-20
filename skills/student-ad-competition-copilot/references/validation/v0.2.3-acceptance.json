@@ -27,8 +27,12 @@
     "skill_creator_quick_validate": "passed-with-python-utf8-mode",
     "print_run_self_check": "passed",
     "marketing_plan_run_self_check": "passed",
-    "full_regression_expected": 454,
-    "full_regression_skipped_expected": 0
+    "full_regression_run": 454,
+    "full_regression_passed": 454,
+    "full_regression_skipped": 0,
+    "full_regression_failed": 0,
+    "full_regression_errors": 0,
+    "full_regression_duration_seconds": 72.491
   },
   "installation_gate": {
     "status": "executed-verified",

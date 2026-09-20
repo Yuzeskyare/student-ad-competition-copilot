@@ -273,8 +273,8 @@
     },
     {
       "path": "references/validation/v0.2.3-acceptance.json",
-      "bytes": 2222,
-      "sha256": "7b2834262b1716a721caf250b46244b4909b0c51a21a8c36a69f16fded2f2ebd"
+      "bytes": 2357,
+      "sha256": "12659f68a64c24c05f4a53b8993332511994ff792c65a27477a2771d163aeeb1"
     },
     {
       "path": "references/workflow/case-proposition-evidence-gate.md",
@@ -374,8 +374,8 @@
   ],
   "internal_verification": {
     "path": "references/validation/v0.2.3-acceptance.json",
-    "bytes": 2222,
-    "sha256": "7b2834262b1716a721caf250b46244b4909b0c51a21a8c36a69f16fded2f2ebd"
+    "bytes": 2357,
+    "sha256": "12659f68a64c24c05f4a53b8993332511994ff792c65a27477a2771d163aeeb1"
   },
   "milestone": "visual-generation-capability-gate"
 }
