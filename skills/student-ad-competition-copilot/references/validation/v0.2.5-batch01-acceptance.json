@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_version": "0.2.5-dev.1",
+  "status": "batch-verified-not-release-accepted",
+  "verified_scope": [
+    "ACQ-011",
+    "DEL-001-declared-evidence-paths"
+  ],
+  "behavioral_tests": {
+    "passed": 10,
+    "total": 10
+  },
+  "historical_readiness_tests": {
+    "passed": 4,
+    "total": 4
+  },
+  "real_record_regression": "Original broken references rejected; corrected in-memory copy passes 11/11 with submission_ready false.",
+  "skill_creator_structure": "passed",
+  "full_suite_rerun": false,
+  "real_creation_end_to_end": "not-run",
+  "limitations": [
+    "Does not establish genuine human approval or final-artwork quality.",
+    "Remaining v0.2.5 issues are open; candidate is not activated or published."
+  ]
+}

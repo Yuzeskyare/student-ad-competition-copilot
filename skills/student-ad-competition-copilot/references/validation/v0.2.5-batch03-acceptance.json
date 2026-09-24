@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_version": "0.2.5-dev.3",
+  "status": "batch-verified-not-release-accepted",
+  "verified_scope": [
+    "PQG-001",
+    "MPQ-001",
+    "MPQ-002",
+    "MPQ-003",
+    "MPQ-004",
+    "MPQ-006",
+    "MPQ-007",
+    "MPQ-008",
+    "MPQ-009",
+    "MPQ-010",
+    "PQG-001A-creative-master-separation",
+    "ACQ-015-frontstage-rule-exception"
+  ],
+  "reports": {
+    "batch-03-first-run.json": "87bdaa250e3323009c93c9726e3540e42d45d34ff80c13f85eb22a553ed3b310",
+    "batch-03-review-regression.json": "3873a0188ad0b8cccc079ba98491255725267fc36b937d0024df26f5d7aab36c",
+    "batch-03-delivery-regression.json": "60d8f5a7b83b8ac11c72f0f4bbd8209309839d23363d90fc452229ed6ed3ecaa",
+    "batch-03-real-render-replay.json": "a693f1ed2916aced55886c8d251b01ca19bc6cbf0a9fa4fdab66b0ef83da5a96",
+    "batch-03-structure.json": "5a8fd0016e5c0829c48601a8bbf187c850b7f9972370d49bfe9d5449f630cbd5"
+  },
+  "limitations": [
+    "27 synthetic visual-contract tests and deterministic pixel checks do not establish creative quality or human identity.",
+    "Historical v11 native-render replay verifies derivation only; no project approval was created.",
+    "Real visual creation end-to-end and the complete release suite remain for batch06."
+  ],
+  "full_suite_rerun": false
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_version": "0.2.5-dev.7",
+  "status": "batch-verified-not-release-accepted",
+  "verified_scope": [
+    "real-five-page-v2.6-approval-object-binding",
+    "independent-real-full-deck-v1.3-approval-object-binding",
+    "rational-dpi-json-serialization"
+  ],
+  "reports": {
+    "batch-07-dpi-regression.json": "be7516f709ab0f64cd6c16adbe54dc4333eb7d68152bbcaaf26c64577b7b71d9",
+    "ordered-content-acceptance/summary.json": "430c9c0e89a34afdf0db003bd0ef030ed9255fedc77fa63a943b8e762ec1d9af",
+    "ordered-content-acceptance/01-five-page/acceptance.json": "a1ea1a4ce255b944ea9102cdc73ca80a7d98973d69658459ed8d1e067e74c7c2",
+    "ordered-content-acceptance/02-full-deck/acceptance.json": "15af2a1cfd5ab61f76c921a2230b619aa6379c44cc4f5c3fc4b8f613a27cffd8"
+  },
+  "nonpassing_reports": {},
+  "limitations": [
+    "Existing real approvals bind unchanged artifacts; no new creative production or new human approval is claimed.",
+    "Historical approvals do not establish a complete new-contract production/visual run; no historical production receipts synthesized.",
+    "Actual full-deck technical recheck has zero errors and two terminology human-review advisories.",
+    "Submission rights, identity, current-rule checks and actual submission receipt remain project boundaries.",
+    "No activation or publication; active source, distribution and installed package remain v0.2.4."
+  ],
+  "full_suite_rerun": false
+}

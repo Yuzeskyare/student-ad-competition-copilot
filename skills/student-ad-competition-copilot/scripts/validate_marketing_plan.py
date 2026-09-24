@@ -423,7 +423,7 @@ def main() -> int:
                             tolerance = float(delivery["a4_physical_tolerance_inches"])
                             physical_match = abs(physical[0] - float(a4["short_side_inches"])) <= tolerance and abs(physical[1] - float(a4["long_side_inches"])) <= tolerance
                         matched = matched and physical_match
-                        metric = {"artifact": artifact["path"], "width": image.width, "height": image.height, "mode": image.mode, "dpi": list(dpi[:2]), "shape_match": matched}
+                        metric = {"artifact": artifact["path"], "width": image.width, "height": image.height, "mode": image.mode, "dpi": [float(value) for value in dpi[:2]], "shape_match": matched}
                         page_metrics.append(metric)
                         if image.mode != delivery["color_mode"]:
                             file_errors.append(f"page image is not RGB: {artifact['path']}")

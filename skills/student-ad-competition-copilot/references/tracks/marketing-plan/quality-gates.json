@@ -12,19 +12,73 @@
       "stage": "research",
       "gate_type": "hybrid",
       "purpose": "确认研究问题、事实分层、平台内容深度、反证和样本边界足以支持洞察。",
-      "applicability": {"mode": "always"},
-      "required_inputs": ["brief-evidence", "research-question", "official-and-third-party-sources"],
-      "required_outputs": ["evidence-register", "research-synthesis", "research-gaps", "counterevidence"],
+      "applicability": {
+        "mode": "always"
+      },
+      "required_inputs": [
+        "brief-evidence",
+        "research-question",
+        "official-and-third-party-sources"
+      ],
+      "required_outputs": [
+        "evidence-register",
+        "research-synthesis",
+        "research-gaps",
+        "counterevidence"
+      ],
       "checks": [
-        {"check_id": "evidence-register-present", "assessment": "machine", "question": "证据登记、来源、时间、类型和使用位置是否存在？", "pass_condition": "必需登记字段和证据路径完整。", "failure_severity": "return-on-observed-failure", "return_to_stage": "research", "evidence_required": true},
-        {"check_id": "fact-judgment-separation", "assessment": "human", "question": "市场、品类、品牌、产品、消费者证据和策略判断是否分开？", "pass_condition": "模型推测没有被写成调查或市场事实。", "failure_severity": "hard-stop", "return_to_stage": "research", "evidence_required": true},
-        {"check_id": "content-level-platform-evidence", "assessment": "human", "question": "平台研究是否超越标题，读取正文、字幕、评论、回复、弹幕或其他内容？", "pass_condition": "标题只用于建池，深读样本和平台限制可追溯。", "failure_severity": "return-on-observed-failure", "return_to_stage": "research", "evidence_required": true},
-        {"check_id": "counterevidence-and-boundary", "assessment": "human", "question": "是否保留反证、负向样本和无法外推的边界？", "pass_condition": "当前判断说明支持、反证、适用范围和未取得的数据。", "failure_severity": "return-on-observed-failure", "return_to_stage": "research", "evidence_required": true}
+        {
+          "check_id": "evidence-register-present",
+          "assessment": "machine",
+          "question": "证据登记、来源、时间、类型和使用位置是否存在？",
+          "pass_condition": "必需登记字段和证据路径完整。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "research",
+          "evidence_required": true
+        },
+        {
+          "check_id": "fact-judgment-separation",
+          "assessment": "human",
+          "question": "市场、品类、品牌、产品、消费者证据和策略判断是否分开？",
+          "pass_condition": "模型推测没有被写成调查或市场事实。",
+          "failure_severity": "hard-stop",
+          "return_to_stage": "research",
+          "evidence_required": true
+        },
+        {
+          "check_id": "content-level-platform-evidence",
+          "assessment": "human",
+          "question": "平台研究是否超越标题，读取正文、字幕、评论、回复、弹幕或其他内容？",
+          "pass_condition": "标题只用于建池，深读样本和平台限制可追溯。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "research",
+          "evidence_required": true
+        },
+        {
+          "check_id": "counterevidence-and-boundary",
+          "assessment": "human",
+          "question": "是否保留反证、负向样本和无法外推的边界？",
+          "pass_condition": "当前判断说明支持、反证、适用范围和未取得的数据。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "research",
+          "evidence_required": true
+        }
       ],
       "hard_stops": [
-        {"stop_id": "hypothesis-as-research", "condition": "模型推测、标题或词频被写成调查结论、总体比例或因果。", "return_to_stage": "research", "required_resolution": "降级为假设、补充内容研究或删除结论。"}
+        {
+          "stop_id": "hypothesis-as-research",
+          "condition": "模型推测、标题或词频被写成调查结论、总体比例或因果。",
+          "return_to_stage": "research",
+          "required_resolution": "降级为假设、补充内容研究或删除结论。"
+        }
       ],
-      "waiver_policy": {"allowed": true, "reason_required": true, "allowed_when": ["具体命题明确不要求研究，且方案不使用外部数据、消费者结论或市场判断。"]},
+      "waiver_policy": {
+        "allowed": true,
+        "reason_required": true,
+        "allowed_when": [
+          "具体命题明确不要求研究，且方案不使用外部数据、消费者结论或市场判断。"
+        ]
+      },
       "on_pass": "marketing-plan.insight"
     },
     {
@@ -33,20 +87,76 @@
       "stage": "insight",
       "gate_type": "human",
       "purpose": "把研究收束为具体人群、场景、矛盾和未满足任务，并完成反证。",
-      "applicability": {"mode": "always"},
-      "required_inputs": ["evidence-register", "research-synthesis", "counterevidence"],
-      "required_outputs": ["audience-scene-tension-job", "insight-boundary", "strategy-directions"],
+      "applicability": {
+        "mode": "always"
+      },
+      "required_inputs": [
+        "evidence-register",
+        "research-synthesis",
+        "counterevidence"
+      ],
+      "required_outputs": [
+        "audience-scene-tension-job",
+        "insight-boundary",
+        "strategy-directions"
+      ],
       "checks": [
-        {"check_id": "specific-audience", "assessment": "human", "question": "目标人群是否由相关行为、处境或任务定义，而非泛称年轻人？", "pass_condition": "人群差异能改变策略选择。", "failure_severity": "return-on-observed-failure", "return_to_stage": "insight", "evidence_required": true},
-        {"check_id": "specific-scene", "assessment": "human", "question": "场景是否包含时间、地点、前后动作、关系对象和约束？", "pass_condition": "场景不是青春、校园、节日等空泛标签。", "failure_severity": "return-on-observed-failure", "return_to_stage": "insight", "evidence_required": true},
-        {"check_id": "tension-and-unmet-job", "assessment": "human", "question": "是否同时说明想完成什么、被什么阻碍，以及现有方案没有完成什么？", "pass_condition": "矛盾和未满足任务能导出品牌介入点。", "failure_severity": "return-on-observed-failure", "return_to_stage": "insight", "evidence_required": true},
-        {"check_id": "scene-job-consistency", "assessment": "human", "question": "场景命名与真实用户任务是否一致？", "pass_condition": "没有通过重命名场景强行为活动或产品寻找理由。", "failure_severity": "hard-stop", "return_to_stage": "insight", "evidence_required": true}
+        {
+          "check_id": "specific-audience",
+          "assessment": "human",
+          "question": "目标人群是否由相关行为、处境或任务定义，而非泛称年轻人？",
+          "pass_condition": "人群差异能改变策略选择。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "insight",
+          "evidence_required": true
+        },
+        {
+          "check_id": "specific-scene",
+          "assessment": "human",
+          "question": "场景是否包含时间、地点、前后动作、关系对象和约束？",
+          "pass_condition": "场景不是青春、校园、节日等空泛标签。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "insight",
+          "evidence_required": true
+        },
+        {
+          "check_id": "tension-and-unmet-job",
+          "assessment": "human",
+          "question": "是否同时说明想完成什么、被什么阻碍，以及现有方案没有完成什么？",
+          "pass_condition": "矛盾和未满足任务能导出品牌介入点。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "insight",
+          "evidence_required": true
+        },
+        {
+          "check_id": "scene-job-consistency",
+          "assessment": "human",
+          "question": "场景命名与真实用户任务是否一致？",
+          "pass_condition": "没有通过重命名场景强行为活动或产品寻找理由。",
+          "failure_severity": "hard-stop",
+          "return_to_stage": "insight",
+          "evidence_required": true
+        }
       ],
       "hard_stops": [
-        {"stop_id": "incomplete-insight", "condition": "洞察缺少具体人群、场景、矛盾或未满足任务之一。", "return_to_stage": "insight", "required_resolution": "重写四元组并重新核对证据。"},
-        {"stop_id": "scene-task-mismatch", "condition": "活动或产品动作只能靠错误场景标签成立。", "return_to_stage": "insight", "required_resolution": "回到真实任务，不只修改名称。"}
+        {
+          "stop_id": "incomplete-insight",
+          "condition": "洞察缺少具体人群、场景、矛盾或未满足任务之一。",
+          "return_to_stage": "insight",
+          "required_resolution": "重写四元组并重新核对证据。"
+        },
+        {
+          "stop_id": "scene-task-mismatch",
+          "condition": "活动或产品动作只能靠错误场景标签成立。",
+          "return_to_stage": "insight",
+          "required_resolution": "回到真实任务，不只修改名称。"
+        }
       ],
-      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "waiver_policy": {
+        "allowed": false,
+        "reason_required": true,
+        "allowed_when": []
+      },
       "on_pass": "marketing-plan.strategy-intermediary"
     },
     {
@@ -55,21 +165,87 @@
       "stage": "strategy",
       "gate_type": "human",
       "purpose": "通过品牌角色、产品RTB和合适的策略中介，把洞察转成后续创意约束。",
-      "applicability": {"mode": "always"},
-      "required_inputs": ["audience-scene-tension-job", "brand-facts", "product-rtb", "strategy-directions"],
-      "required_outputs": ["brand-role", "strategy-intermediary", "core-proposition", "downstream-creative-constraints"],
+      "applicability": {
+        "mode": "always"
+      },
+      "required_inputs": [
+        "audience-scene-tension-job",
+        "brand-facts",
+        "product-rtb",
+        "strategy-directions"
+      ],
+      "required_outputs": [
+        "brand-role",
+        "strategy-intermediary",
+        "core-proposition",
+        "downstream-creative-constraints"
+      ],
       "checks": [
-        {"check_id": "brand-role", "assessment": "human", "question": "品牌在具体矛盾中凭什么以什么身份出现？", "pass_condition": "角色来自品牌资产并能约束内容、活动和渠道。", "failure_severity": "return-on-observed-failure", "return_to_stage": "strategy", "evidence_required": true},
-        {"check_id": "product-rtb", "assessment": "human", "question": "产品事实、任务意义、可体验机制和证据边界是否清楚？", "pass_condition": "产品不是末尾包装露出，也没有超出官方依据。", "failure_severity": "return-on-observed-failure", "return_to_stage": "strategy", "evidence_required": true},
-        {"check_id": "intermediary-causality", "assessment": "human", "question": "策略中介是否说明地基、支柱、承诺和参与/购买路径之间的关系？", "pass_condition": "模型将上游证据压缩为下游必须服从的选择。", "failure_severity": "hard-stop", "return_to_stage": "strategy", "evidence_required": true},
-        {"check_id": "brand-replacement", "assessment": "human", "question": "换品牌、换产品或删除RTB后，策略是否仍原样成立？", "pass_condition": "品牌与产品产生不可替换的机制约束。", "failure_severity": "return-on-observed-failure", "return_to_stage": "strategy", "evidence_required": true},
-        {"check_id": "model-layout", "assessment": "human", "question": "模型版式是否帮助理解关系，而非卡片堆叠或装饰图形？", "pass_condition": "若使用建筑式品牌屋，屋顶、承重结构、地基和入口清楚且可读。", "failure_severity": "return-on-observed-failure", "return_to_stage": "strategy", "evidence_required": true}
+        {
+          "check_id": "brand-role",
+          "assessment": "human",
+          "question": "品牌在具体矛盾中凭什么以什么身份出现？",
+          "pass_condition": "角色来自品牌资产并能约束内容、活动和渠道。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "strategy",
+          "evidence_required": true
+        },
+        {
+          "check_id": "product-rtb",
+          "assessment": "human",
+          "question": "产品事实、任务意义、可体验机制和证据边界是否清楚？",
+          "pass_condition": "产品不是末尾包装露出，也没有超出官方依据。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "strategy",
+          "evidence_required": true
+        },
+        {
+          "check_id": "intermediary-causality",
+          "assessment": "human",
+          "question": "策略中介是否说明地基、支柱、承诺和参与/购买路径之间的关系？",
+          "pass_condition": "模型将上游证据压缩为下游必须服从的选择。",
+          "failure_severity": "hard-stop",
+          "return_to_stage": "strategy",
+          "evidence_required": true
+        },
+        {
+          "check_id": "brand-replacement",
+          "assessment": "human",
+          "question": "换品牌、换产品或删除RTB后，策略是否仍原样成立？",
+          "pass_condition": "品牌与产品产生不可替换的机制约束。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "strategy",
+          "evidence_required": true
+        },
+        {
+          "check_id": "model-layout",
+          "assessment": "human",
+          "question": "模型版式是否帮助理解关系，而非卡片堆叠或装饰图形？",
+          "pass_condition": "若使用建筑式品牌屋，屋顶、承重结构、地基和入口清楚且可读。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "strategy",
+          "evidence_required": true
+        }
       ],
       "hard_stops": [
-        {"stop_id": "strategy-jump", "condition": "研究或洞察直接跳到活动，没有品牌/产品角色和策略中介。", "return_to_stage": "strategy", "required_resolution": "补齐中介并明确向下约束。"},
-        {"stop_id": "decorative-brand-house", "condition": "品牌屋只是卡片、栏目或建筑装饰，没有承重逻辑。", "return_to_stage": "strategy", "required_resolution": "按承诺、利益、RTB、品牌资产和入口重建。"}
+        {
+          "stop_id": "strategy-jump",
+          "condition": "研究或洞察直接跳到活动，没有品牌/产品角色和策略中介。",
+          "return_to_stage": "strategy",
+          "required_resolution": "补齐中介并明确向下约束。"
+        },
+        {
+          "stop_id": "decorative-brand-house",
+          "condition": "品牌屋只是卡片、栏目或建筑装饰，没有承重逻辑。",
+          "return_to_stage": "strategy",
+          "required_resolution": "按承诺、利益、RTB、品牌资产和入口重建。"
+        }
       ],
-      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "waiver_policy": {
+        "allowed": false,
+        "reason_required": true,
+        "allowed_when": []
+      },
       "on_pass": "marketing-plan.five-page-content"
     },
     {
@@ -77,23 +253,93 @@
       "order": 40,
       "stage": "content-prototype",
       "gate_type": "human",
-      "purpose": "在全稿前验证研究/洞察、策略推导、策略中介、Big Idea和核心活动五类关键内容。",
-      "applicability": {"mode": "always"},
-      "required_inputs": ["research-and-insight", "strategy-intermediary", "big-idea", "core-activity-engineering"],
-      "required_outputs": ["five-page-native-sample", "five-page-human-decision"],
+      "purpose": "在全稿前验证研究/洞察、策略推导、策略中介、Big Idea和核心活动五类关键内容。 执行final-pixel-review.md，复核目标原生渲染、三种尺度及逐单元观察，技术或联系表通过不能替代。",
+      "applicability": {
+        "mode": "always"
+      },
+      "required_inputs": [
+        "research-and-insight",
+        "strategy-intermediary",
+        "big-idea",
+        "core-activity-engineering"
+      ],
+      "required_outputs": [
+        "five-page-native-sample",
+        "five-page-human-decision",
+        "version-bound-final-pixel-evidence"
+      ],
       "checks": [
-        {"check_id": "creative-mechanism-six-questions", "assessment": "human", "question": "Big Idea是否回答品牌独占、产品利益、品牌资产、参与、传播和购买闭环？", "pass_condition": "六个问题都有机制性答案，不只是一句主题。", "failure_severity": "return-on-observed-failure", "return_to_stage": "mechanism", "evidence_required": true},
-        {"check_id": "activity-granularity", "assessment": "human", "question": "核心活动是否达到可运营、可估价和可度量的颗粒度？", "pass_condition": "规则、界面/空间、人员、内容资产、风险、渠道、预算和KPI可审查。", "failure_severity": "return-on-observed-failure", "return_to_stage": "mechanism", "evidence_required": true},
-        {"check_id": "layout-role-diversity", "assessment": "human", "question": "五页是否使用与数据、因果、流程、空间、时间、对比或视觉任务匹配的不同结构，而非统一卡片骨架？", "pass_condition": "统一品牌系统但不是同一模板换文案；无语义网页卡片、仪表盘或重复圆角容器不作为默认骨架，局部例外有记录。", "failure_severity": "hard-stop", "return_to_stage": "content-prototype", "evidence_required": true},
-        {"check_id": "asset-integration", "assessment": "human", "question": "官方资产是否经过场景、景别、光色和层级整合？", "pass_condition": "产品和品牌不是角标或原始陈列图。", "failure_severity": "return-on-observed-failure", "return_to_stage": "content-prototype", "evidence_required": true},
-        {"check_id": "projected-legibility", "assessment": "human", "question": "投屏和缩略图下，标题、模型层级、字体、换行、背景和连接线是否清楚？", "pass_condition": "没有小字、溢出、不自然换行、背景抢字或线条混乱。", "failure_severity": "return-on-observed-failure", "return_to_stage": "content-prototype", "evidence_required": true}
+        {
+          "check_id": "creative-mechanism-six-questions",
+          "assessment": "human",
+          "question": "Big Idea是否回答品牌独占、产品利益、品牌资产、参与、传播和购买闭环？",
+          "pass_condition": "六个问题都有机制性答案，不只是一句主题。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "mechanism",
+          "evidence_required": true
+        },
+        {
+          "check_id": "activity-granularity",
+          "assessment": "human",
+          "question": "核心活动是否达到可运营、可估价和可度量的颗粒度？",
+          "pass_condition": "规则、界面/空间、人员、内容资产、风险、渠道、预算和KPI可审查。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "mechanism",
+          "evidence_required": true
+        },
+        {
+          "check_id": "layout-role-diversity",
+          "assessment": "human",
+          "question": "五页是否使用与数据、因果、流程、空间、时间、对比或视觉任务匹配的不同结构，而非统一卡片骨架？",
+          "pass_condition": "统一品牌系统但不是同一模板换文案；无语义网页卡片、仪表盘或重复圆角容器不作为默认骨架，局部例外有记录。",
+          "failure_severity": "hard-stop",
+          "return_to_stage": "content-prototype",
+          "evidence_required": true
+        },
+        {
+          "check_id": "asset-integration",
+          "assessment": "human",
+          "question": "官方资产是否经过场景、景别、光色和层级整合？",
+          "pass_condition": "产品和品牌不是角标或原始陈列图。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "content-prototype",
+          "evidence_required": true
+        },
+        {
+          "check_id": "projected-legibility",
+          "assessment": "human",
+          "question": "投屏和缩略图下，标题、模型层级、字体、换行、背景和连接线是否清楚？",
+          "pass_condition": "没有小字、溢出、不自然换行、背景抢字或线条混乱。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "content-prototype",
+          "evidence_required": true
+        }
       ],
       "hard_stops": [
-        {"stop_id": "full-deck-before-content-pass", "condition": "五页内容门未通过即开始全量排版。", "return_to_stage": "content-prototype", "required_resolution": "停止全稿，完成五页整改和人工决定。"},
-        {"stop_id": "brand-replaceable-big-idea", "condition": "Big Idea换品牌后仍完整成立。", "return_to_stage": "strategy", "required_resolution": "重建品牌角色、产品RTB和创意机制。"},
-        {"stop_id": "generic-card-template", "condition": "五页以网页卡片、仪表盘面板或重复圆角容器作为默认骨架，且没有真实对象或内容关系语义。", "return_to_stage": "content-prototype", "required_resolution": "按各页任务和关系重建不同结构；确有语义的局部例外须记录并复核。"}
+        {
+          "stop_id": "full-deck-before-content-pass",
+          "condition": "五页内容门未通过即开始全量排版。",
+          "return_to_stage": "content-prototype",
+          "required_resolution": "停止全稿，完成五页整改和人工决定。"
+        },
+        {
+          "stop_id": "brand-replaceable-big-idea",
+          "condition": "Big Idea换品牌后仍完整成立。",
+          "return_to_stage": "strategy",
+          "required_resolution": "重建品牌角色、产品RTB和创意机制。"
+        },
+        {
+          "stop_id": "generic-card-template",
+          "condition": "五页以网页卡片、仪表盘面板或重复圆角容器作为默认骨架，且没有真实对象或内容关系语义。",
+          "return_to_stage": "content-prototype",
+          "required_resolution": "按各页任务和关系重建不同结构；确有语义的局部例外须记录并复核。"
+        }
       ],
-      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "waiver_policy": {
+        "allowed": false,
+        "reason_required": true,
+        "allowed_when": []
+      },
       "on_pass": "marketing-plan.execution-engineering"
     },
     {
@@ -102,20 +348,84 @@
       "stage": "execution",
       "gate_type": "human",
       "purpose": "确认内容、活动、媒介、渠道、购买、预算和KPI形成可执行闭环。",
-      "applicability": {"mode": "always"},
-      "required_inputs": ["big-idea", "activity-engineering", "content-mechanism", "media-and-conversion", "budget-and-kpi"],
-      "required_outputs": ["execution-blueprint", "content-assets", "channel-closure", "measurement-plan"],
+      "applicability": {
+        "mode": "always"
+      },
+      "required_inputs": [
+        "big-idea",
+        "activity-engineering",
+        "content-mechanism",
+        "media-and-conversion",
+        "budget-and-kpi"
+      ],
+      "required_outputs": [
+        "execution-blueprint",
+        "content-assets",
+        "channel-closure",
+        "measurement-plan"
+      ],
       "checks": [
-        {"check_id": "participant-and-brand-actions", "assessment": "human", "question": "用户、品牌、人员、合作方和渠道各自做什么，下一站是什么？", "pass_condition": "进入、行动、退出、异常和承接路径可复述。", "failure_severity": "return-on-observed-failure", "return_to_stage": "execution", "evidence_required": true},
-        {"check_id": "space-interface-assets", "assessment": "human", "question": "是否有足以证明执行的空间、界面、脚本、内容模板或物料样机？", "pass_condition": "至少一种核心执行样机可审查。", "failure_severity": "return-on-observed-failure", "return_to_stage": "execution", "evidence_required": true},
-        {"check_id": "roles-risks-stop", "assessment": "human", "question": "人员职责、审批、卫生、安全、隐私、法务和停止条件是否明确？", "pass_condition": "重大风险有责任主体和处理路径。", "failure_severity": "return-on-observed-failure", "return_to_stage": "execution", "evidence_required": true},
-        {"check_id": "channel-and-purchase-closure", "assessment": "human", "question": "内容、体验、渠道、试用/购买和数据回传是否闭环？", "pass_condition": "每个核心触点有明确下一站，不靠交叉线堆砌。", "failure_severity": "return-on-observed-failure", "return_to_stage": "execution", "evidence_required": true},
-        {"check_id": "budget-and-kpi-basis", "assessment": "human", "question": "预算有数量/单价/依据，KPI有分子/分母/数据源/时间和阈值吗？", "pass_condition": "规划假设与真实报价、目标与实绩分开。", "failure_severity": "return-on-observed-failure", "return_to_stage": "execution", "evidence_required": true}
+        {
+          "check_id": "participant-and-brand-actions",
+          "assessment": "human",
+          "question": "用户、品牌、人员、合作方和渠道各自做什么，下一站是什么？",
+          "pass_condition": "进入、行动、退出、异常和承接路径可复述。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "execution",
+          "evidence_required": true
+        },
+        {
+          "check_id": "space-interface-assets",
+          "assessment": "human",
+          "question": "是否有足以证明执行的空间、界面、脚本、内容模板或物料样机？",
+          "pass_condition": "至少一种核心执行样机可审查。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "execution",
+          "evidence_required": true
+        },
+        {
+          "check_id": "roles-risks-stop",
+          "assessment": "human",
+          "question": "人员职责、审批、卫生、安全、隐私、法务和停止条件是否明确？",
+          "pass_condition": "重大风险有责任主体和处理路径。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "execution",
+          "evidence_required": true
+        },
+        {
+          "check_id": "channel-and-purchase-closure",
+          "assessment": "human",
+          "question": "内容、体验、渠道、试用/购买和数据回传是否闭环？",
+          "pass_condition": "每个核心触点有明确下一站，不靠交叉线堆砌。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "execution",
+          "evidence_required": true
+        },
+        {
+          "check_id": "budget-and-kpi-basis",
+          "assessment": "human",
+          "question": "预算有数量/单价/依据，KPI有分子/分母/数据源/时间和阈值吗？",
+          "pass_condition": "规划假设与真实报价、目标与实绩分开。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "execution",
+          "evidence_required": true
+        }
       ],
       "hard_stops": [
-        {"stop_id": "empty-activity", "condition": "核心活动只有名称、口号和几步流程。", "return_to_stage": "execution", "required_resolution": "补齐完整运行、样机、人员、风险、渠道、预算与测量。"}
+        {
+          "stop_id": "empty-activity",
+          "condition": "核心活动只有名称、口号和几步流程。",
+          "return_to_stage": "execution",
+          "required_resolution": "补齐完整运行、样机、人员、风险、渠道、预算与测量。"
+        }
       ],
-      "waiver_policy": {"allowed": true, "reason_required": true, "allowed_when": ["命题明确不要求预算或KPI，且正文不使用相应数字或效果承诺。"]},
+      "waiver_policy": {
+        "allowed": true,
+        "reason_required": true,
+        "allowed_when": [
+          "命题明确不要求预算或KPI，且正文不使用相应数字或效果承诺。"
+        ]
+      },
       "on_pass": "marketing-plan.full-deck-human-quality"
     },
     {
@@ -123,22 +433,90 @@
       "order": 60,
       "stage": "full-deck-review",
       "gate_type": "human",
-      "purpose": "检查逐页论证交接、正文/附录、前台语言、视觉系统和整本可读性。",
-      "applicability": {"mode": "always"},
-      "required_inputs": ["page-blueprint", "native-full-deck", "review-render"],
-      "required_outputs": ["page-by-page-review", "frontstage-language-review", "full-deck-human-decision"],
+      "purpose": "检查逐页论证交接、正文/附录、前台语言、视觉系统和整本可读性。 执行final-pixel-review.md，复核目标原生渲染、三种尺度及逐单元观察，技术或联系表通过不能替代。",
+      "applicability": {
+        "mode": "always"
+      },
+      "required_inputs": [
+        "page-blueprint",
+        "native-full-deck",
+        "review-render"
+      ],
+      "required_outputs": [
+        "page-by-page-review",
+        "frontstage-language-review",
+        "full-deck-human-decision",
+        "version-bound-final-pixel-evidence"
+      ],
       "checks": [
-        {"check_id": "page-blueprint-contract", "assessment": "human", "question": "每页是否有唯一任务、证据输入、具体内容、结论和前后页交接？", "pass_condition": "页面连续推进，不靠章节页、空白页和重复总结凑页数。", "failure_severity": "return-on-observed-failure", "return_to_stage": "full-deck", "evidence_required": true},
-        {"check_id": "body-appendix-separation", "assessment": "human", "question": "正文是否只保留决策必要输出，完整方法、样本和题项进入附录？", "pass_condition": "研究可复核但不打断正文说服。", "failure_severity": "return-on-observed-failure", "return_to_stage": "full-deck", "evidence_required": true},
-        {"check_id": "frontstage-language", "assessment": "human", "question": "正文是否清除命题校正、核对时间、开发记录、方法编号和AI工作语言？", "pass_condition": "参赛前台只保留专业策划正文。", "failure_severity": "hard-stop", "return_to_stage": "full-deck", "evidence_required": true},
-        {"check_id": "layout-and-density", "assessment": "human", "question": "数据、模型、路线、活动、空间、预算等页面是否使用内容对应结构和适当密度，并避免网页卡片、悬浮面板、胶囊标签或仪表盘式统一模板？", "pass_condition": "没有全稿卡片化、内容稀薄或装饰性空白；局部卡片有语义、范围、替代方案和评审证据。", "failure_severity": "return-on-observed-failure", "return_to_stage": "full-deck", "evidence_required": true},
-        {"check_id": "typography-and-lines", "assessment": "human", "question": "字号、换行、背景对比、连接线和对象位置是否在联系表与投屏下正确？", "pass_condition": "没有溢出、错位、背景消失/抢字或线条混乱。", "failure_severity": "return-on-observed-failure", "return_to_stage": "full-deck", "evidence_required": true},
-        {"check_id": "end-to-end-closure", "assessment": "human", "question": "品牌、产品、内容、活动、媒介、购买、预算和验证是否贯穿全案？", "pass_condition": "没有只在末页补品牌、产品或KPI。", "failure_severity": "return-on-observed-failure", "return_to_stage": "full-deck", "evidence_required": true}
+        {
+          "check_id": "page-blueprint-contract",
+          "assessment": "human",
+          "question": "每页是否有唯一任务、证据输入、具体内容、结论和前后页交接？",
+          "pass_condition": "页面连续推进，不靠章节页、空白页和重复总结凑页数。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "full-deck",
+          "evidence_required": true
+        },
+        {
+          "check_id": "body-appendix-separation",
+          "assessment": "human",
+          "question": "正文是否只保留决策必要输出，完整方法、样本和题项进入附录？",
+          "pass_condition": "研究可复核但不打断正文说服。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "full-deck",
+          "evidence_required": true
+        },
+        {
+          "check_id": "frontstage-language",
+          "assessment": "human",
+          "question": "正文是否清除命题校正、核对时间、开发记录、方法编号和AI工作语言？",
+          "pass_condition": "参赛前台只保留专业策划正文。",
+          "failure_severity": "hard-stop",
+          "return_to_stage": "full-deck",
+          "evidence_required": true
+        },
+        {
+          "check_id": "layout-and-density",
+          "assessment": "human",
+          "question": "数据、模型、路线、活动、空间、预算等页面是否使用内容对应结构和适当密度，并避免网页卡片、悬浮面板、胶囊标签或仪表盘式统一模板？",
+          "pass_condition": "没有全稿卡片化、内容稀薄或装饰性空白；局部卡片有语义、范围、替代方案和评审证据。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "full-deck",
+          "evidence_required": true
+        },
+        {
+          "check_id": "typography-and-lines",
+          "assessment": "human",
+          "question": "字号、换行、背景对比、连接线和对象位置是否在联系表与投屏下正确？",
+          "pass_condition": "没有溢出、错位、背景消失/抢字或线条混乱。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "full-deck",
+          "evidence_required": true
+        },
+        {
+          "check_id": "end-to-end-closure",
+          "assessment": "human",
+          "question": "品牌、产品、内容、活动、媒介、购买、预算和验证是否贯穿全案？",
+          "pass_condition": "没有只在末页补品牌、产品或KPI。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "full-deck",
+          "evidence_required": true
+        }
       ],
       "hard_stops": [
-        {"stop_id": "internal-language-frontstage", "condition": "参赛正文出现内部流程、质量治理、AI工作或开发版本语言。", "return_to_stage": "full-deck", "required_resolution": "移至后台/附录或删除，并复核整本语气。"}
+        {
+          "stop_id": "internal-language-frontstage",
+          "condition": "参赛正文出现内部流程、质量治理、AI工作或开发版本语言。",
+          "return_to_stage": "full-deck",
+          "required_resolution": "移至后台/附录或删除，并复核整本语气。"
+        }
       ],
-      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "waiver_policy": {
+        "allowed": false,
+        "reason_required": true,
+        "allowed_when": []
+      },
       "on_pass": "marketing-plan.technical-delivery"
     },
     {
@@ -147,17 +525,64 @@
       "stage": "technical-review",
       "gate_type": "machine",
       "purpose": "验证赛事文件、页面、manifest、哈希、预算算术、KPI字段、AIGC使用声明和必要记录。",
-      "applicability": {"mode": "always"},
-      "required_inputs": ["final-deliverables", "delivery-manifest", "brief-constraints", "submission-profile", "aigc-use-declaration"],
-      "required_outputs": ["technical-validation", "run-manifest"],
+      "applicability": {
+        "mode": "always"
+      },
+      "required_inputs": [
+        "final-deliverables",
+        "delivery-manifest",
+        "brief-constraints",
+        "submission-profile",
+        "aigc-use-declaration"
+      ],
+      "required_outputs": [
+        "technical-validation",
+        "run-manifest"
+      ],
       "checks": [
-        {"check_id": "file-and-page-specification", "assessment": "machine", "question": "文件、页数、比例/尺寸、分辨率、颜色、大小和正文/附件角色是否满足当前profile？", "pass_condition": "所有适用技术项通过。", "failure_severity": "return-on-observed-failure", "return_to_stage": "technical-review", "evidence_required": true},
-        {"check_id": "manifest-path-hash", "assessment": "machine", "question": "manifest路径、文件存在和哈希是否一致且未逃出运行目录？", "pass_condition": "所有引用可定位且哈希一致。", "failure_severity": "return-on-observed-failure", "return_to_stage": "technical-review", "evidence_required": true},
-        {"check_id": "budget-kpi-structure", "assessment": "machine", "question": "适用时预算算术和KPI字段结构是否完整？", "pass_condition": "算术和必需字段通过；合理性仍由人工判断。", "failure_severity": "return-on-observed-failure", "return_to_stage": "technical-review", "evidence_required": true},
-        {"check_id": "aigc-record", "assessment": "machine", "question": "AIGC使用声明和使用时所需记录是否完整？", "pass_condition": "声明为yes或no；yes时记录路径和必需字段存在。", "failure_severity": "return-on-observed-failure", "return_to_stage": "technical-review", "evidence_required": true}
+        {
+          "check_id": "file-and-page-specification",
+          "assessment": "machine",
+          "question": "文件、页数、比例/尺寸、分辨率、颜色、大小和正文/附件角色是否满足当前profile？",
+          "pass_condition": "所有适用技术项通过。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "technical-review",
+          "evidence_required": true
+        },
+        {
+          "check_id": "manifest-path-hash",
+          "assessment": "machine",
+          "question": "manifest路径、文件存在和哈希是否一致且未逃出运行目录？",
+          "pass_condition": "所有引用可定位且哈希一致。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "technical-review",
+          "evidence_required": true
+        },
+        {
+          "check_id": "budget-kpi-structure",
+          "assessment": "machine",
+          "question": "适用时预算算术和KPI字段结构是否完整？",
+          "pass_condition": "算术和必需字段通过；合理性仍由人工判断。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "technical-review",
+          "evidence_required": true
+        },
+        {
+          "check_id": "aigc-record",
+          "assessment": "machine",
+          "question": "AIGC使用声明和使用时所需记录是否完整？",
+          "pass_condition": "声明为yes或no；yes时记录路径和必需字段存在。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "technical-review",
+          "evidence_required": true
+        }
       ],
       "hard_stops": [],
-      "waiver_policy": {"allowed": false, "reason_required": true, "allowed_when": []},
+      "waiver_policy": {
+        "allowed": false,
+        "reason_required": true,
+        "allowed_when": []
+      },
       "on_pass": null
     }
   ]

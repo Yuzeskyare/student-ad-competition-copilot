@@ -9,6 +9,8 @@ import sys
 from pathlib import Path
 
 from quality_gate_contract import validate_quality_gate_results
+from review_contract import validate_review_contract
+from visual_review_contract import validate_visual_review
 from visual_generation_capability_contract import validate_visual_generation_capability
 
 sys.dont_write_bytecode = True
@@ -74,7 +76,7 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
     except Exception as exc:
         return {"schema_version": "0.1.0", "status": "failed", "checks": [], "errors": [str(exc)]}
 
-    checks.append(check("manifest-schema", manifest.get("schema_version") in {"0.1.0", "0.2.0", "0.3.0"}, manifest.get("schema_version")))
+    checks.append(check("manifest-schema", manifest.get("schema_version") in {"0.1.0", "0.2.0", "0.3.0", "0.4.0"}, manifest.get("schema_version")))
     checks.append(check("category-print-ad", manifest.get("category") == "print-ad", manifest.get("category")))
     run_scope = manifest.get("run_scope")
     checks.append(check("run-scope", run_scope in RUN_SCOPE_ARTIFACTS, run_scope))
@@ -124,12 +126,17 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
             method_text = method_path.read_text(encoding="utf-8-sig")
             checks.append(check("used-methods-documented", all(item in method_text for item in used), used))
 
+    checks.extend(validate_visual_review(run_dir, manifest))
+    review_checks = validate_review_contract(run_dir, manifest)
+    # Historical validation stays reproducible, but is never new-contract acceptance.
+    if manifest.get("schema_version") == "0.4.0":
+        checks.extend(review_checks)
     failed = [item["name"] for item in checks if not item["passed"]]
     return {
         "schema_version": "0.1.0", "run_id": manifest.get("run_id"),
         "run_dir": str(run_dir), "manifest": str(manifest_path.resolve()),
         "status": "passed" if not failed else "failed", "checks_total": len(checks),
-        "checks_passed": len(checks) - len(failed), "failure_names": failed, "checks": checks,
+        "checks_passed": len(checks) - len(failed), "failure_names": failed, "review_contract_status": "verified" if all(c["passed"] for c in review_checks) else ("failed" if manifest.get("schema_version") == "0.4.0" else "legacy-not-verified"), "checks": checks,
     }
 
 

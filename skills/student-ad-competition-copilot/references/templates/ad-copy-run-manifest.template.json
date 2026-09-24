@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.2.0",
+  "schema_version": "0.4.0",
   "run_id": "competition-season-brand-ad-copy",
   "competition": "academy-award",
   "category": "ad-copy",
@@ -9,12 +9,26 @@
   "run_scope": "delivery-candidate",
   "selected_candidate_id": "AC-02",
   "aigc_used": "no",
-  "method_cards_used": ["mc-brief-constraint-deconstruction"],
+  "method_cards_used": [
+    "mc-brief-constraint-deconstruction"
+  ],
   "method_cards_rejected": [],
   "candidates": [
-    {"candidate_id": "AC-01", "path": "04-production/candidates-v0.1/AC-01.txt", "sha256": "0000000000000000000000000000000000000000000000000000000000000000"},
-    {"candidate_id": "AC-02", "path": "04-production/candidates-v0.1/AC-02.txt", "sha256": "0000000000000000000000000000000000000000000000000000000000000000"},
-    {"candidate_id": "AC-03", "path": "04-production/candidates-v0.1/AC-03.txt", "sha256": "0000000000000000000000000000000000000000000000000000000000000000"}
+    {
+      "candidate_id": "AC-01",
+      "path": "04-production/candidates-v0.1/AC-01.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "candidate_id": "AC-02",
+      "path": "04-production/candidates-v0.1/AC-02.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "candidate_id": "AC-03",
+      "path": "04-production/candidates-v0.1/AC-03.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
   ],
   "artifacts": {
     "brief_evidence": "01-brief/brief-evidence.md",
@@ -29,5 +43,7 @@
     "technical_validation": "06-delivery/technical-validation-v0.1.json",
     "quality_gate_results": "quality-gate-results.json",
     "run_status": "run-status.json"
-  }
+  },
+  "review_contract": "05-reviews/review-contract.json",
+  "revision_mode": "initial"
 }

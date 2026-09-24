@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Version-bound review evidence",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "track",
+    "decisions",
+    "production_requests",
+    "production_receipts",
+    "final_artifacts",
+    "content_status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "track": {
+      "enum": [
+        "print-ad",
+        "ad-copy",
+        "marketing-plan"
+      ]
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/decision"
+      }
+    },
+    "production_requests": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/file"
+      }
+    },
+    "production_receipts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/file"
+      }
+    },
+    "final_artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "content_status": {
+      "enum": [
+        "pending",
+        "pass",
+        "fail"
+      ]
+    },
+    "copy_delivery": {
+      "type": "object"
+    },
+    "stable_copy": {
+      "type": "object"
+    },
+    "challenge": {
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "file": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "artifact": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/file"
+        }
+      ],
+      "required": [
+        "version",
+        "units"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "units": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "required": [
+        "id",
+        "stage",
+        "decision",
+        "checked_at",
+        "source",
+        "quote",
+        "reviewed_artifacts"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "enum": [
+            "direction",
+            "representative",
+            "final",
+            "production-authorization"
+          ]
+        },
+        "decision": {
+          "enum": [
+            "pass",
+            "reject"
+          ]
+        },
+        "checked_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source": {
+          "$ref": "#/$defs/file"
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewed_artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/artifact"
+          },
+          "minItems": 1
+        },
+        "production_request_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.3.0",
+  "schema_version": "0.4.0",
   "run_id": "competition-season-brand-print-ad",
   "competition": "daguangsai",
   "category": "print-ad",
@@ -22,6 +22,8 @@
     "direction_cards": "03-concepts/direction-cards.md",
     "concept_gate": "03-concepts/concept-gate.json",
     "quality_gate_results": "quality-gate-results.json",
-    "run_status": "run-status.json"
-  }
+    "run_status": "run-status.json",
+    "visual_review": "05-reviews/visual-review.json"
+  },
+  "review_contract": "05-reviews/review-contract.json"
 }

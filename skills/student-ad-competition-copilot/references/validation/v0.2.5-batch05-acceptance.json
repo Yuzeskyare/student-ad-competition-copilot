@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_version": "0.2.5-dev.5",
+  "status": "batch-verified-not-release-accepted",
+  "verified_scope": [
+    "DEL-001",
+    "ACQ-015",
+    "PQG-001A",
+    "DEL-002-support-path",
+    "MPQ-005A-support-path"
+  ],
+  "reports": {
+    "batch-05-green.json": "5f0236a126a7905c1ac0198b2b463fc5f0cbee496b7234ce72a7e927917e48ed",
+    "batch-05-delivery-regression.json": "60d8f5a7b83b8ac11c72f0f4bbd8209309839d23363d90fc452229ed6ed3ecaa",
+    "batch-05-structure.json": "318f18d3bcfc875ac8e0d892466eed20317ac6dbb753e3135a71f714aff566eb"
+  },
+  "limitations": [
+    "Synthetic handoff/receipt tests do not prove a real upload or research truth.",
+    "Actual participants, rights, platform fields and submission remain project boundaries, not defects closed by software.",
+    "Full integration and real workflow acceptance remain for batch06."
+  ],
+  "full_suite_rerun": false
+}

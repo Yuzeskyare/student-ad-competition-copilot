@@ -3,58 +3,157 @@
   "$id": "https://local.student-ad-competition-copilot/schemas/ad-copy-brief-constraints.schema.json",
   "title": "Ad-copy proposition constraints",
   "type": "object",
-  "required": ["schema_version", "competition", "proposition_id", "allowed_subtypes", "subtype_constraints", "evidence"],
+  "required": [
+    "schema_version",
+    "competition",
+    "proposition_id",
+    "allowed_subtypes",
+    "subtype_constraints",
+    "evidence"
+  ],
   "properties": {
-    "schema_version": {"const": "0.1.0"},
-    "competition": {"enum": ["daguangsai", "academy-award"]},
-    "proposition_id": {"type": "string", "minLength": 1},
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "competition": {
+      "enum": [
+        "daguangsai",
+        "academy-award"
+      ]
+    },
+    "proposition_id": {
+      "type": "string",
+      "minLength": 1
+    },
     "subtype_basis": {
-      "enum": ["brief-explicit", "broad-category-working-classification", "competition-default"]
+      "enum": [
+        "brief-explicit",
+        "broad-category-working-classification",
+        "competition-default"
+      ]
     },
     "length_status": {
-      "enum": ["specified", "not-specified", "not-applicable", "conflict"]
+      "enum": [
+        "specified",
+        "not-specified",
+        "not-applicable",
+        "conflict"
+      ]
     },
     "allowed_subtypes": {
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": {"enum": ["slogan", "short-copy", "long-copy", "seeding-copy", "brand-story", "script", "social-copy"]}
+      "items": {
+        "enum": [
+          "slogan",
+          "short-copy",
+          "long-copy",
+          "seeding-copy",
+          "brand-story",
+          "script",
+          "social-copy"
+        ]
+      }
     },
     "subtype_constraints": {
       "type": "object",
       "additionalProperties": {
         "type": "object",
         "properties": {
-          "minimum": {"type": ["integer", "null"], "minimum": 0},
-          "maximum": {"type": ["integer", "null"], "minimum": 1},
-          "unit": {"const": "content-codepoints"}
+          "minimum": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "maximum": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "unit": {
+            "const": "content-codepoints"
+          }
         },
-        "required": ["minimum", "maximum", "unit"],
+        "required": [
+          "minimum",
+          "maximum",
+          "unit"
+        ],
         "additionalProperties": false
       }
     },
-    "required_terms": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "required_terms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
     "required_any_groups": {
       "type": "array",
       "items": {
         "type": "array",
         "minItems": 1,
-        "items": {"type": "string", "minLength": 1},
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
         "uniqueItems": true
       }
     },
-    "prohibited_terms": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
-    "emoji_policy": {"enum": ["inherit", "forbidden", "warning", "allowed"]},
-    "claim_review_status": {"enum": ["pending", "reviewed", "blocked"]},
+    "prohibited_terms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "emoji_policy": {
+      "enum": [
+        "inherit",
+        "forbidden",
+        "warning",
+        "allowed"
+      ]
+    },
+    "claim_review_status": {
+      "enum": [
+        "pending",
+        "reviewed",
+        "blocked"
+      ]
+    },
     "evidence": {
       "type": "object",
-      "required": ["source", "checked_at"],
+      "required": [
+        "source",
+        "checked_at"
+      ],
       "properties": {
-        "source": {"type": "string", "minLength": 1},
-        "checked_at": {"type": "string", "minLength": 1},
-        "notes": {"type": "string"}
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checked_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "notes": {
+          "type": "string"
+        }
       },
       "additionalProperties": false
+    },
+    "creative_explanation_required": {
+      "type": "boolean",
+      "description": "Verified from the current brief; required by 0.4.0 delivery validation."
     }
   },
   "additionalProperties": false

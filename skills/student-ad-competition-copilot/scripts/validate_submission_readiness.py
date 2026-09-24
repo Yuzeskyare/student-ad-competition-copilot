@@ -27,6 +27,21 @@ def validate(payload: dict, run_dir: Path) -> dict:
     checks.append(check("schema-version", payload.get("schema_version") == "0.1.0", payload.get("schema_version")))
     checks.append(check("identity", all(isinstance(payload.get(key), str) and payload[key] for key in ("run_id", "track", "competition", "method_scope")), {key: payload.get(key) for key in ("run_id", "track", "competition", "method_scope")}))
 
+    # An unresolved item may have no evidence yet. A supplied path must still
+    # resolve correctly; "incomplete" must not conceal a broken reference.
+    declared_paths = []
+    for section, field in (
+        ("rule_verification", "evidence_path"), ("rights_clearance", "evidence_path"),
+        ("citations", "evidence_path"), ("aigc", "record_path"),
+        ("content_quality", "evidence_path"), ("technical_validation", "evidence_path"),
+        ("submission", "receipt_path"),
+    ):
+        relative = payload.get(section, {}).get(field)
+        if relative is not None:
+            declared_paths.append({"field": f"{section}.{field}", "path": relative,
+                                   "valid": safe_file(run_dir, relative)})
+    checks.append(check("declared-evidence-paths", all(item["valid"] for item in declared_paths), declared_paths))
+
     rule = payload.get("rule_verification", {})
     rule_status = rule.get("status")
     rule_ok = rule_status in {"verified-current", "not-verified-current", "not-required-for-method"}

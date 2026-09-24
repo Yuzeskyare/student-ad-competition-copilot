@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_version": "0.2.5-dev.2",
+  "status": "batch-verified-not-release-accepted",
+  "behavioral_tests": {
+    "passed": 33,
+    "total": 33
+  },
+  "batch01_regression": {
+    "passed": 10,
+    "total": 10
+  },
+  "historical_ad_copy_checks": {
+    "passed": 17,
+    "total": 17
+  },
+  "schema_and_template_validation": "passed",
+  "skill_creator_structure": "passed",
+  "verified_scope": [
+    "version-bound-review",
+    "preproduction-guard-local-execution",
+    "stable-copy-and-prosody-binding",
+    "feedback-version-scope",
+    "copy-explanation-submission-composition",
+    "human-state-consistency",
+    "technical-validator-content-assessment-separation"
+  ],
+  "full_suite_rerun": false,
+  "real_creation_end_to_end": "not-run",
+  "limitations": [
+    "Evidence integrity is checked, not human identity or creative quality.",
+    "Synthetic human-source test fixtures are not real approvals.",
+    "External tool invocation follows the workflow; the guard cannot intercept arbitrary tool calls.",
+    "Legacy runs remain legacy-not-verified; none are backfilled or migrated automatically.",
+    "Batch03 visual-quality evidence and batch04 creative decision behavior remain open."
+  ]
+}

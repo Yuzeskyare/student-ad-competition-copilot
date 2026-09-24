@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.3.0",
+  "schema_version": "0.4.0",
   "run_id": "competition-season-brand-marketing-plan",
   "competition": "daguangsai",
   "category": "marketing-plan",
@@ -16,12 +16,26 @@
     "impact_acknowledged": false
   },
   "aigc_used": "no",
-  "method_cards_used": ["mp-evidence-to-strategy"],
+  "method_cards_used": [
+    "mp-evidence-to-strategy"
+  ],
   "method_cards_rejected": [],
   "directions": [
-    {"direction_id": "MP-01", "one_line_strategy": "replace with a specific strategy", "status": "selected"},
-    {"direction_id": "MP-02", "one_line_strategy": "replace with a structurally different strategy", "status": "rejected"},
-    {"direction_id": "MP-03", "one_line_strategy": "replace with a third strategy", "status": "rejected"}
+    {
+      "direction_id": "MP-01",
+      "one_line_strategy": "replace with a specific strategy",
+      "status": "selected"
+    },
+    {
+      "direction_id": "MP-02",
+      "one_line_strategy": "replace with a structurally different strategy",
+      "status": "rejected"
+    },
+    {
+      "direction_id": "MP-03",
+      "one_line_strategy": "replace with a third strategy",
+      "status": "rejected"
+    }
   ],
   "final_artifact": {
     "path": "06-delivery/full-deck-candidates/final-plan.pptx",
@@ -44,6 +58,8 @@
     "full_deck_review": "05-reviews/full-deck-human-approval.md",
     "technical_validation": "05-reviews/technical-validation.json",
     "quality_gate_results": "quality-gate-results.json",
-    "run_status": "run-status.json"
-  }
+    "run_status": "run-status.json",
+    "visual_review": "05-reviews/visual-review.json"
+  },
+  "review_contract": "05-reviews/review-contract.json"
 }

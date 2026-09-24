@@ -3,50 +3,229 @@
   "$id": "https://local.student-ad-competition-copilot/schemas/ad-copy-run-manifest.schema.json",
   "title": "Ad-copy production run manifest",
   "type": "object",
-  "required": ["schema_version", "run_id", "competition", "category", "subtype", "brief_id", "selected_direction", "run_scope", "method_cards_used", "method_cards_rejected", "artifacts"],
+  "required": [
+    "schema_version",
+    "run_id",
+    "competition",
+    "category",
+    "subtype",
+    "brief_id",
+    "selected_direction",
+    "run_scope",
+    "method_cards_used",
+    "method_cards_rejected",
+    "artifacts",
+    "review_contract"
+  ],
   "properties": {
-    "schema_version": {"const": "0.2.0"},
-    "run_id": {"type": "string", "minLength": 1},
-    "competition": {"enum": ["daguangsai", "academy-award"]},
-    "category": {"const": "ad-copy"},
-    "subtype": {"enum": ["slogan", "short-copy", "long-copy", "seeding-copy", "brand-story", "script", "social-copy"]},
-    "brief_id": {"type": "string", "minLength": 1},
-    "selected_direction": {"type": "string", "minLength": 1},
-    "selected_candidate_id": {"type": "string", "minLength": 1},
-    "run_scope": {"enum": ["concept-only", "production-candidate", "delivery-candidate"]},
-    "aigc_used": {"enum": ["yes", "no", "unknown"]},
-    "method_cards_used": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
-    "method_cards_rejected": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
-    "candidates": {
-      "type": "array", "minItems": 3, "maxItems": 5,
+    "schema_version": {
+      "const": "0.4.0"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "competition": {
+      "enum": [
+        "daguangsai",
+        "academy-award"
+      ]
+    },
+    "category": {
+      "const": "ad-copy"
+    },
+    "subtype": {
+      "enum": [
+        "slogan",
+        "short-copy",
+        "long-copy",
+        "seeding-copy",
+        "brand-story",
+        "script",
+        "social-copy"
+      ]
+    },
+    "brief_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "selected_direction": {
+      "type": "string",
+      "minLength": 1
+    },
+    "selected_candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_scope": {
+      "enum": [
+        "concept-only",
+        "production-candidate",
+        "delivery-candidate"
+      ]
+    },
+    "aigc_used": {
+      "enum": [
+        "yes",
+        "no",
+        "unknown"
+      ]
+    },
+    "method_cards_used": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
       "items": {
-        "type": "object", "required": ["candidate_id", "path", "sha256"],
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "method_cards_rejected": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "path",
+          "sha256"
+        ],
         "properties": {
-          "candidate_id": {"type": "string", "minLength": 1},
-          "path": {"type": "string", "minLength": 1},
-          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          "candidate_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
         },
         "additionalProperties": false
       }
     },
     "artifacts": {
       "type": "object",
-      "required": ["brief_evidence", "brief_constraints", "research_notes", "method_query", "direction_cards", "method_application", "concept_gate", "quality_gate_results", "run_status"],
-      "additionalProperties": {"type": "string", "minLength": 1}
+      "required": [
+        "brief_evidence",
+        "brief_constraints",
+        "research_notes",
+        "method_query",
+        "direction_cards",
+        "method_application",
+        "concept_gate",
+        "quality_gate_results",
+        "run_status"
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "review_contract": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision_mode": {
+      "enum": [
+        "initial",
+        "challenge"
+      ]
+    },
+    "award_review_requested": {
+      "type": "boolean"
     }
   },
   "allOf": [
     {
-      "if": {"properties": {"run_scope": {"enum": ["production-candidate", "delivery-candidate"]}}, "required": ["run_scope"]},
-      "then": {"required": ["selected_candidate_id", "aigc_used", "candidates"], "properties": {"artifacts": {"required": ["candidate_review"]}}}
+      "if": {
+        "properties": {
+          "run_scope": {
+            "enum": [
+              "production-candidate",
+              "delivery-candidate"
+            ]
+          }
+        },
+        "required": [
+          "run_scope"
+        ]
+      },
+      "then": {
+        "required": [
+          "selected_candidate_id",
+          "aigc_used",
+          "candidates"
+        ],
+        "properties": {
+          "artifacts": {
+            "required": [
+              "candidate_review"
+            ]
+          }
+        }
+      }
     },
     {
-      "if": {"properties": {"run_scope": {"const": "delivery-candidate"}}, "required": ["run_scope"]},
-      "then": {"properties": {"aigc_used": {"enum": ["yes", "no"]}, "artifacts": {"required": ["final_copy", "technical_validation"]}}}
+      "if": {
+        "properties": {
+          "run_scope": {
+            "const": "delivery-candidate"
+          }
+        },
+        "required": [
+          "run_scope"
+        ]
+      },
+      "then": {
+        "properties": {
+          "aigc_used": {
+            "enum": [
+              "yes",
+              "no"
+            ]
+          },
+          "artifacts": {
+            "required": [
+              "final_copy",
+              "technical_validation"
+            ]
+          }
+        }
+      }
     },
     {
-      "if": {"properties": {"aigc_used": {"const": "yes"}}, "required": ["aigc_used"]},
-      "then": {"properties": {"artifacts": {"required": ["aigc_record"]}}}
+      "if": {
+        "properties": {
+          "aigc_used": {
+            "const": "yes"
+          }
+        },
+        "required": [
+          "aigc_used"
+        ]
+      },
+      "then": {
+        "properties": {
+          "artifacts": {
+            "required": [
+              "aigc_record"
+            ]
+          }
+        }
+      }
     }
   ],
   "additionalProperties": false

@@ -22,7 +22,7 @@ def _check(name: str, passed: bool, evidence: object) -> dict[str, Any]:
 
 def validate_visual_generation_capability(manifest: dict, run_scope: object) -> list[dict[str, Any]]:
     """Return checks for new visual-track manifests; legacy schemas remain readable."""
-    if manifest.get("schema_version") != CURRENT_SCHEMA or manifest.get("category") not in VISUAL_TRACKS:
+    if manifest.get("schema_version") not in {CURRENT_SCHEMA, "0.4.0"} or manifest.get("category") not in VISUAL_TRACKS:
         return []
 
     capability = manifest.get("visual_generation_capability")

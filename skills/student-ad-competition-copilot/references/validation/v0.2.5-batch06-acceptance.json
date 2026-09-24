@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_version": "0.2.5-dev.6",
+  "status": "batch-verified-not-release-accepted",
+  "verified_scope": [
+    "all-five-candidate-suites",
+    "legacy-runtime-on-candidate",
+    "marketing-and-print-cross-module-contracts",
+    "independent-bounded-ad-copy-forward-use",
+    "candidate-documentation-conflict-fix"
+  ],
+  "reports": {
+    "batch-06-candidate-regression.json": "b65d0c89b9791ca34e2c66beb9c05fb6b6071b4a8dbc246e28fc6f2159c8cf7e",
+    "batch-06-legacy-on-candidate.json": "21af4efff1936a60f69f15e247256aac9752f81d8f8e46509402e8e356ee5651",
+    "batch-06-cross-module.json": "aa23206925a9457bd19612684d94d484762e376ad6a4e20c698d80364c3c0606",
+    "batch-06-structure.json": "692c354c07e11bbba8f390b9b7d7d590f9f862580dcd46f7db469e558e9d5495",
+    "batch-06-forward-review.json": "933967c7a7997322788a7848a8fdf82700a3825a98f6804e746026c2131cb203"
+  },
+  "nonpassing_reports": {
+    "batch-06-repository-regression.json": "85cba0db8a625a127e2da0793ffecffcfe32ee0d606f28d83b90fe55b97b74c6"
+  },
+  "limitations": [
+    "Full repository regression: 460/461 pass; the exact hash manifest on offline J: is unavailable. Failure retained, no skip/waiver.",
+    "Real-material forward test is bounded, not fresh whole-workflow visual/human acceptance.",
+    "All synthetic decisions, renders and receipts are test fixtures, not real approvals or uploads.",
+    "UGW-006 local command guard is implemented; external generation/delivery wrappers still need actual workflow coverage.",
+    "No activation, release or closure of project research, rights and platform boundaries."
+  ],
+  "full_suite_rerun": true
+}

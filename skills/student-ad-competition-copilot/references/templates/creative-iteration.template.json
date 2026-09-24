@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "competition-season-brand-category",
+  "assessment_type": "internal-diagnostic",
+  "award_guarantee": false,
+  "uncertainties": [
+    "真实评审和同期作品尚未知"
+  ],
+  "ceiling_review": [],
+  "next_action": "retain-current",
+  "challengers": [],
+  "displayed_challenger_ids": [],
+  "risk_actions": []
+}

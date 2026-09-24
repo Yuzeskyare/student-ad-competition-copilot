@@ -1,0 +1,17 @@
+{
+  "candidate_version": "0.2.5-dev.8",
+  "tests_run": 126,
+  "successful": true,
+  "change": "Judge-facing citation policy separates official brief evidence from external research citations.",
+  "new_regressions": 7,
+  "real_feedback": "User rejected v1.5 source notes; restore approved v1.4.",
+  "release_accepted": false,
+  "remaining_release_blocker": "One bounded real full-page pixel/evidence assessment under corrected policy; then package consistency and release review.",
+  "not_release_blockers": [
+    "Actual contest registration/upload",
+    "Platform receipt",
+    "Project first-party research completion",
+    "Repeated approval of unchanged v1.4",
+    "Writing competition-brief citations on artwork"
+  ]
+}

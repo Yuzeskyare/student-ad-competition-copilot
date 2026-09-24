@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.5",
+  "status": "release-qualified",
+  "change_id": "real-brief-feedback-contracts",
+  "scope": "Software release qualification; not a competition-work full quality or submission approval",
+  "tests_run": 126,
+  "tests_passed": 126,
+  "runtime_self_checks_passed": 8,
+  "knowledge_pack": "passed",
+  "skill_structure": "passed",
+  "real_assessment_sha256": "0973202aef022844d096c1ccea6fea27fa439f5cb94bf3649259147b14395304",
+  "real_pages_reviewed": 25,
+  "lossless_views_verified": 100,
+  "human_approval_preserved": true,
+  "rejected_brief_footers_withdrawn": true,
+  "project_submission_ready": false,
+  "project_full_visual_contract_pass": false,
+  "installation_verification": "Separate post-installation receipt; not claimed by prebuilt package",
+  "known_boundaries": [
+    "This is not a full per-object visual-contract pass. Historical raster-object inventories and preproduction numeric product tolerances remain incomplete.",
+    "JPEG inspection derivatives are display-only; integrity and derivation checks use original lossless PNG views.",
+    "Generated product-label microtext is not certified as official packaging.",
+    "Project content_pass, method_validated and submission_ready remain false; true version-bound human approval remains pass."
+  ]
+}

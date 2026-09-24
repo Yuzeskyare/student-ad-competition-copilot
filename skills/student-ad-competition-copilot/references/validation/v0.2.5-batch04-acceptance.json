@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_version": "0.2.5-dev.4",
+  "status": "batch-verified-not-release-accepted",
+  "verified_scope": [
+    "MPQ-005",
+    "ACQ-002",
+    "ACQ-003",
+    "ACQ-004",
+    "ACQ-005",
+    "ACQ-006",
+    "ACQ-008",
+    "ACQ-009",
+    "ACQ-010",
+    "ACQ-016"
+  ],
+  "reports": {
+    "batch-04-green.json": "d30e93fc899acdc269eeca9e218d60f4f14a8511a4ea7fc3e316a38c3fb3d03c",
+    "batch-04-review-regression.json": "3873a0188ad0b8cccc079ba98491255725267fc36b937d0024df26f5d7aab36c",
+    "batch-04-structure.json": "9a3d6b38f9da57eb3b8b08edb809fdffaea88b29989475691a19f80a39c0969f"
+  },
+  "limitations": [
+    "20 decision-record tests do not prove creative quality or actual award odds.",
+    "Real forward creative testing and full integration remain for batch06."
+  ],
+  "full_suite_rerun": false
+}

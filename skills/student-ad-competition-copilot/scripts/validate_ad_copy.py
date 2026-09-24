@@ -337,7 +337,10 @@ def main() -> int:
 
     if args.aigc_used == "yes":
         record_present = bool(args.aigc_record and args.aigc_record.is_file() and args.aigc_record.stat().st_size > 0)
-        checks.append(check("aigc-record-present", record_present, str(args.aigc_record) if args.aigc_record else None))
+        record_check = check("aigc-record-present", record_present, str(args.aigc_record) if args.aigc_record else None)
+        if not record_present:
+            record_check["remediation"] = "--aigc-used yes requires --aigc-record <existing-nonempty-record>. Supply the backend usage record and rerun; this failure does not assess copy quality."
+        checks.append(record_check)
     elif args.aigc_used == "unknown":
         checks.append(check("aigc-use-declared", False, "Declare yes or no before final delivery", "warning"))
     else:
@@ -357,7 +360,7 @@ def main() -> int:
         rule_evidence = {"source_url": profile["source_url"], "checked_at": profile["checked_at"]}
 
     claim_status = brief_document.get("claim_review_status", "pending") if brief_document else "pending"
-    content_review_status = "blocked" if claim_status == "blocked" else "requires-human-review"
+    content_review_assessment = "not-performed-by-technical-validator"
     payload = {
         "schema_version": "0.1.0",
         "competition": args.competition,
@@ -373,7 +376,7 @@ def main() -> int:
         "technical_validation_status": technical_status,
         "rule_snapshot_status": rule_status,
         "rule_evidence": rule_evidence,
-        "content_review_status": content_review_status,
+        "content_review_assessment": content_review_assessment,
         "claim_review_status": claim_status,
         "brief_subtype_basis": brief_document.get("subtype_basis") if brief_document else None,
         "brief_length_status": brief_document.get("length_status") if brief_document else None,
@@ -391,7 +394,7 @@ def main() -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     summary_keys = (
-        "technical_validation_status", "rule_snapshot_status", "content_review_status",
+        "technical_validation_status", "rule_snapshot_status", "content_review_assessment",
         "checks_total", "checks_passed", "error_failures", "warnings",
     )
     print(json.dumps({key: payload[key] for key in summary_keys}, ensure_ascii=False))
