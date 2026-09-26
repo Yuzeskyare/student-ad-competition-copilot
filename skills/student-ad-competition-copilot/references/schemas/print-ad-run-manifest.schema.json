@@ -103,11 +103,140 @@
             "use-available-capability",
             "accept-limited-mode",
             "enable-or-switch-environment",
-            "pending"
+            "pending",
+            "use-external-assets"
           ]
         },
         "impact_acknowledged": {
           "type": "boolean"
+        },
+        "external_supply": {
+          "type": "object",
+          "required": [
+            "kind",
+            "status",
+            "scope",
+            "evidence",
+            "assets",
+            "review"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "external-generation",
+                "provided-assets"
+              ]
+            },
+            "status": {
+              "enum": [
+                "awaiting-assets",
+                "ready"
+              ]
+            },
+            "scope": {
+              "enum": [
+                "production-candidate",
+                "delivery-candidate"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 1
+            },
+            "assets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "path",
+                  "sha256"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "review": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "path",
+                    "sha256"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "ready"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "assets": {
+                    "minItems": 1
+                  },
+                  "review": {
+                    "type": "object",
+                    "required": [
+                      "path",
+                      "sha256"
+                    ],
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "assets": {
+                    "maxItems": 0
+                  },
+                  "review": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          ]
         }
       },
       "allOf": [
@@ -117,10 +246,7 @@
               "status": {
                 "const": "available"
               }
-            },
-            "required": [
-              "status"
-            ]
+            }
           },
           "then": {
             "properties": {
@@ -128,6 +254,50 @@
                 "type": "string",
                 "minLength": 1
               },
+              "operations": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "user_decision": {
+                "const": "use-external-assets"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "external_supply"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "external_supply"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "available"
+              }
+            },
+            "not": {
+              "properties": {
+                "user_decision": {
+                  "const": "use-external-assets"
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
               "operations": {
                 "contains": {
                   "const": "generate"
@@ -212,11 +382,40 @@
         ],
         "properties": {
           "visual_generation_capability": {
-            "properties": {
-              "status": {
-                "const": "available"
+            "anyOf": [
+              {
+                "properties": {
+                  "status": {
+                    "const": "available"
+                  },
+                  "user_decision": {
+                    "const": "use-available-capability"
+                  },
+                  "operations": {
+                    "contains": {
+                      "const": "generate"
+                    }
+                  }
+                }
+              },
+              {
+                "required": [
+                  "external_supply"
+                ],
+                "properties": {
+                  "user_decision": {
+                    "const": "use-external-assets"
+                  },
+                  "external_supply": {
+                    "properties": {
+                      "status": {
+                        "const": "ready"
+                      }
+                    }
+                  }
+                }
               }
-            }
+            ]
           },
           "artifacts": {
             "required": [
@@ -322,6 +521,54 @@
             "required": [
               "visual_review"
             ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "run_scope": {
+            "const": "production-candidate"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "visual_generation_capability": {
+            "properties": {
+              "external_supply": {
+                "properties": {
+                  "scope": {
+                    "const": "production-candidate"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "run_scope": {
+            "const": "delivery-candidate"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "visual_generation_capability": {
+            "properties": {
+              "external_supply": {
+                "properties": {
+                  "scope": {
+                    "const": "delivery-candidate"
+                  }
+                }
+              }
+            }
           }
         }
       }

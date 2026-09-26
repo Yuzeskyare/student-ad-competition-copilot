@@ -1,0 +1,8 @@
+{
+  "kind": "external-generation",
+  "status": "awaiting-assets",
+  "scope": "production-candidate",
+  "evidence": "填写用户已选择的外部路径、目标工具/入口与本次资产覆盖范围；不得记录密钥。",
+  "assets": [],
+  "review": null
+}

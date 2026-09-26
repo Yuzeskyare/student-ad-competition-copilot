@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.8",
+  "status": "release-qualified",
+  "change_id": "open-style-multi-tool-portability",
+  "tests_run": 72,
+  "tests_passed": 72,
+  "test_basis": "26 external-supply + 24 schema + 22 integration tests from phase A; runtime unchanged since then",
+  "behavior_tasks_reviewed": 6,
+  "image_generations_in_scope": 4,
+  "canva_image_generation": "excluded-by-user",
+  "tool_validation": {
+    "builtin_image_gen": "generation and edit observed; exact model not exposed",
+    "other_supported_tools": "official documentation and applicable simulated tasks only",
+    "other_hosts": "static and simulated workflow checks only"
+  },
+  "default_completion": "delivery_complete",
+  "default_per_object_inventory_required": false,
+  "project_submission_ready": false,
+  "project_full_visual_contract_pass": false,
+  "boundaries": [
+    "Image samples retained transparency, whitespace and path-following deviations; no finished-artwork approval inferred.",
+    "Different tool outputs and cross-host execution are not all empirically validated.",
+    "Rights/font and platform AIGC reminders remain post-delivery; current rules/specs and citations remain required."
+  ]
+}

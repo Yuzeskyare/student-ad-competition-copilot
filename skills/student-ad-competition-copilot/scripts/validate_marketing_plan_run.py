@@ -164,7 +164,7 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
     checks.append(check("category-marketing-plan", manifest.get("category") == "marketing-plan", manifest.get("category")))
     run_scope = manifest.get("run_scope", "delivery-candidate" if manifest.get("schema_version") == "0.1.0" else None)
     checks.append(check("run-scope", run_scope in RUN_SCOPE_ARTIFACTS, run_scope))
-    checks.extend(validate_visual_generation_capability(manifest, run_scope))
+    checks.extend(validate_visual_generation_capability(manifest, run_scope, run_dir))
     checks.append(check("identity-fields", all(isinstance(manifest.get(key), str) and manifest[key] for key in (
         "run_id", "competition", "proposition_id", "selected_direction"
     )), {key: manifest.get(key) for key in ("run_id", "competition", "proposition_id")}))

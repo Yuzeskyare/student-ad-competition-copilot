@@ -46,11 +46,15 @@ metadata:
 
 ## 视觉生成能力硬前检
 
-平面广告或营销策划在确定赛道后、给出方向或承诺产出质量前，必须检查当前会话是否存在实际可调用的位图生图能力。`gpt-image`、OpenAI `image_gen`、Nano Banana/Gemini 图像生成或等价工具都可以；图片搜索、截图、查看图片、图表、HTML/SVG、提示词能力、仅有 Skill/文档或未连接插件都不算。不要根据模型名称猜测能力。
+平面广告或营销策划在确定赛道后检查实际视觉生产路径：当前宿主可直接调用的生图工具、用户选择的外部生图回传，或已提供且足以承担当前任务的视觉资产。模型名称、图片搜索、截图、HTML/SVG、提示词或未连接插件均不等于实际可调用的位图生图能力。工具与宿主均不限定厂商。
 
-把提供方、`generate`/`edit`操作范围、检查依据和时间记录到`visual_generation_capability`。若能力为`unavailable`或`unknown`，必须立刻向用户说明这是严重质量缺口：平面广告无法完成高质量视觉生产，营销策划无法可靠完成关键视觉、样机与高保真样页；然后只问一个最小选择——启用/切换到有生图能力的环境，或明确接受仅文字、线框和低保真占位的`concept-only`受限模式。用户只说“继续”不代表接受降级，不得静默用图库、占位图或纯排版冒充正常质量。
+`visual_generation_capability`如实记录宿主直接能力；外部路径按[前检协议](references/workflow/visual-generation-capability-gate.md)记录可选的`external_supply`，不虚填`available`。等待图像时继续独立工作，但不能宣称所依赖的视觉生产完成。仅在确实没有可行生产路径时说明严重质量缺口，并取得启用/切换环境、外部生成回传或明确受限模式的最小选择。已有选择直接复用；用户只说“继续”不代表接受降级。不得静默用图库、占位图或纯排版冒充正常质量。
 
-没有可调用生图能力时，`production-candidate`和`delivery-candidate`保持阻塞；只有用户明确选择`accept-limited-mode`并确认影响后，才可继续受限概念工作。完整判断、话术和状态映射见[视觉生成能力前检](references/workflow/visual-generation-capability-gate.md)。
+按[工具与宿主适配](references/workflow/image-tool-adaptation.md)把通用视觉要求转成当前入口的提示词、参考输入和设置，只读相关分支。外部资产回传且核验后可以继续作品生产；最终内容审核与交付检查仍适用。
+
+## 开放式视觉风格选择
+
+平面广告与营销策划在确定视觉方向及生图前读取[视觉风格选择](references/workflow/visual-style-direction.md)。未指定风格不默认摄影写实；高完成度不等于照片感。依据命题、受众、品牌与页面任务选择真实影响图片面貌的视觉语言，示例只启发、不构成白名单。沿用已有方向/代表稿审核，不新增风格枚举、打分表或审核轮次。
 
 ## 反卡片化设计硬约束
 
@@ -114,7 +118,7 @@ metadata:
 
 ## 交付与完成
 
-先调用`load_workspace_dependencies`取得工作区Python，再执行当前赛道交付规范中的验证命令。使用统一[作品交付证据模板](references/templates/submission-readiness.template.json)和`validate_submission_readiness.py`分开记录：
+先发现当前环境可用的Python与所需依赖，再按当前shell执行赛道交付规范中的验证命令；`load_workspace_dependencies`仅在提供它的宿主中可用，不是通用前提。脚本路径相对Skill根目录，运行数据路径相对指定运行目录。无执行能力时移交命令与材料，记录待执行，不伪造通过；详见[工具与宿主适配](references/workflow/image-tool-adaptation.md)。使用统一[作品交付证据模板](references/templates/submission-readiness.template.json)和`validate_submission_readiness.py`分开记录：
 
 - `technical_pass`：客观文件检查通过；
 - `content_pass`：对应人工内容门通过；

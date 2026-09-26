@@ -255,8 +255,8 @@
         {
           "check_id": "visual-integration",
           "assessment": "human",
-          "question": "产品光线、透视、边缘、阴影、景深和比例是否属于当前空间？",
-          "pass_condition": "产品既保真又参与构图，不像后贴角标。",
+          "question": "产品尺度、边缘、色彩和构图是否符合所选视觉语言；需要摄影真实感的部分，其光线、透视、阴影和景深是否成立？",
+          "pass_condition": "产品身份保真且参与构图；非摄影语言按其造型与组合规则评价，不因缺少摄影阴影或景深失败。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "production",
           "evidence_required": true
@@ -264,7 +264,7 @@
         {
           "check_id": "generated-artifact-scan",
           "assessment": "human",
-          "question": "是否存在假字、假Logo、伪包装、伪透明、人体或物理错误？",
+          "question": "是否存在假字、假Logo、伪包装、伪透明或无意结构缺陷；有意夸张和非现实空间是否符合已选风格且不违背明确命题要求？",
           "pass_condition": "最终候选没有将生成错误作为真实品牌或产品元素。",
           "failure_severity": "hard-stop",
           "return_to_stage": "production",

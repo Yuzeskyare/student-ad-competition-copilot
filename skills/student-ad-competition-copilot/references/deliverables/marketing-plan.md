@@ -12,7 +12,7 @@
 
 具体命题必须建立`marketing-plan-brief-constraints.json`，可收窄通用范围，不能静默扩大。PPTX是可编辑母版；PDF和逐页JPG是赛事导出，不代替原生表格、品牌屋、路线、预算与KPI对象。
 
-`marketing-plan-run-manifest.json`必须记录`visual_generation_capability`。没有可调用生图能力时，只有用户明确接受并记录受限模式才可继续`concept-only`研究、策略与线框；`production-candidate`和`delivery-candidate`必须为`available`且操作包含`generate`，不能用占位图或纯排版冒充高保真策划生产。
+`marketing-plan-run-manifest.json`必须记录`visual_generation_capability`。直接生成或按前检协议核验的外部资产均可支持生产；等待回传不能宣称高保真样稿或整本完成。充分的资产不要求宿主虚报`available`，而以可选`external_supply`核对文件、哈希、覆盖范围和复核依据。明确接受受限模式时仍仅允许`concept-only`，不能用占位图冒充高保真策划生产。
 
 五页样稿和整本`content_pass`必须通过反卡片化人工检查：页面结构由数据、因果、流程、空间、时间、对比或视觉任务决定，不能把网页卡片、仪表盘和重复圆角容器当作统一模板；真实界面/物件或内容关系需要的局部例外须有理由与评审证据。
 
