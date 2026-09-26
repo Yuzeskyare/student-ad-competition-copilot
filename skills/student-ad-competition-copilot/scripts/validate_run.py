@@ -39,9 +39,10 @@ def inspect_handoff(root,manifest,contract,content,technical,path):
     declared=readiness['content_quality']['status']
     if (declared=='pass') != (content=='pass'):raise ValueError('Readiness content status conflicts with current decisions')
     if (readiness['technical_validation']['status']=='pass') != bool(technical):raise ValueError('Readiness technical status is stale or unbound')
-    disclosure=handoff['platform_disclosure']
-    if disclosure.get('status') not in {'pending','complete','not-required'}:raise ValueError('Unknown platform disclosure state')
-    if disclosure['status'] in {'complete','not-required'}:
+    delivery_mode=readiness.get('method_scope')=='artwork-delivery'
+    disclosure=handoff.get('platform_disclosure',{'status':'pending'})
+    if not delivery_mode and disclosure.get('status') not in {'pending','complete','not-required'}:raise ValueError('Unknown platform disclosure state')
+    if not delivery_mode and disclosure['status'] in {'complete','not-required'}:
         bound_file(root,disclosure['rule_evidence'])
         if not disclosure.get('rule_quote'):raise ValueError('Platform disclosure needs current rule basis')
         if disclosure['status']=='complete':bound_file(root,disclosure['submitted_evidence'])
@@ -74,8 +75,8 @@ def inspect_handoff(root,manifest,contract,content,technical,path):
             raise ValueError('Upload receipt belongs to different files or run')
         evidence=bound_file(root,receipt['platform_evidence'])
         if evidence!=inside(root,readiness['submission']['receipt_path']):raise ValueError('Receipt sources disagree')
-    return dict(submission_ready=ready,open_evidence_slots=open_slots,
-        blocking_evidence_slots=[s['id'] for s in slots if s['status']=='hypothesis' and s['required_before'] in {'submission','claim-finalization'}],
+    return dict(submission_ready=ready,delivery_ready=result['delivery_ready'],delivery_blockers=result['delivery_blockers'],post_delivery_reminders=result['post_delivery_reminders'],open_evidence_slots=open_slots,
+        blocking_evidence_slots=[s['id'] for s in slots if s['status']=='hypothesis' and s['required_before']=='claim-finalization'],
         platform_disclosure=disclosure['status'],readiness=result)
 
 
@@ -100,6 +101,7 @@ def validate(root,manifest_path,handoff_path=None):
     content_pass=content=='pass' and current and all(r['passed'] for r in run_result.get('checks',[])
         if r['name'] in {'final-pixel-evidence','creative-iteration-evidence'})
     submission_ready=bool(passed and content_pass and technical and handoff and handoff['submission_ready'])
+    delivery_complete=bool(passed and content_pass and technical and manifest.get('run_scope')=='delivery-candidate' and handoff and handoff['delivery_ready'] and not handoff['blocking_evidence_slots'])
     method=False
     try:
         status=load(inside(root,manifest['artifacts']['run_status']))
@@ -113,13 +115,13 @@ def validate(root,manifest_path,handoff_path=None):
     elif run_result.get('failure_names'):next_action='Repair the first failed run check: '+run_result['failure_names'][0]
     elif manifest.get('run_scope')=='concept-only':next_action='None for the completed concept scope; enter production only if the requested target includes it.'
     elif manifest.get('run_scope')=='production-candidate':next_action='Review the completed production scope before the next requested delivery stage.'
-    elif not handoff:next_action='Prepare the handoff record; keep rule, rights, evidence and upload gaps open.'
+    elif not handoff:next_action='Record current competition rules, final specifications and completed external citations for artwork delivery.'
     elif handoff['blocking_evidence_slots']:next_action='Fill the next applicable evidence slot: '+handoff['blocking_evidence_slots'][0]
-    elif not submission_ready:next_action='Complete the declared platform/rule/rights/registration handoff; upload only within explicit authorization.'
-    else:next_action='None: declared delivery and verified submission scope is complete.'
+    elif not delivery_complete:next_action='Complete the artwork delivery requirement: '+', '.join(handoff['delivery_blockers'])
+    else:next_action='None: artwork delivery is complete. Rights and AIGC/platform matters are post-delivery reminders only.'
     return dict(schema_version='1.0.0',run_id=manifest['run_id'],track=track,status='passed' if passed else 'failed',
         technical_pass=bool(technical),content_pass=content_pass,content_review_status=content if current else 'unverified',
-        method_validated=method,submission_ready=submission_ready,review_contract_status=run_result.get('review_contract_status'),
+        method_validated=method,delivery_complete=delivery_complete,post_delivery_reminders=handoff['post_delivery_reminders'] if handoff else [],submission_ready=submission_ready,review_contract_status=run_result.get('review_contract_status'),
         run_validation=run_result,handoff=handoff,errors=errors,next_action=next_action)
 
 
@@ -129,7 +131,7 @@ def main():
     parser.add_argument('--handoff');args=parser.parse_args();root=Path(args.run_dir).resolve()
     result=validate(root,inside(root,args.manifest),args.handoff);out=inside(root,args.output);out.parent.mkdir(parents=True,exist_ok=True)
     out.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    print(json.dumps({k:result[k] for k in ('status','technical_pass','content_pass','method_validated','submission_ready','next_action')},ensure_ascii=False))
+    print(json.dumps({k:result[k] for k in ('status','technical_pass','content_pass','method_validated','delivery_complete','submission_ready','next_action')},ensure_ascii=False))
     return 0 if result['status']=='passed' else 1
 
 

@@ -1,5 +1,6 @@
 # 广告文案交付规范
 
+默认完成边界：交付作品。当前赛事规则、实际提交规格与外部研究引用在完成前核对；素材/字体使用依据、AIGC后台记录及平台申报仅完成后提醒，报名身份、上传和回执不阻断作品完成。
 本文件只负责纯文本文案的形态、计数、运行清单和技术提交接口。创作方法读取[文案Playbook](../tracks/ad-copy/playbook.md)，人工关读取[质量门](../tracks/ad-copy/quality-gates.json)，赛事规格读取`references/competitions/ad-copy-profiles.json`。
 
 ## 类别与工作子类型
@@ -24,16 +25,16 @@
 & "<workspace-python>" scripts/validate_ad_copy.py --self-check
 # 未使用AIGC时，不需要创建空记录。
 & "<workspace-python>" scripts/validate_ad_copy.py --competition <赛事> --subtype <子类型> --input <文案.txt> --brief-constraints <约束.json> --aigc-used no --output <结果.json>
-# 使用AIGC时，必须传入实际的后台使用记录。
+# 已有AIGC记录可随附；缺失时只作交付后提醒。
 & "<workspace-python>" scripts/validate_ad_copy.py --competition <赛事> --subtype <子类型> --input <文案.txt> --brief-constraints <约束.json> --aigc-used yes --aigc-record <AI记录.json> --output <结果.json>
 & "<workspace-python>" scripts/validate_ad_copy_run.py --run-dir <运行目录> --output <运行验收.json>
 ```
 
-`--aigc-used yes`时，`--aigc-record`必须指向已存在且非空的后台记录；内容按命题要求保存工具、介入范围与人工处理情况。`unknown`只表示尚未确认，不能用于最终交付。记录缺失时补记录并重跑技术验证，不据此重写已经批准的文案。后台记录不写入口号或创意解说。
+AIGC使用情况与后台记录仅作为交付后提醒；记录缺失、未知或平台未申报不使技术验证失败，不阻断已批准文案交付。可以提供真实已有记录，不为填字段补造记录，也不把制作说明写入口号或创意解说。
 
 投稿就绪记录中的证据路径统一相对于该次验证的`--run-dir`。尚未取得的证据可保留`null`和开放状态；一旦填写路径，即使对应事项仍为`incomplete`也必须可解析。`--self-check`仅检查工具自身能力声明，不代替对实际记录的校验。
 
-机器不判断语义、事实暗示、品牌归属、自然度、原创性或法律结论。真实投稿另使用[投稿就绪合同](../schemas/submission-readiness.schema.json)，复核当前规则、平台实际计数、权利、AI记录、报名字段、上传和回执。
+机器不判断语义、事实暗示、品牌归属、自然度、原创性或法律结论。作品交付前使用交付证据合同核对当前赛事规则、实际提交规格与外部研究引用。素材/字体使用依据与AIGC/平台申报在完成后提醒；报名、上传、回执不在默认范围。
 
 ## 新运行的版本与审核绑定
 
@@ -41,4 +42,4 @@
 
 ## 统一交付与恢复
 
-按[交付与恢复入口](../workflow/delivery-and-recovery.md)运行三赛道统一验证，自动生成保守交接记录并按实际证据回填；技术、内容、方法、投稿四种状态分开。未知研究保持可见假设，平台披露和真实回执不得伪造。
+按[交付与恢复入口](../workflow/delivery-and-recovery.md)运行三赛道统一验证，自动生成保守交接记录并按实际证据回填；以作品交付为完成边界；外部研究引用在完成作品前核对，素材/字体依据和AIGC/平台申报仅交付后提醒。

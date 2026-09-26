@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.6",
+  "status": "release-qualified",
+  "change_id": "artwork-delivery-completion-boundary",
+  "tests_run": 136,
+  "tests_passed": 136,
+  "runtime_self_checks_passed": 8,
+  "default_completion": "delivery_complete",
+  "required_before_delivery": [
+    "current competition rules and actual specifications",
+    "external research citation mapping",
+    "current approved artifact and applicable technical/visual quality"
+  ],
+  "post_delivery_reminders": [
+    "asset and font usage basis",
+    "AIGC records and platform disclosure"
+  ],
+  "outside_default_scope": [
+    "registration identity and fields",
+    "upload and receipt"
+  ],
+  "project_submission_ready": false,
+  "project_full_visual_contract_pass": false
+}

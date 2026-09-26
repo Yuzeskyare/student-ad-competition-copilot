@@ -337,12 +337,12 @@ def main() -> int:
 
     if args.aigc_used == "yes":
         record_present = bool(args.aigc_record and args.aigc_record.is_file() and args.aigc_record.stat().st_size > 0)
-        record_check = check("aigc-record-present", record_present, str(args.aigc_record) if args.aigc_record else None)
+        record_check = check("aigc-record-present", record_present, str(args.aigc_record) if args.aigc_record else None, "warning")
         if not record_present:
-            record_check["remediation"] = "--aigc-used yes requires --aigc-record <existing-nonempty-record>. Supply the backend usage record and rerun; this failure does not assess copy quality."
+            record_check["remediation"] = "Post-delivery reminder: retain actual AI usage details with --aigc-record and handle platform disclosure before submission; missing records do not block artwork delivery."
         checks.append(record_check)
     elif args.aigc_used == "unknown":
-        checks.append(check("aigc-use-declared", False, "Declare yes or no before final delivery", "warning"))
+        checks.append(check("aigc-use-declared", False, "Post-delivery reminder: verify actual AI use for platform disclosure", "warning"))
     else:
         checks.append(check("aigc-use-declared", True, "no"))
 

@@ -259,7 +259,11 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
     # Historical validation stays reproducible, but is never new-contract acceptance.
     if manifest.get("schema_version") == "0.4.0":
         checks.extend(review_checks)
-    failed = [item["name"] for item in checks if not item["passed"]]
+    # Post-delivery administration never blocks the artwork workflow.
+    for item in checks:
+        if item['name'] in {'aigc-use-declaration', 'aigc-use-resolved', 'artifact:aigc_record', 'submission-status-explicit'}:
+            item['severity'] = 'reminder'
+    failed = [item["name"] for item in checks if not item["passed"] and item.get('severity') != 'reminder']
     return {
         "schema_version": "0.1.0",
         "run_id": manifest.get("run_id"),
@@ -267,7 +271,7 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
         "manifest": str(manifest_path.resolve()),
         "status": "passed" if not failed else "failed",
         "checks_total": len(checks),
-        "checks_passed": len(checks) - len(failed),
+        "checks_passed": sum(bool(item["passed"]) for item in checks), "post_delivery_reminders": [item for item in checks if item.get("severity") == "reminder" and not item["passed"]],
         "failure_names": failed, "review_contract_status": "verified" if all(c["passed"] for c in review_checks) else ("failed" if manifest.get("schema_version") == "0.4.0" else "legacy-not-verified"),
         "checks": checks,
     }

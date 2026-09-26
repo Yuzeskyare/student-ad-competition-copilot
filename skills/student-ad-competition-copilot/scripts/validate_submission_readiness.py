@@ -106,8 +106,30 @@ def validate(payload: dict, run_dir: Path) -> dict:
     boundaries_ok = isinstance(boundaries, list) and (ready or bool(boundaries))
     checks.append(check("readiness-boundaries", boundaries_ok, boundaries))
 
-    failures = [item["name"] for item in checks if not item["passed"]]
-    return {"schema_version": "0.1.0", "run_id": payload.get("run_id"), "status": "passed" if not failures else "failed", "checks_total": len(checks), "checks_passed": len(checks) - len(failures), "failure_names": failures, "submission_ready": ready, "checks": checks}
+    # Artwork delivery is independent of the optional submission workflow.
+    delivery_mode = payload.get("method_scope") == "artwork-delivery"
+    optional = {"rights-clearance", "aigc-record", "submission-ready-invariant", "readiness-boundaries"}
+    if delivery_mode:
+        # Optional records may be incomplete; keep their diagnostics as reminders.
+        mandatory_paths = [item for item in declared_paths if item["field"].split(".")[0] in
+                           {"rule_verification", "citations", "content_quality", "technical_validation"}]
+        for item in checks:
+            if item["name"] == "declared-evidence-paths":
+                item["passed"] = all(row["valid"] for row in mandatory_paths)
+                item["evidence"] = mandatory_paths
+            if item["name"] in optional:
+                item["severity"] = "reminder"
+    failures = [item["name"] for item in checks if not item["passed"] and item.get("severity") != "reminder"]
+    delivery_ready = (not failures and rule_status == "verified-current"
+                      and payload.get("citations", {}).get("status") in {"complete", "not-applicable"}
+                      and content.get("status") == "pass" and technical.get("status") == "pass")
+    delivery_blockers = []
+    if rule_status != "verified-current": delivery_blockers.append("current-competition-rules-and-specifications")
+    if payload.get("citations", {}).get("status") not in {"complete", "not-applicable"}: delivery_blockers.append("external-research-citations")
+    if content.get("status") != "pass": delivery_blockers.append("approved-current-content")
+    if technical.get("status") != "pass": delivery_blockers.append("final-file-technical-validation")
+    delivery_blockers.extend(failures)
+    return {"schema_version": "0.1.0", "run_id": payload.get("run_id"), "status": "passed" if not failures else "failed", "checks_total": len(checks), "checks_passed": len(checks) - len(failures), "failure_names": failures, "submission_ready": ready if not delivery_mode else False, "delivery_ready": bool(delivery_ready), "delivery_blockers": delivery_blockers, "post_delivery_reminders": ["使用作品投稿或公开发布前，请自行核对最终素材与字体的使用依据。", "请按实际使用情况整理AIGC后台记录，并按平台要求完成申报。"], "checks": checks}
 
 
 def main() -> int:

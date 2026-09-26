@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.5",
+  "skill_version": "0.2.6",
   "status": "stable-release",
-  "built_at": "2026-09-24",
-  "stable_release": "0.2.4",
+  "built_at": "2026-09-26",
+  "stable_release": "0.2.5",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -18,8 +18,8 @@
   ],
   "knowledge_manifest": {
     "path": "references/case-library/v0.2.1/manifest.json",
-    "bytes": 2698,
-    "sha256": "7272c7c881f704c118973d1d9a8c02f8103ca299d73e3e8001e70c292c7e5d89"
+    "bytes": 2778,
+    "sha256": "b95753374efe37f581d4d17607cd2276c220a88fb9b12ab6e25a98354e8ab850"
   },
   "source_corpus": {
     "completion_audit_sha256": "5838875bff648f69a433cb84a3de5699d5ddc66b26673a04f892375647775482",
@@ -34,8 +34,8 @@
   "files": [
     {
       "path": "SKILL.md",
-      "sha256": "7113d8c969db60058dd589a63641ecad633e4333f8c03ac50864b58b0ac9dc94",
-      "bytes": 16965
+      "sha256": "bbc3c1d18b7cbbfd8aa20edb64cac38dc6a59b7e9429019b2297788e1196bd68",
+      "bytes": 18017
     },
     {
       "path": "agents/openai.yaml",
@@ -49,7 +49,7 @@
     },
     {
       "path": "references/case-library/v0.2.1/compliance-boundaries.jsonl",
-      "sha256": "e22210c60d4e15461c3763ad0c2c08a847c1562c9133dbbc9dc209512e9cce5c",
+      "sha256": "9eb8554cee9d8153d8b6a825913428dec2d3c7d12fc39b490c78eb99c77c5185",
       "bytes": 113720
     },
     {
@@ -64,8 +64,8 @@
     },
     {
       "path": "references/case-library/v0.2.1/manifest.json",
-      "sha256": "7272c7c881f704c118973d1d9a8c02f8103ca299d73e3e8001e70c292c7e5d89",
-      "bytes": 2698
+      "sha256": "b95753374efe37f581d4d17607cd2276c220a88fb9b12ab6e25a98354e8ab850",
+      "bytes": 2778
     },
     {
       "path": "references/case-library/v0.2.1/method-cards.jsonl",
@@ -104,18 +104,18 @@
     },
     {
       "path": "references/deliverables/ad-copy.md",
-      "sha256": "b0da5c0e105f16d44f02fe5e53de8c237475bdd6318cef81f0adc6433be29ed7",
-      "bytes": 4367
+      "sha256": "9c215dfb0f94c185b22e87085e50be3fa121a4f7b3e3251957847a2a15eb8463",
+      "bytes": 4588
     },
     {
       "path": "references/deliverables/marketing-plan.md",
-      "sha256": "22198a027fe32f5f7bcefd54dcaf1c9047e02df850eb770144c6c1adf9e3f4da",
-      "bytes": 4560
+      "sha256": "aba162e99be3cf74d575b4ece1cafe5ba966a657ce9618e8e16c59ca6240b436",
+      "bytes": 5088
     },
     {
       "path": "references/deliverables/print-ad.md",
-      "sha256": "65139852ac0562c44e3c4fec3bb1ad03abb7f7b7b1452cb16612afbff9d05984",
-      "bytes": 4135
+      "sha256": "90dde7ab831dbf346c4d3d51e9dfbd1c0f0c1d350e4ca141a697188ba330ea83",
+      "bytes": 4430
     },
     {
       "path": "references/schemas/ad-copy-brief-constraints.schema.json",
@@ -139,8 +139,8 @@
     },
     {
       "path": "references/schemas/marketing-plan-delivery-manifest.schema.json",
-      "sha256": "f9a30f6a6a8eb29fd5184cee6e61a62c99596a5cbc7402aaafa4bbbe3493a1f5",
-      "bytes": 4107
+      "sha256": "054d26654e2471f1831ab1c90f5901ddd6c1f4a3a7b526deaedc17b41ef2f2f5",
+      "bytes": 6290
     },
     {
       "path": "references/schemas/marketing-plan-run-manifest.schema.json",
@@ -159,8 +159,8 @@
     },
     {
       "path": "references/schemas/submission-readiness.schema.json",
-      "sha256": "b64dfa76e6ed451496cc90e3ede2bc6a7aac65274368d02e987bff2555f77fc7",
-      "bytes": 3229
+      "sha256": "c95aeb8ed83bf2f449b8d9967cf4f712c8019c07fb410c0ca65f97613754d6a5",
+      "bytes": 5192
     },
     {
       "path": "references/schemas/taxonomy.json",
@@ -229,8 +229,8 @@
     },
     {
       "path": "references/templates/submission-readiness.template.json",
-      "sha256": "3b4ea34dedd62cc8d2ec22b50f57a87f9f63c488d56f48ca8d3341ccaddb70ce",
-      "bytes": 931
+      "sha256": "c127e034936b9f881cd0deaf73a52c0266e7e481ebd4a3b0415a074a0d41f998",
+      "bytes": 1359
     },
     {
       "path": "references/templates/visual-review.template.json",
@@ -239,33 +239,33 @@
     },
     {
       "path": "references/tracks/ad-copy/playbook.md",
-      "sha256": "dd3a404e503c0feafa968fe47d311fc299beae1afc83b0b58f176ba75662863d",
-      "bytes": 14068
+      "sha256": "0c531bf6c308fc159e7b38afed9f082ca8fa77c55c5ce80afd39f77c512382be",
+      "bytes": 14390
     },
     {
       "path": "references/tracks/ad-copy/quality-gates.json",
-      "sha256": "37d8b342b5f25e3ed2483022b96c32cac4f60203d630547d84c138eb03709e5c",
-      "bytes": 18373
+      "sha256": "36a4cdc8266e7c93d8f4cae30bfaf4ed3d2ced82f4fb57507af9193d929e7dc0",
+      "bytes": 18335
     },
     {
       "path": "references/tracks/marketing-plan/playbook.md",
-      "sha256": "dae0ddc14f5e5f45a6856a808e82e55417e3936713ef7a50ed884e1f787f7100",
-      "bytes": 26558
+      "sha256": "2f9749006560d2fefa1f4fdbee63715b57664c24b33ab09d02a580385a831aa9",
+      "bytes": 26938
     },
     {
       "path": "references/tracks/marketing-plan/quality-gates.json",
-      "sha256": "45809228d40598d205862b9658527e724ac1ae2fef93cb51a2d7e7725c952e14",
-      "bytes": 24743
+      "sha256": "41bdc131fa35e3a0a61e5ae87b3d0df93f9eaef4cd92e08004254311c84df2c1",
+      "bytes": 24802
     },
     {
       "path": "references/tracks/print-ad/playbook.md",
-      "sha256": "e0c3e30f8178cd27e2d6f4addf43efef33dd70eba028b0b3be79b10ee33be536",
-      "bytes": 17553
+      "sha256": "9168ed60d965723fc38862e72f399af2faaf9dc0314c3b0943e00558c0cb2054",
+      "bytes": 17815
     },
     {
       "path": "references/tracks/print-ad/quality-gates.json",
-      "sha256": "bc287512549f0c7cbc93756f672da76f3dd1b73c11939ae50a171e1dfdd761fc",
-      "bytes": 18854
+      "sha256": "1135cd76b28f03caf7fcdfa274c51731ff96e8969ad4888ba740ff9c2fdadb23",
+      "bytes": 18900
     },
     {
       "path": "references/validation/v0.2.1-ugw001-resume-contract-acceptance.json",
@@ -358,6 +358,11 @@
       "bytes": 741
     },
     {
+      "path": "references/validation/v0.2.6-acceptance.json",
+      "sha256": "7004eb6bcd539cf316aee31836855a09b1db2e7667617faefdca40a18df47103",
+      "bytes": 801
+    },
+    {
       "path": "references/workflow/award-ceiling-and-challengers.md",
       "sha256": "dd951d29a226cc23a1d7e4f4a5b7b247f533dc29dd23562ea5d80cff391d0832",
       "bytes": 4981
@@ -369,8 +374,8 @@
     },
     {
       "path": "references/workflow/common-competition-kernel.md",
-      "sha256": "81a773d20792b0c7dd024d99361c279d55391b733504440cb9e415322d38f7ad",
-      "bytes": 13116
+      "sha256": "613fe3a8de0a10b381c4ae6fa72d9d5a6fb85ddc7ff8e0265b9fe56dd586ba8c",
+      "bytes": 13707
     },
     {
       "path": "references/workflow/content-shaped-layout-gate.md",
@@ -379,13 +384,13 @@
     },
     {
       "path": "references/workflow/delivery-and-recovery.md",
-      "sha256": "a5bdc7753cfbee9ec30e8cd20af1b59d2bbd15aa10af143b7ba9a2f33d7953f3",
-      "bytes": 4473
+      "sha256": "fb9ff6a3df4e7c121e8a7e2203ccdc411e8e5ce089236e1fa388ba828bd99bf2",
+      "bytes": 3308
     },
     {
       "path": "references/workflow/execution-to-requested-scope.md",
-      "sha256": "2d0904d9d0eb27f2272d6982fa1c702989b86dee38132754a57609b985a7732b",
-      "bytes": 4419
+      "sha256": "d8ac753cfc21e4e36634f0a942ddf6fda9de5d6b1b62ca8a4a9f9880d346105e",
+      "bytes": 4669
     },
     {
       "path": "references/workflow/final-pixel-review.md",
@@ -399,8 +404,8 @@
     },
     {
       "path": "references/workflow/user-stage-receipts.md",
-      "sha256": "39e7055530d0dfaa0a4a1078499b7351bdb133acc3a0564f6123155f93389c08",
-      "bytes": 3342
+      "sha256": "90b1a834250c8f7d1a8bde087130e7c0a759fc8858b20b69901c4fcf9500e94d",
+      "bytes": 3759
     },
     {
       "path": "references/workflow/version-bound-review.md",
@@ -429,8 +434,8 @@
     },
     {
       "path": "scripts/prepare_handoff.py",
-      "sha256": "d1c69c769f5be44fe64df72e711d911e76414b748651ebbab08f4f56133d9862",
-      "bytes": 2874
+      "sha256": "a703ed76dac51eaf264054f8989970cf29934c8ac155285900c66e768df23f32",
+      "bytes": 3389
     },
     {
       "path": "scripts/prepare_visual_views.py",
@@ -454,13 +459,13 @@
     },
     {
       "path": "scripts/validate_ad_copy.py",
-      "sha256": "f7f9afa074cc8e6f1d26ef1dad0a37888fe58112d32819fc1fc8c3a933fad693",
-      "bytes": 20143
+      "sha256": "53078d0f8115b08a7dab21712393a8c2c52c9810c414da627f4ba5ac7bc35a77",
+      "bytes": 20201
     },
     {
       "path": "scripts/validate_ad_copy_run.py",
-      "sha256": "628a2d525448baac5dbdee0fbb9e292b994d59c5ee4fbc1c276758ac262a9e8a",
-      "bytes": 15687
+      "sha256": "532126937047c210dfb7befc537d3be19fc3f0f0ff146378b929a957000c10ec",
+      "bytes": 16128
     },
     {
       "path": "scripts/validate_knowledge_pack.py",
@@ -469,33 +474,33 @@
     },
     {
       "path": "scripts/validate_marketing_plan.py",
-      "sha256": "8f22b974caac6420697f1dde0e05b6f6f5fd78233ebec22e948d4cf360a3e94a",
-      "bytes": 29128
+      "sha256": "1103ecedb637c1923ab803058ccfebd5c86dc7f0d751e5c0a589b3b40b397d11",
+      "bytes": 29531
     },
     {
       "path": "scripts/validate_marketing_plan_run.py",
-      "sha256": "13734e8fc335a3532aaae4e4f8373810575596e30a4553894bd6714c9729d4ad",
-      "bytes": 16523
+      "sha256": "2bddba4b917a6b00d7158b9f0a39f2d796472d657dd5981462181ec04e0b2c8a",
+      "bytes": 16964
     },
     {
       "path": "scripts/validate_print_ad_run.py",
-      "sha256": "aabccec3fb5d01709ce4a7a0ecb7a1ce2f4ad01d233201dd4da91f72cf6ebb42",
-      "bytes": 8972
+      "sha256": "63380e46d6bd868c5419e73f114b50532a5b0a4edfca6ef9ad486183d48044d9",
+      "bytes": 9413
     },
     {
       "path": "scripts/validate_run.py",
-      "sha256": "7e94c120104dcb767573c128dd05428950c696bbeaf67042378e124f423a03b0",
-      "bytes": 10250
+      "sha256": "672fea9f842b860ce34a94bbb155eb7efa9f8cceb88cd93f7b2c5ec71d2d0fe0",
+      "bytes": 11034
     },
     {
       "path": "scripts/validate_submission.py",
-      "sha256": "67800d7601b6832c0f6098d678f04b8ed770bb5c12ac5cc661bd3fbb20e84b52",
-      "bytes": 11681
+      "sha256": "427441d4aab121840f8aff6969e840715be9b836a32a59adaf8a756824fb57f3",
+      "bytes": 11991
     },
     {
       "path": "scripts/validate_submission_readiness.py",
-      "sha256": "e53b93eee1d8102fe788e9c34a1bf35dea90db7de0f7dd1bbfdb478c3bdd523e",
-      "bytes": 7429
+      "sha256": "bf182db11c61d52e809c71cca225878a851e9de79c0cd1327f4add7444a38a7a",
+      "bytes": 9600
     },
     {
       "path": "scripts/visual_generation_capability_contract.py",
@@ -509,9 +514,9 @@
     }
   ],
   "internal_verification": {
-    "path": "references/validation/v0.2.5-acceptance.json",
-    "sha256": "d47719c0001db9658cf96940ca2d1ef7c9538b1fc256854109d59cc2fdd3be87",
-    "bytes": 1351
+    "path": "references/validation/v0.2.6-acceptance.json",
+    "sha256": "7004eb6bcd539cf316aee31836855a09b1db2e7667617faefdca40a18df47103",
+    "bytes": 801
   },
-  "milestone": "real-brief-iteration-release"
+  "milestone": "artwork-delivery-completion-boundary"
 }

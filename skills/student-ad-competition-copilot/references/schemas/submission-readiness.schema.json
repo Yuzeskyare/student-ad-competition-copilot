@@ -1,61 +1,249 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://local.student-ad-competition-copilot/schemas/submission-readiness.schema.json",
-  "title": "Real-submission readiness contract",
+  "title": "Artwork delivery evidence with optional historical submission records",
   "type": "object",
-  "required": ["schema_version", "run_id", "track", "competition", "method_scope", "rule_verification", "rights_clearance", "citations", "aigc", "content_quality", "technical_validation", "submission", "readiness_boundaries"],
+  "required": [
+    "schema_version",
+    "run_id",
+    "track",
+    "competition",
+    "method_scope",
+    "rule_verification",
+    "citations",
+    "content_quality",
+    "technical_validation"
+  ],
   "properties": {
-    "schema_version": {"const": "0.1.0"},
-    "run_id": {"type": "string", "minLength": 1},
-    "track": {"enum": ["print-ad", "ad-copy", "marketing-plan"]},
-    "competition": {"enum": ["daguangsai", "academy-award"]},
-    "method_scope": {"enum": ["method-only", "real-submission"]},
-    "rule_verification": {
-      "type": "object", "required": ["status", "source_url", "checked_at", "evidence_path"],
-      "properties": {
-        "status": {"enum": ["verified-current", "not-verified-current", "not-required-for-method"]},
-        "source_url": {"type": ["string", "null"]}, "checked_at": {"type": ["string", "null"], "format": "date-time"},
-        "evidence_path": {"type": ["string", "null"]}
-      }, "additionalProperties": false
+    "schema_version": {
+      "const": "0.1.0"
     },
-    "rights_clearance": {"$ref": "#/$defs/clearance"},
-    "citations": {"$ref": "#/$defs/clearance"},
-    "aigc": {
-      "type": "object", "required": ["used", "status", "record_path", "rationale"],
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "track": {
+      "enum": [
+        "print-ad",
+        "ad-copy",
+        "marketing-plan"
+      ]
+    },
+    "competition": {
+      "enum": [
+        "daguangsai",
+        "academy-award"
+      ]
+    },
+    "method_scope": {
+      "enum": [
+        "method-only",
+        "real-submission",
+        "artwork-delivery"
+      ]
+    },
+    "rule_verification": {
+      "type": "object",
+      "required": [
+        "status",
+        "source_url",
+        "checked_at",
+        "evidence_path"
+      ],
       "properties": {
-        "used": {"enum": ["yes", "no", "unknown"]},
-        "status": {"enum": ["complete", "incomplete", "not-applicable"]},
-        "record_path": {"type": ["string", "null"]}, "rationale": {"type": ["string", "null"]}
-      }, "additionalProperties": false
+        "status": {
+          "enum": [
+            "verified-current",
+            "not-verified-current",
+            "not-required-for-method"
+          ]
+        },
+        "source_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "checked_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "evidence_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "rights_clearance": {
+      "$ref": "#/$defs/clearance"
+    },
+    "citations": {
+      "$ref": "#/$defs/clearance"
+    },
+    "aigc": {
+      "type": "object",
+      "required": [
+        "used",
+        "status",
+        "record_path",
+        "rationale"
+      ],
+      "properties": {
+        "used": {
+          "enum": [
+            "yes",
+            "no",
+            "unknown"
+          ]
+        },
+        "status": {
+          "enum": [
+            "complete",
+            "incomplete",
+            "not-applicable"
+          ]
+        },
+        "record_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
     },
     "content_quality": {
-      "type": "object", "required": ["status", "evidence_path"],
-      "properties": {"status": {"enum": ["pass", "pass-with-boundaries", "fail", "not-run"]}, "evidence_path": {"type": ["string", "null"]}},
+      "type": "object",
+      "required": [
+        "status",
+        "evidence_path"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "pass",
+            "pass-with-boundaries",
+            "fail",
+            "not-run"
+          ]
+        },
+        "evidence_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
       "additionalProperties": false
     },
     "technical_validation": {
-      "type": "object", "required": ["status", "evidence_path"],
-      "properties": {"status": {"enum": ["pass", "fail", "not-run"]}, "evidence_path": {"type": ["string", "null"]}},
+      "type": "object",
+      "required": [
+        "status",
+        "evidence_path"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "pass",
+            "fail",
+            "not-run"
+          ]
+        },
+        "evidence_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
       "additionalProperties": false
     },
     "submission": {
-      "type": "object", "required": ["submission_ready", "registration_fields_verified", "uploaded", "receipt_path"],
+      "type": "object",
+      "required": [
+        "submission_ready",
+        "registration_fields_verified",
+        "uploaded",
+        "receipt_path"
+      ],
       "properties": {
-        "submission_ready": {"type": "boolean"}, "registration_fields_verified": {"type": "boolean"},
-        "uploaded": {"type": "boolean"}, "receipt_path": {"type": ["string", "null"]}
-      }, "additionalProperties": false
+        "submission_ready": {
+          "type": "boolean"
+        },
+        "registration_fields_verified": {
+          "type": "boolean"
+        },
+        "uploaded": {
+          "type": "boolean"
+        },
+        "receipt_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
     },
-    "readiness_boundaries": {"type": "array", "items": {"type": "string", "minLength": 1}}
+    "readiness_boundaries": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
   },
   "$defs": {
     "clearance": {
-      "type": "object", "required": ["status", "evidence_path", "open_items", "rationale"],
+      "type": "object",
+      "required": [
+        "status",
+        "evidence_path",
+        "open_items",
+        "rationale"
+      ],
       "properties": {
-        "status": {"enum": ["complete", "incomplete", "not-applicable"]},
-        "evidence_path": {"type": ["string", "null"]},
-        "open_items": {"type": "array", "items": {"type": "string", "minLength": 1}},
-        "rationale": {"type": ["string", "null"]}
-      }, "additionalProperties": false
+        "status": {
+          "enum": [
+            "complete",
+            "incomplete",
+            "not-applicable"
+          ]
+        },
+        "evidence_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "open_items": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "rationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

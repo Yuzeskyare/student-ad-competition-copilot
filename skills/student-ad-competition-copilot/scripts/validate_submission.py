@@ -226,9 +226,9 @@ def main() -> int:
     if profile.get("aigc_record_required_when_used"):
         if args.aigc_used == "yes":
             exists = bool(args.aigc_record and args.aigc_record.is_file() and args.aigc_record.stat().st_size > 0)
-            checks.append(check("aigc-record-present", exists, str(args.aigc_record.resolve()) if args.aigc_record else None))
+            checks.append(check("aigc-record-present", exists, str(args.aigc_record.resolve()) if args.aigc_record else None, "warning"))
         elif args.aigc_used == "unknown":
-            checks.append(check("aigc-use-declared", False, "Declare yes or no before final delivery", "warning"))
+            checks.append(check("aigc-use-declared", False, "Post-delivery reminder: verify actual AI use for platform disclosure", "warning"))
         else:
             checks.append(check("aigc-use-declared", True, "no"))
 

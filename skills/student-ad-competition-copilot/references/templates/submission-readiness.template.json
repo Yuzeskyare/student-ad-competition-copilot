@@ -3,13 +3,50 @@
   "run_id": "replace-me",
   "track": "print-ad",
   "competition": "daguangsai",
-  "method_scope": "method-only",
-  "rule_verification": {"status": "not-required-for-method", "source_url": null, "checked_at": null, "evidence_path": null},
-  "rights_clearance": {"status": "incomplete", "evidence_path": null, "open_items": ["replace-me"], "rationale": null},
-  "citations": {"status": "not-applicable", "evidence_path": null, "open_items": [], "rationale": "No external claims in the final work."},
-  "aigc": {"used": "unknown", "status": "incomplete", "record_path": null, "rationale": null},
-  "content_quality": {"status": "not-run", "evidence_path": null},
-  "technical_validation": {"status": "not-run", "evidence_path": null},
-  "submission": {"submission_ready": false, "registration_fields_verified": false, "uploaded": false, "receipt_path": null},
-  "readiness_boundaries": ["replace-me"]
+  "method_scope": "artwork-delivery",
+  "rule_verification": {
+    "status": "not-verified-current",
+    "source_url": null,
+    "checked_at": null,
+    "evidence_path": null
+  },
+  "rights_clearance": {
+    "status": "incomplete",
+    "evidence_path": null,
+    "open_items": [
+      "交付后提醒：核对素材与字体使用依据。"
+    ],
+    "rationale": null
+  },
+  "citations": {
+    "status": "incomplete",
+    "evidence_path": null,
+    "open_items": [
+      "Complete external research citation mapping before artwork delivery; use not-applicable only with an actual no-external-claims rationale."
+    ],
+    "rationale": null
+  },
+  "aigc": {
+    "used": "unknown",
+    "status": "incomplete",
+    "record_path": null,
+    "rationale": null
+  },
+  "content_quality": {
+    "status": "not-run",
+    "evidence_path": null
+  },
+  "technical_validation": {
+    "status": "not-run",
+    "evidence_path": null
+  },
+  "submission": {
+    "submission_ready": false,
+    "registration_fields_verified": false,
+    "uploaded": false,
+    "receipt_path": null
+  },
+  "readiness_boundaries": [
+    "完成作品前核实当前赛事规则、实际交付规格与外部研究引用。"
+  ]
 }

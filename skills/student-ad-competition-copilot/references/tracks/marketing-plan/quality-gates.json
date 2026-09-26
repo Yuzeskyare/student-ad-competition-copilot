@@ -570,11 +570,11 @@
         {
           "check_id": "aigc-record",
           "assessment": "machine",
-          "question": "AIGC使用声明和使用时所需记录是否完整？",
-          "pass_condition": "声明为yes或no；yes时记录路径和必需字段存在。",
+          "question": "是否在交付后提醒用户核对AIGC记录与平台申报？",
+          "pass_condition": "交付说明提醒即可；记录未完成、使用情况未确认或平台未申报均不阻断作品交付。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "technical-review",
-          "evidence_required": true
+          "evidence_required": false
         }
       ],
       "hard_stops": [],

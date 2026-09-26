@@ -456,8 +456,8 @@
         {
           "check_id": "run-integrity",
           "assessment": "machine",
-          "question": "入选候选、最终文本、哈希、AIGC使用声明、必要记录和运行路径是否一致？",
-          "pass_condition": "使用声明为yes或no；yes时记录存在；运行清单引用完整且路径未逃出运行目录。",
+          "question": "最终作品、清单、哈希和运行路径是否一致？",
+          "pass_condition": "当前作品路径受控、哈希与审核范围一致；AIGC记录和平台申报仅作交付后提醒。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "technical-review",
           "evidence_required": true

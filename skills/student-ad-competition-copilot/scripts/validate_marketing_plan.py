@@ -466,7 +466,7 @@ def main() -> int:
     rights = manifest.get("rights_review")
     rights_status = rights.get("status") if isinstance(rights, dict) else None
     rights_structured = isinstance(rights, dict) and rights_status in {"passed", "pending", "blocked", "not-applicable"} and isinstance(rights.get("borrowed_assets"), list)
-    checks.append(result("rights-review-structured", rights_structured, rights_status))
+    checks.append(result("rights-review-structured", rights_structured, rights_status, "warning"))
 
     budget_errors, budget_metrics = validate_budget(manifest.get("budget"), brief.get("budget_requirement", "not-specified"))
     checks.append(result("budget-contract", not budget_errors, {"errors": budget_errors, **budget_metrics}))
@@ -481,7 +481,7 @@ def main() -> int:
         record, record_error = safe_path(args.input_dir, aigc.get("record_path"))
         if record_error or record is None or not record.is_file() or record.stat().st_size == 0:
             aigc_errors.append("aigc record is required and must be non-empty when used=yes")
-    checks.append(result("aigc-record", not aigc_errors, aigc_errors, "warning" if isinstance(aigc, dict) and aigc.get("used") == "unknown" else "error"))
+    checks.append(result("aigc-record", not aigc_errors, aigc_errors, "warning"))
 
     if brief.get("required_terms"):
         checks.append(result("required-terms-human-review", False, brief["required_terms"], "warning"))
@@ -496,12 +496,12 @@ def main() -> int:
     else:
         rule_status = profile["publication_status"]
         rule_evidence = {"source_url": profile["source_url"], "checked_at": profile["checked_at"]}
-    if brief.get("category_authorized") is not True or rights_status == "blocked":
+    if brief.get("category_authorized") is not True:
         content_status = "blocked"
-    elif rights_status == "passed" and not any(row.get("status") == "open-question" for row in manifest.get("evidence_register", []) if isinstance(row, dict)):
+    elif not any(row.get("status") == "open-question" for row in manifest.get("evidence_register", []) if isinstance(row, dict)):
         content_status = "requires-strategy-review"
     else:
-        content_status = "requires-evidence-or-rights-review"
+        content_status = "requires-evidence-review"
 
     payload = {
         "schema_version": "0.1.0",
