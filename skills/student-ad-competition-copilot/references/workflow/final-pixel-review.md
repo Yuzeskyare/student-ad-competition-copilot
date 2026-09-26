@@ -1,65 +1,57 @@
-# 最终像素与多尺度审核
+# 最终画面验收
 
-平面和策划的0.4.0运行在`production-candidate`和`delivery-candidate`阶段，`artifacts.visual_review`指向[视觉证据模板](../templates/visual-review.template.json)。生产阶段覆盖请求中的代表样稿，交付阶段逐幅/逐页覆盖审核合同的全部最终对象。技术规格、反卡片检查和联系表不能替代最终像素判断。
+平面和策划的 0.4.0 运行通过 artifacts.visual_review 引用视觉证据。新记录用视觉协议 2.0.0；旧 1.0.0 按原合同验证，不静默改写历史结论。生产阶段覆盖代表稿，交付阶段覆盖全部最终页面。五页样稿和联系表不能外推为全稿通过。
 
-## 从当前原生渲染生成审核视图
+## 默认检查与停止条件
 
-先用实际目标应用渲染当前文件，并保存工具/命令执行记录、应用版本和字体替代信息。PPT最终在PowerPoint交付时须包含PowerPoint原生复核；其他目标按实际应用记录。只有字体名合法、框在页内，或`native_font_rendering_verified=false`时，不得声称字体最终呈现通过。无法取得目标渲染时保存技术结果并保留视觉待审。
+阅读全文并查看每页最终画面，核对内容逻辑、阅读层级、字形与可读性、遮挡、残留、裁切和前后台语言。关键文字、品牌产品、核心数据和外部引用主动核验，不能等自动扫描报警后才检查。
 
-每幅/页记录单个`artifact`（path、sha256、version、一个unit），由确定性工具从原生PNG/JPEG生成缩略图和高风险区域裁切：
+全部范围已检查、关键内容与规格通过、影响交付的已知问题已解决，且交付版本与批准范围一致时完成。没有逐对象台账、固定数量裁切或历史生产前数值容差，不单独构成未完成；规则、关键事实、引用依据和未检查的页面仍须补齐。审美偏好和可选优化不自动触发返工。
 
-```powershell
-& "<workspace-python-with-Pillow>" scripts/prepare_visual_views.py --run-dir <运行目录> --source <最终文件相对路径> --version <版本> --unit <幅号或页码> --native <原生渲染相对路径> --renderer <实际应用及版本> --execution-evidence <实际渲染执行记录> --target-renderer-verified --crop <左,上,右,下像素> --output-dir <新的审核视图目录>
-```
+检查器只核验证据关系，不能证明模型真的看过画面，不能认证视觉质量或人工身份。不得以机器通过替代真实内容判断。
 
-只有实际验证了目标应用才加`--target-renderer-verified`。需要多处局部时重复`--crop`；默认2倍，通常150%—200%。缩略图检验阅读轴和小尺寸可读性，原尺寸看空间与画面关系，局部看字形、换行、标签归属、边缘及接触。裁切工具不会评定视觉质量。输出的`render-record.json`包含来源与哈希、实际renderer、执行证据和视图引用，放入该单元的`render_record`。
+## 当前渲染与视图
 
-缩略图/裁切保存为PNG，校验器重新从当前native像素推导并比较，避免只有文件名更新、视图仍是旧版。原生渲染确实来自该作品，需要渲染执行证据支持；机器不认证执行记录或真人身份。
+用实际目标应用导出最终画面，保存真实渲染执行记录、应用版本和字体替换情况。PowerPoint 交付需要目标应用复核；字体名合法、对象框在页内不能证明字形正常。无法取得必要画面时保留视觉待审。
 
-## 逐单元的可观察结论
+使用 scripts/prepare_visual_views.py 的既有参数生成视图。只有实际验证目标应用后才加 --target-renderer-verified。默认生成原生视图引用与缩略图，不自动放大全页。普通阅读尺度看不清关键文字、瓶标、图表单位、边缘或修复效果时，用 --crop 左,上,右,下 生成必要细节，可重复指定。--full-page-detail 仅在确有需要或生成旧协议视图时使用。
 
-每项观察保存`check`、`status: pass|not-applicable`、具体`observation`和对应`views` ID。发现缺陷保持fail/pending并修复，不能改字段求通过；不适用要说明画面中为何无该对象。下列基础检查覆盖当前单元：
+每个 unit 保存 artifact（路径、哈希、版本、一个页码）、render_record、checks、critical_review、issues。提供的缩略和细节图继续做像素派生验证。没有细节图本身不失败，但必要放大未做不能通过。不得只更新文件名冒充当前画面。
 
-| check | 看最终像素时回答的问题 |
+## 简短具体观察
+
+checks 可用单个 check，或用 covers 将相关检查合并到一条观察。保存 status（pass 或 not-applicable）、具体 observation 和当前 views ID。不适用须说明原因，不用“全部正常”替代观察；失败或待查不能改字段求通过。
+
+基础检查名沿用 composition、occlusion、text-legibility、residue、frontstage-role、source-visibility、crop-safety、positive-art-direction。组合记录减少重复文字，不减少实际范围。
+
+平面保留 visual-only-meaning、three-second-recall、visible-element-delete-test。观看者复述必须真实，不代填；元素必要性在画面层面判断，不逐对象建档。策划保留 orientation-comparison，方向依据可跨页复用，不要求已合理选择的版式重做横竖稿或补造历史实验。
+
+critical_review 每页有三项：
+
+| kind | 主动核验 |
 |---|---|
-| composition | 主阅读轴与空间关系是否清楚？ |
-| occlusion | 实际字形/产品/人物是否互相遮挡？ |
-| text-legibility | 缩略、全屏及局部是否清楚，是否出现孤字、标点行首、短尾或意外重叠？ |
-| residue | 底图还有空白便签、伪字、幽灵对象、重复元素、修补接缝吗？原生文字移走后原承载面应同步清理 |
-| frontstage-role | 每个可见元素给受众什么信息？删除后不损失判断的内部制作/评委操作说明应删除 |
-| source-visibility | 外部研究与数据是否有适合评委阅读的脚注或可定位附录，单位是否完整？品牌与命题依据是否正确保留在后台，未变成前台制作说明？ |
-| crop-safety | 是否切断脸、手、关节、视线、动作对象或群体关系？ |
-| positive-art-direction | 除了避错，画面在层级、节奏、材质、品牌归属上具体好在哪里？ |
+| key-text | 标题、关键信息小字、生成文字的字形、换行、归属与实际阅读效果 |
+| brand-product | 品牌、包装、瓶标、数量、比例、各处裁切缩放遮挡与场景融合 |
+| data-citations | 核心数字、单位、限定条件、外部引用与正文主张对应 |
 
-平面另做`visual-only-meaning`（遮标题仍可辨关系）、`three-second-recall`（记录观看者实际复述，不代填）、`visible-element-delete-test`（逐个可见元素的必要性）。策划另做`orientation-comparison`：在布局锁定前比较内容密度、图像横纵比和目标场景，再选择横竖版；比较记录可跨页复用，禁止把本案例横版推广成通用要求。
+每项保存 status、具体 observation、views 和 detail_required，按实际说明通过或不适用。确需放大时 detail_required 为 true 并引用细节图，不能为省截图谎填 false。缩略图单独不能证明关键内容可读。适用的品牌/产品和数据/引用项用 evidence 引用既有路径与 SHA-256 依据，不重写事实总表。
 
-多段文字落在明暗变化的照片上时，先调整共同光区、负空间、统一渐变或构图；不要逐框套卡片。真实票券、界面、商品对象或有语义必要性的容器仍可使用，保留内容形态门规定的理由与评审。画布与源图比例不合时先重排、换图或有依据地扩展背景，再采用不会破坏动作关系的裁切。
+品牌身份、官方产品事实和命题场景依据留后台，不写“来源：命题资料”等前台过程说明。外部研究与统计交付前完成完整对应，用适合评委阅读的脚注或可定位附录；data-citations 的 reader_locator 指明阅读入口，不能仅给后台路径。依据应能定位当前主张、原始出处和适用边界，不能用任意文件凑哈希。
 
-## 文字与底图容器
+同一官方资产的身份依据可以复用，各个位置的呈现仍逐页检查。生成包装不能因为存在参考图就宣称精确保真。数值测量仅用于实际疑点或明确规格，不倒推阈值迎合错误画面。作品内必要披露按当前规则处理；素材字体使用依据、后台 AIGC 记录和平台申报仍只是交付后提醒。
 
-`visible_elements`逐项清点原生及位图里的可见文字、内嵌标签、产品和其他元素，记录`id`、`kind`和面向受众的`role`。文字另记实际`text`。事实声明记`claim: true`，先区分来源角色，不能把“后台可追溯”一律变成“同页露出来源”：
+品牌核验同时检查命题明确要求的配套标识及其适用范围；一页出现过不能自动证明其他适用页面满足要求，也不能无依据扩展为所有页面必须重复标识。远景产品按实际展示尺度与源资产核验，不要求从不存在的像素读出全部包装微小文字；可见的品牌失真仍须修复，证据不足与已确认失真分开记录。
 
-- 品牌身份、官方产品事实、命题给定场景：`source_kind: brand-brief`、`citation_placement: backend`，`claim_scope`分别为`brand-identity`、`product-fact`、`brief-scenario`；保存`primary_source`及绑定哈希的`source_evidence`，不填`visible_source`。参赛前台不要写“来源：命题资料”“按赛题要求”等过程说明；品牌资料不能替代外部统计或效果证据。
-- 外部论文、调研、统计或比较性数据：`source_kind: external-research`。适合短脚注时用`citation_placement: same-page`，记录`visible_source`、`primary_source`、`source_evidence`和当前`source_view`；适合研究附录时用`citation_placement: appendix`，另绑定确切附录页`citation_artifact`、其图像`citation_view`与评委可用的`reader_locator`，不能只有后台文件路径。未指定新字段的旧外部事实仍按同页脚注校验。
+数据项区分外部观测、项目计算和规划假设。外部研究核对原始出处与阅读引用；预算计算核对公式、单位和明细，目标值核对假设标识与执行含义。不要为预算假设强索论文，也不要把计算正确当成真实报价或已实现效果。
 
-附录路径另用`citation_render_record`绑定同一当前作品中的确切附录页，`citation_view`必须属于该页当前渲染记录。引用服务于评委理解与核验，不展示内部命题解析、工具或审核流程。摘录完整单位与限定条件，不擅自加强比较。明确的赛事规则或用户要求另行保留为规则依据，不套用统一页脚模板。
+## 问题触发复查
 
-每个文字对象都有`typography`记录：`element_id`、`detail_view`、`glyphs_complete`、`optical_alignment`、`actual_lines`、`max_lines`、`no_wrap`、`orphan_or_bad_break`。诗性短行可用`intentional_line_exception`给出`design_reason`和覆盖当前对象的真实内容`decision_id`；不把创作性断行一律误杀。孤字等默认问题只有实际观察成立才返工。
+未发现问题时 issues 可为空。发现问题记录 id、problem、affected_scope 和真实 status；修复后记录 observation、views、detail_required，状态为 resolved。不得删掉未解决的问题来取得通过。需要数值判断时附 measurements：reason、unit、actual、minimum、maximum。底图容器适配查看实际字形，不能只凭对象框判断。
 
-底图纸片、招牌、气泡等每个`embedded-label`另列`containers`：`element_id`、`container_bounds`、`safe_bounds`、`text_bounds`均用当前原生渲染像素坐标；另有`font_size`、`minimum_font_size`、`actual_lines`、`expected_lines`、`alignment`、`center_tolerance`、`semantic_anchor_verified`、`detail_view`。`text_bounds`记录可见字面占用，不以PPT对象矩形冒充字形范围。居中对齐计算字面中心与安全区中心之差；阈值、字号和行数按具体项目确定，不复用案例中的21pt或1pt。
+- 局部截断：检查同页及同类排版；反复出现则扩大范围。
+- 字体、全局模板或渲染方式变化：复查全稿最终呈现。
+- 产品失真：检查相关产品图，不同使用位置不能自动继承呈现通过。
+- 引用或计算错误：检查同源与同一计算链涉及的主张。
+- 局部修复：检查修改区域和受影响的相邻内容；影响不明时扩大复查。
 
-发现一个同类对象失败，清点同页/同系列的全部同类对象；每张纸片分别测量，不能把同风格当成同尺寸。适配顺序是删无用字、精简、自然断行、调整容器内空间，最后才小调字号。禁止以小到难读、强描边、重阴影或移出承载面换取“不溢出”。
-
-## 产品、生成几何与返工隔离
-
-每个产品在`products`列出`element_id`、`official_asset`、`expected_count/actual_count`、`allowed_aspect_ratio/actual_aspect_ratio`、`allowed_relative_scale/actual_relative_scale`。允许区间在生产前依据官方轮廓与场景参照确定，不按生成错误反向放宽。分别记录`perspective`、`light-material`、`contact-shadow`、`occlusion`、`mechanism-role`、`official-label-fidelity`六项像素观察。
-
-高保真场景优先通过实际generate/edit迭代空间关系；Logo、精确包装标签和强制图标使用可追溯官方资产或确定性合成。产品“出现了”不等于融入空间。镜头中的接触、尺度、光材、遮挡及创意作用同时成立，才可提交人工内容门。
-
-用户已确认的区域在局部修复中冻结。整页未改可比较渲染哈希；局部保护在`preserved_regions`记录`before/after`图片引用和`bounds`，脚本比较该区域像素。允许变更的区域不要填为冻结区域；确需更改时先明确影响范围，重新审核受影响部分。
-
-## 前后台语言与使用披露
-
-创作母版、后台AIGC使用记录、报名平台披露分别保存。工具、提示词、版本号、制作流程和评委指令默认不进入前台。若官方当前规则明确要求作品内可见披露，在对应元素使用`role: required-disclosure`并绑定`rule_evidence`和`rule_quote`；这是规则驱动例外，不能一律删除。后台记录和平台申报没有完成时保持相应开放状态，不据此改写作品创意或宣称已投稿。
-
-三赛道原有内容、技术及投稿状态继续独立。`final-pixel-evidence`通过只表示视图、测量和记录关系成立；最终内容通过仍依赖版本与范围一致的真实人工决定。
+已通过且有证据证明不受影响的部分复用结论。preserved_regions 可绑定 before/after 图片与 bounds 核验局部像素一致；像素一致不证明引用语义不变，也不能把旧的未检查内容变成已检查。复用来源、版本和范围应可追溯，不对同一版本重复人审。必要检查完成后停止，不为填记录反复改作品。

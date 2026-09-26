@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.7",
+  "status": "release-qualified",
+  "change_id": "proportional-visual-review",
+  "tests_run": 160,
+  "tests_passed": 160,
+  "runtime_self_checks_passed": 8,
+  "schema_interface_checks": 5,
+  "default_completion": "delivery_complete",
+  "visual_evidence_versions": [
+    "1.0.0",
+    "2.0.0"
+  ],
+  "default_per_object_inventory_required": false,
+  "project_submission_ready": false,
+  "project_full_visual_contract_pass": false,
+  "real_replay_scope": "25 saved page observations and 100 bound views; 12 pages reinspected; 5 repaired pages exercised as V2 units.",
+  "boundaries": [
+    "Record validation does not certify actual visual judgment or human identity.",
+    "Specific artwork marker/fidelity questions remain separate from Skill release."
+  ]
+}

@@ -57,7 +57,7 @@ def observations(rows, required, view_ids):
     return mapped
 
 
-def inspect_unit(root, unit, rows, track):
+def inspect_unit(root, unit, rows, track, proportional=False):
     from PIL import Image, ImageChops
     target = unit['artifact']
     keys = artifact(root, target)
@@ -77,16 +77,16 @@ def inspect_unit(root, unit, rows, track):
         by_scale.setdefault(view['scale'], []).append(view)
         by_id[view['id']] = view
         images[view['id']] = image_file(root, view['file'])
-    require(set(by_scale) == {'thumbnail', 'native', 'detail'} and len(by_scale['native']) == 1,
+    require(({'native'} <= set(by_scale) if proportional else set(by_scale) == {'thumbnail', 'native', 'detail'}) and len(by_scale['native']) == 1,
             'Each artwork/page needs thumbnail, one native render and detail crops')
     native_view = by_scale['native'][0]; native = images[native_view['id']]
-    for view in by_scale['thumbnail']:
+    for view in by_scale.get('thumbnail', []):
         thumb = images[view['id']]
         require(thumb.width < native.width and thumb.height < native.height, 'Thumbnail must declare a smaller actual viewing scale')
         expected = native.copy(); expected.thumbnail(thumb.size, Image.Resampling.LANCZOS)
         require(expected.size == thumb.size and ImageChops.difference(expected, thumb).getbbox() is None,
                 'Thumbnail pixels are not derived from the current native render')
-    for view in by_scale['detail']:
+    for view in by_scale.get('detail', []):
         bounds = box(view['native_bounds'])
         require(contains([0, 0, native.width, native.height], bounds), 'Detail crop falls outside the native render')
         require(isinstance(view.get('zoom'), (int, float)) and 1.5 <= view['zoom'] <= 4,
@@ -99,7 +99,10 @@ def inspect_unit(root, unit, rows, track):
         require(expected.size == actual.size and ImageChops.difference(expected, actual).getbbox() is None,
                 'Detail pixels are not derived from the declared current native region')
     required = BASE_CHECKS | ({'visual-only-meaning', 'three-second-recall', 'visible-element-delete-test'} if track == 'print-ad' else {'orientation-comparison'})
-    observations(unit['checks'], required, set(by_id))
+    observations(expand_checks(unit['checks']) if proportional else unit['checks'], required, set(by_id))
+    if proportional:
+        inspect_proportional(root, unit, by_id)
+        return keys
     inventory = unit['visible_elements']
     require(isinstance(inventory, list), 'Visible-element inventory is required, including raster text')
     ids = [item['id'] for item in inventory]
@@ -202,6 +205,78 @@ def inspect_unit(root, unit, rows, track):
     return keys
 
 
+def expand_checks(rows):
+    """One concrete observation may cover related checks; no duplicate check IDs."""
+    require(isinstance(rows, list), 'Visual observations must be a list')
+    expanded = []
+    for row in rows:
+        names = row.get('covers', [row.get('check')])
+        require(isinstance(names, list) and names and all(nonempty(n) for n in names),
+                'A grouped observation needs explicit check coverage')
+        expanded.extend(dict(row, check=name) for name in names)
+    return expanded
+
+
+def inspect_proportional(root, unit, views):
+    """Validate applicable evidence, never infer that a model actually saw pixels."""
+    def observed(row):
+        require(nonempty(row.get('observation')), 'A concrete observation is required')
+        refs = row.get('views')
+        require(isinstance(refs, list) and refs and set(refs) <= set(views),
+                'Observation must cite current pixel views')
+        require(type(row.get('detail_required')) is bool, 'Record whether enlargement is necessary')
+        if row['detail_required']:
+            require(any(views[v]['scale'] == 'detail' for v in refs),
+                    'Critical content needs a current detail view when not legible at native scale')
+        require(any(views[v]['scale'] in {'native', 'detail'} for v in refs),
+                'A thumbnail alone cannot verify critical content or repairs')
+
+    critical = unit['critical_review']
+    require(isinstance(critical, list), 'Critical review must be a list')
+    required = {'key-text', 'brand-product', 'data-citations'}
+    require(len(critical) == len(required) and {r.get('kind') for r in critical} == required,
+            'Actively review key text, brand/product and data/citations on every page')
+    for row in critical:
+        require(row.get('status') in {'pass', 'not-applicable'}, 'Critical content is unresolved')
+        observed(row)
+        if row['status'] == 'pass' and row['kind'] in {'brand-product', 'data-citations'}:
+            evidence = row.get('evidence')
+            require(isinstance(evidence, list) and evidence, 'Key facts need traceable evidence')
+            for ref in evidence:
+                bound_file(root, ref)
+        if row['status'] == 'pass' and row['kind'] == 'data-citations':
+            require(nonempty(row.get('reader_locator')),
+                    'External research needs a reader-facing citation locator')
+    issues = unit['issues']
+    require(isinstance(issues, list), 'Declare observed issues; an empty list means none observed')
+    ids = set()
+    for issue in issues:
+        require(nonempty(issue.get('id')) and issue['id'] not in ids, 'Issue IDs must be unique')
+        ids.add(issue['id'])
+        require(nonempty(issue.get('problem')) and nonempty(issue.get('affected_scope')),
+                'Record the observed problem and its affected scope')
+        require(issue.get('status') == 'resolved', 'Observed issue remains unresolved')
+        observed(issue)
+        # Measurements are conditional on a concrete need, not required for every object.
+        for measure in issue.get('measurements', []):
+            require(nonempty(measure.get('reason')) and nonempty(measure.get('unit')),
+                    'A measurement needs a reason and unit')
+            actual, lower, upper = measure['actual'], measure['minimum'], measure['maximum']
+            require(all(type(v) in (int, float) and math.isfinite(v) for v in (actual, lower, upper))
+                    and lower <= actual <= upper, 'Required measurement is outside its allowed interval')
+    # Region reuse proves pixel stability only, not unchanged meaning or citations.
+    from PIL import ImageChops
+    native = next(v for v in views.values() if v['scale'] == 'native')
+    for region in unit.get('preserved_regions', []):
+        before, after = image_file(root, region['before']), image_file(root, region['after'])
+        require(region['after']['sha256'] == native['file']['sha256'], 'Preserved-region check uses an old render')
+        bounds = box(region['bounds'])
+        require(before.size == after.size and contains([0, 0, after.width, after.height], bounds),
+                'Invalid preserved-region comparison')
+        require(ImageChops.difference(before.crop(bounds), after.crop(bounds)).getbbox() is None,
+                'Previously approved region changed during a local repair')
+
+
 def validate_visual_review(root, manifest):
     if manifest.get('schema_version') != '0.4.0' or manifest.get('category') not in {'print-ad', 'marketing-plan'} or manifest.get('run_scope') == 'concept-only':
         return []
@@ -209,7 +284,7 @@ def validate_visual_review(root, manifest):
         root = root.resolve()
         contract, rows = read_contract(root, manifest)
         pack = load(inside(root, manifest['artifacts']['visual_review']))
-        require(pack.get('schema_version') == '1.0.0' and pack.get('run_id') == manifest['run_id'] and
+        require(pack.get('schema_version') in {'1.0.0', '2.0.0'} and pack.get('run_id') == manifest['run_id'] and
                 pack.get('run_scope') == manifest['run_scope'], 'Visual evidence identity/scope mismatch')
         if manifest['run_scope'] == 'delivery-candidate':
             expected = coverage(root, contract['final_artifacts'])
@@ -220,10 +295,10 @@ def validate_visual_review(root, manifest):
         require(expected, 'Visual evidence needs explicit production or delivery scope')
         actual = set()
         for unit in pack['units']:
-            keys = inspect_unit(root, unit, rows, manifest['category'])
+            keys = inspect_unit(root, unit, rows, manifest['category'], pack['schema_version'] == '2.0.0')
             require(not actual & keys, 'Duplicate reviewed visual unit')
             actual |= keys
         require(expected == actual, 'Visual evidence must cover every declared artwork/page, with no sample-to-full extrapolation')
-        return [{'name':'final-pixel-evidence','passed':True,'evidence':'Current render evidence and measurements checked; visual quality remains a human judgment.'}]
+        return [{'name':'final-pixel-evidence','passed':True,'evidence':'Current render coverage and applicable evidence checked; record validation does not certify visual judgment or human approval.'}]
     except (OSError, ValueError, KeyError, TypeError, AttributeError, ImportError) as exc:
         return [{'name':'final-pixel-evidence','passed':False,'evidence':str(exc)}]

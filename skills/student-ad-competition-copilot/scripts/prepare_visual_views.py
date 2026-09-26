@@ -15,6 +15,7 @@ def main():
         parser.add_argument('--'+name,required=True)
     parser.add_argument('--target-renderer-verified',action='store_true')
     parser.add_argument('--crop',action='append',type=lambda s:[int(v) for v in s.split(',')])
+    parser.add_argument('--full-page-detail',action='store_true',help='Explicit legacy/full-page enlargement when needed')
     parser.add_argument('--zoom',type=float,default=2)
     parser.add_argument('--thumbnail-width',type=int,default=320)
     args=parser.parse_args()
@@ -25,7 +26,7 @@ def main():
     dest=inside(root,args.output_dir)
     if dest.exists():parser.error('Use a new output directory; do not overwrite reviewed views')
     image=Image.open(native).convert('RGB')
-    crops=args.crop or [[0,0,image.width,image.height]]
+    crops=args.crop or ([[0,0,image.width,image.height]] if args.full_page_detail else [])
     if not 1.5<=args.zoom<=4 or args.thumbnail_width<1:parser.error('Invalid viewing scale')
     for crop in crops:
         if len(crop)!=4 or not 0<=crop[0]<crop[2]<=image.width or not 0<=crop[1]<crop[3]<=image.height:
