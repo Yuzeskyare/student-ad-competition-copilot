@@ -32,8 +32,9 @@ def load_pillow():
         from PIL import Image, ImageSequence
     except ModuleNotFoundError as exc:
         raise RuntimeError(
-            f"Pillow is unavailable in {sys.executable}. In Codex, call load_workspace_dependencies "
-            "and run this script with the returned workspace Python executable."
+            f"Pillow is unavailable in {sys.executable}. Select a Python environment with Pillow "
+            "and rerun this script using that interpreter. See image-tool-adaptation.md for "
+            "interpreter setup. In Codex, load_workspace_dependencies may locate an available interpreter."
         ) from exc
     return Image, ImageSequence
 

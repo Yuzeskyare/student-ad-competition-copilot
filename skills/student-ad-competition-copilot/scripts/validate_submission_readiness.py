@@ -24,6 +24,16 @@ def safe_file(run_dir: Path, relative: object) -> bool:
 def validate(payload: dict, run_dir: Path) -> dict:
     run_dir = run_dir.resolve()
     checks = []
+    delivery_mode = payload.get('method_scope') == 'artwork-delivery'
+    payload = dict(payload)
+    # Do not parse out-of-scope administration before deciding its applicability.
+    # Keep caller data intact; an independent submission run still validates it.
+    for section in ('rights_clearance', 'aigc', 'submission'):
+        if delivery_mode:
+            payload.pop(section, None)
+        elif not isinstance(payload.get(section, {}), dict):
+            checks.append(check(section+'-object', False, 'Expected an object'))
+            payload[section] = {}
     checks.append(check("schema-version", payload.get("schema_version") == "0.1.0", payload.get("schema_version")))
     checks.append(check("identity", all(isinstance(payload.get(key), str) and payload[key] for key in ("run_id", "track", "competition", "method_scope")), {key: payload.get(key) for key in ("run_id", "track", "competition", "method_scope")}))
 
@@ -107,7 +117,6 @@ def validate(payload: dict, run_dir: Path) -> dict:
     checks.append(check("readiness-boundaries", boundaries_ok, boundaries))
 
     # Artwork delivery is independent of the optional submission workflow.
-    delivery_mode = payload.get("method_scope") == "artwork-delivery"
     optional = {"rights-clearance", "aigc-record", "submission-ready-invariant", "readiness-boundaries"}
     if delivery_mode:
         # Optional records may be incomplete; keep their diagnostics as reminders.
@@ -119,6 +128,8 @@ def validate(payload: dict, run_dir: Path) -> dict:
                 item["evidence"] = mandatory_paths
             if item["name"] in optional:
                 item["severity"] = "reminder"
+                item["passed"] = True
+                item["evidence"] = 'Not evaluated in artwork-delivery; independent submission only.'
     failures = [item["name"] for item in checks if not item["passed"] and item.get("severity") != "reminder"]
     delivery_ready = (not failures and rule_status == "verified-current"
                       and payload.get("citations", {}).get("status") in {"complete", "not-applicable"}

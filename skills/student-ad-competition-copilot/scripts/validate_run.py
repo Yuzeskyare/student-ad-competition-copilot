@@ -12,6 +12,39 @@ from validate_submission_readiness import validate as validate_readiness
 TRACKS={'print-ad','ad-copy','marketing-plan'}
 
 
+def required_content_checks(manifest):
+    required=set()
+    if manifest.get('schema_version')=='0.4.0':
+        if manifest.get('category') in {'print-ad','marketing-plan'} and manifest.get('run_scope')!='concept-only':
+            required.add('final-pixel-evidence')
+        if manifest.get('category') in {'ad-copy','marketing-plan'} and (manifest.get('award_review_requested') is True or manifest.get('revision_mode')=='challenge'):
+            required.add('creative-iteration-evidence')
+    return required
+
+
+def repair_before_review(run_result):
+    """Separate observed failures from the unfinished final human decision."""
+    checks={r['name']:r for r in run_result.get('checks',[])}
+    repairs=[]
+    for name in run_result.get('failure_names',[]):
+        row=checks.get(name,{})
+        evidence=row.get('evidence')
+        waiting=False
+        if name in {'run-content-review','manual-content-review'}:
+            waiting=isinstance(evidence,str) and evidence in {'pending','not-run'}
+        elif name=='run-method-complete':
+            waiting=evidence is False
+        elif name=='short-copy-prosody-review' and isinstance(evidence,dict):
+            waiting=evidence.get('status') in ('pending','not-run')
+        elif name=='quality-gates-ready' and isinstance(evidence,dict):
+            waiting=bool(evidence) and all(s in ('pass','pass-with-boundaries','waived','not-run') for s in evidence.values())
+        elif name.startswith('quality-gate:') and name.endswith(':scope-status') and isinstance(evidence,dict):
+            gate_id=name.split(':')[1]
+            waiting=gate_id.endswith(('human-visual-quality','full-deck-human-quality','semantic-brand','subtype-quality')) and evidence.get('status')=='not-run'
+        if not waiting and row.get('severity')!='reminder':repairs.append(name)
+    return repairs
+
+
 def technical_state(root,manifest,run_result,contract):
     checks={r['name']:r['passed'] for r in run_result.get('checks',[])}
     if manifest['category']=='ad-copy':
@@ -41,6 +74,11 @@ def inspect_handoff(root,manifest,contract,content,technical,path):
     if (readiness['technical_validation']['status']=='pass') != bool(technical):raise ValueError('Readiness technical status is stale or unbound')
     delivery_mode=readiness.get('method_scope')=='artwork-delivery'
     disclosure=handoff.get('platform_disclosure',{'status':'pending'})
+    if delivery_mode:
+        # This compatibility field is informational; it cannot gate artwork delivery.
+        value=disclosure.get('status') if isinstance(disclosure,dict) else None
+        disclosure={'status':value if isinstance(value,str) and value in {'pending','complete','not-required'} else 'unknown'}
+    elif not isinstance(disclosure,dict):raise ValueError('Platform disclosure must be an object')
     if not delivery_mode and disclosure.get('status') not in {'pending','complete','not-required'}:raise ValueError('Unknown platform disclosure state')
     if not delivery_mode and disclosure['status'] in {'complete','not-required'}:
         bound_file(root,disclosure['rule_evidence'])
@@ -97,9 +135,12 @@ def validate(root,manifest_path,handoff_path=None):
     if handoff_path:
         try:handoff=inspect_handoff(root,manifest,contract,content if current else 'unverified',technical,handoff_path)
         except (OSError,ValueError,KeyError,TypeError,AttributeError) as exc:errors.append(str(exc))
+    required=required_content_checks(manifest)
+    content_checks=[r for r in run_result.get('checks',[]) if r['name'] in required]
+    missing=required-{r['name'] for r in content_checks}
+    if missing:errors.append('Missing required content checks: '+', '.join(sorted(missing)))
     passed=run_result.get('status')=='passed' and not errors and current
-    content_pass=content=='pass' and current and all(r['passed'] for r in run_result.get('checks',[])
-        if r['name'] in {'final-pixel-evidence','creative-iteration-evidence'})
+    content_pass=content=='pass' and current and not missing and all(r['passed'] is True for r in content_checks)
     submission_ready=bool(passed and content_pass and technical and handoff and handoff['submission_ready'])
     delivery_complete=bool(passed and content_pass and technical and manifest.get('run_scope')=='delivery-candidate' and handoff and handoff['delivery_ready'] and not handoff['blocking_evidence_slots'])
     method=False
@@ -110,6 +151,8 @@ def validate(root,manifest_path,handoff_path=None):
     if manifest.get('schema_version')!='0.4.0':next_action='Preserve legacy results; explicitly migrate evidence before claiming current-contract acceptance.'
     elif errors:next_action='Repair the first evidence/identity error: '+errors[0]
     elif not current:next_action='Repair the current review contract before reusing or requesting a human decision.'
+    elif content=='pending' and manifest.get('run_scope')=='delivery-candidate' and repair_before_review(run_result):next_action='Repair the first failed run check before human review: '+repair_before_review(run_result)[0]
+    elif content=='pending' and manifest.get('run_scope')=='delivery-candidate' and not technical:next_action='Repair final-file technical validation before human review.'
     elif content=='pending' and manifest.get('run_scope')=='delivery-candidate':next_action='Present current final objects for one scoped human content decision; reuse any existing valid decision.'
     elif content=='fail':next_action='Return to the layer identified by the current human rejection.'
     elif run_result.get('failure_names'):next_action='Repair the first failed run check: '+run_result['failure_names'][0]

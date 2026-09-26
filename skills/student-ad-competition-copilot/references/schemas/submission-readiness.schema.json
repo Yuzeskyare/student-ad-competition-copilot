@@ -81,48 +81,13 @@
       "additionalProperties": false
     },
     "rights_clearance": {
-      "$ref": "#/$defs/clearance"
+      "description": "Optional administrative data; not evaluated in artwork-delivery."
     },
     "citations": {
       "$ref": "#/$defs/clearance"
     },
     "aigc": {
-      "type": "object",
-      "required": [
-        "used",
-        "status",
-        "record_path",
-        "rationale"
-      ],
-      "properties": {
-        "used": {
-          "enum": [
-            "yes",
-            "no",
-            "unknown"
-          ]
-        },
-        "status": {
-          "enum": [
-            "complete",
-            "incomplete",
-            "not-applicable"
-          ]
-        },
-        "record_path": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "rationale": {
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "additionalProperties": false
+      "description": "Optional administrative data; not evaluated in artwork-delivery."
     },
     "content_quality": {
       "type": "object",
@@ -172,38 +137,10 @@
       "additionalProperties": false
     },
     "submission": {
-      "type": "object",
-      "required": [
-        "submission_ready",
-        "registration_fields_verified",
-        "uploaded",
-        "receipt_path"
-      ],
-      "properties": {
-        "submission_ready": {
-          "type": "boolean"
-        },
-        "registration_fields_verified": {
-          "type": "boolean"
-        },
-        "uploaded": {
-          "type": "boolean"
-        },
-        "receipt_path": {
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "additionalProperties": false
+      "description": "Optional administrative data; not evaluated in artwork-delivery."
     },
     "readiness_boundaries": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
+      "description": "Optional administrative data; not evaluated in artwork-delivery."
     }
   },
   "$defs": {
@@ -246,5 +183,99 @@
       "additionalProperties": false
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "method_scope": {
+            "const": "artwork-delivery"
+          }
+        },
+        "required": [
+          "method_scope"
+        ]
+      },
+      "then": {},
+      "else": {
+        "properties": {
+          "rights_clearance": {
+            "$ref": "#/$defs/clearance"
+          },
+          "aigc": {
+            "type": "object",
+            "required": [
+              "used",
+              "status",
+              "record_path",
+              "rationale"
+            ],
+            "properties": {
+              "used": {
+                "enum": [
+                  "yes",
+                  "no",
+                  "unknown"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "complete",
+                  "incomplete",
+                  "not-applicable"
+                ]
+              },
+              "record_path": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "rationale": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "submission": {
+            "type": "object",
+            "required": [
+              "submission_ready",
+              "registration_fields_verified",
+              "uploaded",
+              "receipt_path"
+            ],
+            "properties": {
+              "submission_ready": {
+                "type": "boolean"
+              },
+              "registration_fields_verified": {
+                "type": "boolean"
+              },
+              "uploaded": {
+                "type": "boolean"
+              },
+              "receipt_path": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "readiness_boundaries": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  ]
 }

@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.8",
+  "skill_version": "0.2.9",
   "status": "stable-release",
   "built_at": "2026-09-26",
-  "stable_release": "0.2.7",
+  "stable_release": "0.2.8",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -32,11 +32,6 @@
     "official_case_universe": 8090
   },
   "files": [
-    {
-      "path": "SKILL.md",
-      "sha256": "a7b7dc05833dcda5fef3ded5b6cbe00f2974f996ceb7ec08a1714441f3fff164",
-      "bytes": 18884
-    },
     {
       "path": "agents/openai.yaml",
       "sha256": "9c1ae4a63d921d34a7b23c5d829040dedff7ddc747c1cdf13cf5e5e9bb53f598",
@@ -104,18 +99,18 @@
     },
     {
       "path": "references/deliverables/ad-copy.md",
-      "sha256": "9c215dfb0f94c185b22e87085e50be3fa121a4f7b3e3251957847a2a15eb8463",
-      "bytes": 4588
+      "sha256": "6ce48529fc7148a9c60c9df11810153016ab2d0c426231bfafd7e649ba6d53de",
+      "bytes": 4746
     },
     {
       "path": "references/deliverables/marketing-plan.md",
-      "sha256": "c6fd9c8c4f8db76c0863538168d0c6748319603565477f6cccc860343b3a7768",
-      "bytes": 5198
+      "sha256": "51bed3e36517c86b436a5d8eac63ba2af9790695bb323eb2d73eb727047fc173",
+      "bytes": 5356
     },
     {
       "path": "references/deliverables/print-ad.md",
-      "sha256": "21716a0655403b131ce1936c7d7810724f7fd8879a17caa8fa4e0f95fc962c06",
-      "bytes": 4658
+      "sha256": "d8a3a856054c952fc186297f9512ce88b27618c6470b6ccb612a16f158831381",
+      "bytes": 4817
     },
     {
       "path": "references/schemas/ad-copy-brief-constraints.schema.json",
@@ -159,8 +154,8 @@
     },
     {
       "path": "references/schemas/submission-readiness.schema.json",
-      "sha256": "c95aeb8ed83bf2f449b8d9967cf4f712c8019c07fb410c0ca65f97613754d6a5",
-      "bytes": 5192
+      "sha256": "1fbf7a0d90211929a6cb24904f85c0c73404eabb72d5d844b570a95d3eae0bbe",
+      "bytes": 6443
     },
     {
       "path": "references/schemas/taxonomy.json",
@@ -378,6 +373,11 @@
       "bytes": 1242
     },
     {
+      "path": "references/validation/v0.2.9-acceptance.json",
+      "sha256": "17b3650e8beb4106378c17649be38b67997136d6c0c477a6442c41f765d2a3ff",
+      "bytes": 813
+    },
+    {
       "path": "references/workflow/award-ceiling-and-challengers.md",
       "sha256": "dd951d29a226cc23a1d7e4f4a5b7b247f533dc29dd23562ea5d80cff391d0832",
       "bytes": 4981
@@ -399,8 +399,8 @@
     },
     {
       "path": "references/workflow/delivery-and-recovery.md",
-      "sha256": "fb9ff6a3df4e7c121e8a7e2203ccdc411e8e5ce089236e1fa388ba828bd99bf2",
-      "bytes": 3308
+      "sha256": "4a3e75140f459280fc6979068e83d2175181511f3716bea35b089d4689279425",
+      "bytes": 3454
     },
     {
       "path": "references/workflow/execution-to-requested-scope.md",
@@ -414,8 +414,8 @@
     },
     {
       "path": "references/workflow/image-tool-adaptation.md",
-      "sha256": "addef4f8b830cadf56af5a6c118bc7038464d5f860be9a658d88032fef0d5848",
-      "bytes": 9646
+      "sha256": "eafa280108f66629e10514f790e398318d50f92aa32c28a196a3ae4df14c0ad1",
+      "bytes": 11700
     },
     {
       "path": "references/workflow/user-review-checkpoints.md",
@@ -424,13 +424,13 @@
     },
     {
       "path": "references/workflow/user-stage-receipts.md",
-      "sha256": "90b1a834250c8f7d1a8bde087130e7c0a759fc8858b20b69901c4fcf9500e94d",
-      "bytes": 3759
+      "sha256": "6fd844d11ff8132824b2261ff0a3d938eb581265089a59f6fd6bf081f1ff1a7a",
+      "bytes": 3821
     },
     {
       "path": "references/workflow/version-bound-review.md",
-      "sha256": "e75779cf88673a2b3e4fc5296564fe6723b639c917937ae7a86ae5158bcb74d7",
-      "bytes": 7872
+      "sha256": "aa2bd7f1a5f358d38f3e299a81f29eefe3df5b937b8642bf12ca97281272b4c7",
+      "bytes": 8069
     },
     {
       "path": "references/workflow/visual-generation-capability-gate.md",
@@ -514,34 +514,39 @@
     },
     {
       "path": "scripts/validate_run.py",
-      "sha256": "672fea9f842b860ce34a94bbb155eb7efa9f8cceb88cd93f7b2c5ec71d2d0fe0",
-      "bytes": 11034
+      "sha256": "6fe5dac9159670d5e55e6a4fe0e3c76e8c018f918bdcc44ea3659c845fb7a357",
+      "bytes": 13889
     },
     {
       "path": "scripts/validate_submission.py",
-      "sha256": "427441d4aab121840f8aff6969e840715be9b836a32a59adaf8a756824fb57f3",
-      "bytes": 11991
+      "sha256": "0795e40b8883c0661c2de67295ddff3c49e66c2c13d7df8011512a96c4e38b40",
+      "bytes": 12107
     },
     {
       "path": "scripts/validate_submission_readiness.py",
-      "sha256": "bf182db11c61d52e809c71cca225878a851e9de79c0cd1327f4add7444a38a7a",
-      "bytes": 9600
+      "sha256": "22a222b250a0ddc66c00c6c7df282c3e5d4ee7146b382833bcbeabd2345fdbdb",
+      "bytes": 10227
     },
     {
       "path": "scripts/visual_generation_capability_contract.py",
-      "sha256": "426138dc9315e74a6cb89b27c62f4580f26e256b7d16a22689d3025d0da10811",
-      "bytes": 7859
+      "sha256": "d713b7920adf727dcd9f69d4439ad7059473a7a742d9cfeac0d81727828a7f5b",
+      "bytes": 9475
     },
     {
       "path": "scripts/visual_review_contract.py",
       "sha256": "442b4a7cb56a7daf5ad67c8b58df15c697efc7e59c8978f5cd74883ad5fae4bd",
       "bytes": 20770
+    },
+    {
+      "path": "SKILL.md",
+      "sha256": "e1f6a5357eeec8f6659646a41f30d4b1c16777aa9c3fb6cf48ffef6dfaabb968",
+      "bytes": 18199
     }
   ],
-  "milestone": "open-style-multi-tool-portability",
+  "milestone": "engineering-reliability",
   "internal_verification": {
-    "path": "references/validation/v0.2.8-acceptance.json",
-    "sha256": "823cf3f3cc3404c5198a90b171700ef18866c786ad80708775ed74104bd68f2c",
-    "bytes": 1242
+    "path": "references/validation/v0.2.9-acceptance.json",
+    "sha256": "17b3650e8beb4106378c17649be38b67997136d6c0c477a6442c41f765d2a3ff",
+    "bytes": 813
   }
 }

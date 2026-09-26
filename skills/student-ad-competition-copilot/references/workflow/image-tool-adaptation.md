@@ -72,6 +72,32 @@ Stability 的部分图像生成接口提供 `negative_prompt` 等控制，但须
 
 换宿主时移交现有运行清单、相对路径资产、提示词/参考分工及既有决定，重新确认可用工具后继续。宿主专用元数据不承担唯一指令，用户无需具有 Codex 专用插件才能理解和使用本流程。
 
+## Python 与命令执行约定
+
+包内示例的 `<workspace-python>` 是占位符：替换成当前宿主已经发现、且能运行所需脚本的 Python 可执行文件路径，不要原样输入，也不代表必须调用 Codex 工具。可先用宿主依赖发现功能，或在 PowerShell 用 `Get-Command python, python3 -ErrorAction SilentlyContinue`、在 POSIX shell 用 `command -v python3` 找到候选解释器，再用下列命令确认实际路径。
+
+先进入 Skill 根目录；把路径占位符替换为真实值。含空格的路径保留引号。参数中的 `<...>` 表示待替换值，`[--选项 ...]` 表示可选项，实际执行时不保留尖括号或方括号。
+
+PowerShell：
+
+```powershell
+Set-Location "<Skill根目录>"
+& "<workspace-python>" -c "import sys; print(sys.executable)"
+& "<workspace-python>" scripts/validate_run.py --run-dir "<运行目录>" --manifest "<运行清单.json>" --handoff "<交接目录/handoff.json>" --output "<新回执.json>"
+```
+
+POSIX shell（bash/zsh 等）：
+
+```sh
+cd "<Skill根目录>"
+"<workspace-python>" -c "import sys; print(sys.executable)"
+"<workspace-python>" scripts/validate_run.py --run-dir "<运行目录>" --manifest "<运行清单.json>" --handoff "<交接目录/handoff.json>" --output "<新回执.json>"
+```
+
+其余赛道命令沿用同一参数，按当前 shell 调整可执行文件调用方式。统一入口的 manifest、handoff、output 相对 `--run-dir`；独立技术检查脚本的路径参数按该脚本 `--help` 解释，避免与运行目录重复拼接。
+
+需要位图读取/验证时，使用同一个解释器执行 `-c "from PIL import Image; print(Image.__version__)"` 确认 Pillow。缺依赖先选用已有合适环境；需要安装时，在宿主允许的项目环境中按其依赖管理方式安装 Pillow，再用该解释器复测。不要自动修改用户全局环境。依赖错误说明本次检查未完成，不代表图像损坏，也不要求重新生成图像。无执行能力时交接待执行命令，不登记为通过。
+
 ## 判断结果
 
 核对实际画面，不靠提示词命中风格名判定。工具更换后检查意图是否保持，不要求不同模型生成相同像素；误差按范围定向修正，不无限重抽。实际运行记录以真实模型/版本（可识别时）、入口及结果为准，区分已实际生成验证、仅文档核对和待核验。

@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.9",
+  "status": "release-qualified",
+  "change_id": "engineering-reliability",
+  "tests_run": 151,
+  "tests_passed": 151,
+  "issues_addressed": [
+    "E01",
+    "E02",
+    "E03",
+    "E04",
+    "E05",
+    "E06"
+  ],
+  "default_completion": "delivery_complete",
+  "canva_image_generation": "excluded-by-user",
+  "boundaries": [
+    "Synthetic test artifacts and approvals only; no actual artwork was regenerated or reapproved.",
+    "PowerShell command with spaces executed locally; POSIX examples statically reviewed only.",
+    "Other hosts and image tools were not empirically revalidated."
+  ],
+  "project_submission_ready": false,
+  "project_full_visual_contract_pass": false,
+  "default_per_object_inventory_required": false
+}

@@ -108,6 +108,8 @@ metadata:
 
 普通创作只查询`version.json`中`knowledge_manifest`明确声明、通过哈希与完整性验证且携带 eligible-evidence 投影的活动包；候选测试必须显式传入`--pack`，解析失败时停止，不能回退历史包：
 
+命令中的解释器占位符、路径和不同 shell 写法见[统一执行约定](references/workflow/image-tool-adaptation.md#python-与命令执行约定)。
+
 ```powershell
 & "<workspace-python>" scripts/query_case_library.py --competition <赛事> --category <赛道> --problem "<当前问题>" --limit 8
 ```
@@ -118,15 +120,9 @@ metadata:
 
 ## 交付与完成
 
-先发现当前环境可用的Python与所需依赖，再按当前shell执行赛道交付规范中的验证命令；`load_workspace_dependencies`仅在提供它的宿主中可用，不是通用前提。脚本路径相对Skill根目录，运行数据路径相对指定运行目录。无执行能力时移交命令与材料，记录待执行，不伪造通过；详见[工具与宿主适配](references/workflow/image-tool-adaptation.md)。使用统一[作品交付证据模板](references/templates/submission-readiness.template.json)和`validate_submission_readiness.py`分开记录：
+按[Python与命令执行约定](references/workflow/image-tool-adaptation.md#python-与命令执行约定)发现解释器、核对所需依赖，再运行当前赛道的验证命令。使用[作品交付证据模板](references/templates/submission-readiness.template.json)和`validate_submission_readiness.py`记录规则与引用等证据；完成判定遵循本页“最终完成边界”，状态含义遵循[阶段回执协议](references/workflow/user-stage-receipts.md)。
 
-- `technical_pass`：客观文件检查通过；
-- `content_pass`：对应人工内容门通过；
-- `method_validated`：共享方法在声明范围内走通；
-- `delivery_complete`：当前赛事规则、实际提交规格、外部引用、内容审核与技术/视觉验收完成，当前作品已经交付。
-- `post_delivery_reminders`：素材/字体使用依据、AIGC记录与平台申报的交付后提醒，不影响完成状态。
-
-作品交付可以完成且尚未报名或上传。历史`submission_ready`仅供用户另行要求的实际投稿流程使用，不用于判断本Skill是否完成。用户指出的可观察问题优先于既有选择或自动结果；按“观察 → 影响 → 修改 → 验证”保留失败版本与修复记录。
+用户指出的可观察问题优先于既有选择或自动结果；按“观察 → 影响 → 修改 → 验证”保留失败版本与修复记录。
 
 ## 新运行的版本与审核绑定
 
@@ -138,4 +134,4 @@ metadata:
 
 ## 统一交付与恢复
 
-按[交付与恢复入口](references/workflow/delivery-and-recovery.md)运行三赛道统一验证，自动生成保守交接记录并按实际证据回填；以作品交付为完成边界；外部研究引用在交付前完成，素材/字体依据和AIGC/平台申报仅交付后提醒，报名上传另行授权。
+按[交付与恢复入口](references/workflow/delivery-and-recovery.md)运行三赛道统一验证，生成保守交接记录并按实际证据回填，再依据结果给出阶段回执。

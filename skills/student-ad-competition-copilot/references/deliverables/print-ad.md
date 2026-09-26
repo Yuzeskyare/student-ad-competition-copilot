@@ -26,6 +26,8 @@
 
 ## 技术验证
 
+命令中的解释器占位符、路径和不同 shell 写法见[统一执行约定](../workflow/image-tool-adaptation.md#python-与命令执行约定)。
+
 ```powershell
 & "<workspace-python>" scripts/validate_submission.py --self-check
 & "<workspace-python>" scripts/validate_submission.py --competition <赛事> --input-dir <成稿目录> --include <实际作品glob> --aigc-used <yes|no|unknown> [--aigc-record <记录>] --output <结果.json>

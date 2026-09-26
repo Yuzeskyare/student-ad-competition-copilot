@@ -31,6 +31,8 @@
 
 ## 技术验证
 
+命令中的解释器占位符、路径和不同 shell 写法见[统一执行约定](../workflow/image-tool-adaptation.md#python-与命令执行约定)。
+
 ```powershell
 & "<workspace-python>" scripts/validate_marketing_plan.py --self-check
 & "<workspace-python>" scripts/validate_marketing_plan.py --competition <赛事> --input-dir <交付目录> --delivery-manifest <清单.json> --brief-constraints <约束.json> --output <结果.json>

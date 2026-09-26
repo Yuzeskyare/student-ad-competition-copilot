@@ -7,6 +7,7 @@ import hashlib
 import json
 from pathlib import Path, PureWindowsPath
 import re
+import sys
 
 
 CURRENT_SCHEMA = "0.3.0"
@@ -25,39 +26,54 @@ def _check(name: str, passed: bool, evidence: object) -> dict[str, Any]:
     return {"name": name, "passed": bool(passed), "evidence": evidence}
 
 
-def _bound_file(root: Path | None, ref: object, *, bitmap: bool = False) -> bool:
+def _bound_file(root: Path | None, ref: object, *, bitmap: bool = False, diagnostics: list | None = None) -> bool:
     """Verify a returned asset/evidence file; never treat a URL or prompt as an asset."""
-    if root is None or not isinstance(ref, dict):
+    def fail(reason, detail):
+        if diagnostics is not None:
+            diagnostics.append({'path': ref.get('path') if isinstance(ref, dict) else None,
+                                'reason': reason, 'detail': detail})
         return False
+    if root is None or not isinstance(ref, dict):
+        return fail('invalid-reference', 'A run directory and file reference are required.')
     name, expected = ref.get("path"), ref.get("sha256")
     if not isinstance(name, str) or not name.strip() or not isinstance(expected, str):
-        return False
+        return fail('invalid-reference', 'Path and SHA-256 must be nonempty strings.')
     if not re.fullmatch(r"[a-f0-9]{64}", expected):
-        return False
+        return fail('invalid-reference', 'Expected a lowercase SHA-256 digest.')
     if Path(name).is_absolute() or PureWindowsPath(name).drive or ":" in name or "\\" in name:
-        return False
+        return fail('unsafe-path', 'Use a forward-slash relative path inside the run directory.')
     try:
         root = root.resolve()
         path = (root / name).resolve()
-        if root not in path.parents or not path.is_file() or path.stat().st_size == 0:
-            return False
+        if root not in path.parents:
+            return fail('unsafe-path', 'Path escapes the run directory.')
+        if not path.is_file():
+            return fail('missing-file', 'The referenced file does not exist.')
+        if path.stat().st_size == 0:
+            return fail('empty-file', 'The referenced file is empty.')
         with path.open("rb") as handle:
             digest = hashlib.sha256()
             for block in iter(lambda: handle.read(1024 * 1024), b""):
                 digest.update(block)
             actual = digest.hexdigest()
         if actual != expected:
-            return False
+            return fail('hash-mismatch', 'The file differs from its recorded SHA-256.')
         if bitmap:
-            from PIL import Image
-            with Image.open(path) as img:
-                img.verify()
+            try:
+                from PIL import Image
+            except ImportError:
+                return fail('dependency-unavailable', f'Pillow is unavailable in {sys.executable}. Select a Python environment with Pillow and rerun this same validation; the asset has not been judged invalid. See image-tool-adaptation.md for interpreter setup. In Codex, load_workspace_dependencies may locate an available interpreter.')
+            try:
+                with Image.open(path) as img:
+                    img.verify()
+            except (OSError, ValueError, SyntaxError):
+                return fail('image-decode-failed', 'Pillow could not verify this bitmap.')
         return True
-    except (OSError, ValueError, ImportError, SyntaxError):
-        return False
+    except (OSError, ValueError) as exc:
+        return fail('file-read-failed', str(exc))
 
 
-def _external_supply(supply: object, run_scope: object, root: Path | None) -> tuple[bool, bool]:
+def _external_supply(supply: object, run_scope: object, root: Path | None, diagnostics: list | None = None) -> tuple[bool, bool]:
     """Return record validity and asset readiness, not an artistic quality verdict."""
     if not isinstance(supply, dict):
         return False, False
@@ -82,8 +98,8 @@ def _external_supply(supply: object, run_scope: object, root: Path | None) -> tu
     ready = (
         bool(assets) and len(unique_paths) == len(assets) and valid_paths
         and len(set(unique_paths)) == len(unique_paths)
-        and all(_bound_file(root, row, bitmap=True) for row in assets)
-        and _bound_file(root, supply.get("review"))
+        and all(_bound_file(root, row, bitmap=True, diagnostics=diagnostics) for row in assets)
+        and _bound_file(root, supply.get("review"), diagnostics=diagnostics)
         and (run_scope == "concept-only" or scope == run_scope)
     )
     if ready:
@@ -132,14 +148,16 @@ def validate_visual_generation_capability(manifest: dict, run_scope: object, run
 
     supply_ready = False
     if decision == "use-external-assets":
-        supply_valid, supply_ready = _external_supply(capability.get("external_supply"), run_scope, run_dir)
+        diagnostics = []
+        supply_valid, supply_ready = _external_supply(capability.get("external_supply"), run_scope, run_dir, diagnostics)
         # External use never changes what the host can actually call.
         direct_record = status != "available" or (
             isinstance(provider, str) and bool(provider.strip()) and bool(operations)
         )
         ready = record_valid and direct_record and supply_valid and (supply_ready or run_scope == "concept-only")
         checks.append(_check("visual-external-asset-supply", supply_valid and direct_record,
-                             "Ready requires readable bitmap files, matching hashes, a linked review and current scope; pending is preparation only."))
+                             {'requirement': 'Ready requires readable bitmap files, matching hashes, a linked review and current scope; pending is preparation only.',
+                              'diagnostics': diagnostics}))
     elif "external_supply" in capability:
         ready = False
         checks.append(_check("visual-external-asset-supply", False, "external_supply requires use-external-assets"))

@@ -4,6 +4,8 @@
 
 ## 统一检查
 
+命令中的解释器占位符、路径和不同 shell 写法见[统一执行约定](image-tool-adaptation.md#python-与命令执行约定)。
+
 ```powershell
 & "<workspace-python>" scripts/validate_run.py --run-dir <运行目录> --manifest <运行清单.json> --handoff <交接目录/handoff.json> --output <新回执.json>
 ```

@@ -21,6 +21,8 @@
 
 ## 技术验证
 
+命令中的解释器占位符、路径和不同 shell 写法见[统一执行约定](../workflow/image-tool-adaptation.md#python-与命令执行约定)。
+
 ```powershell
 & "<workspace-python>" scripts/validate_ad_copy.py --self-check
 # 未使用AIGC时，不需要创建空记录。

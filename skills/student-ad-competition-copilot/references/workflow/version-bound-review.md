@@ -20,6 +20,8 @@
 
 在**实际生产调用之前**运行（路径均按运行目录解释；`--output`须为新的回执文件）：
 
+命令中的解释器占位符、路径和不同 shell 写法见[统一执行约定](image-tool-adaptation.md#python-与命令执行约定)。
+
 ```powershell
 & "<workspace-python>" scripts/guard_production.py --run-dir <运行目录> --manifest <赛道-run-manifest.json> --request-id <请求ID> --output 05-reviews/preproduction-001.json
 ```
