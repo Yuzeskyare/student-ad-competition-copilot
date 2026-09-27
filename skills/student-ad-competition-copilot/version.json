@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.9",
+  "skill_version": "0.2.10",
   "status": "stable-release",
-  "built_at": "2026-09-26",
-  "stable_release": "0.2.8",
+  "built_at": "2026-09-27",
+  "stable_release": "0.2.9",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -99,8 +99,8 @@
     },
     {
       "path": "references/deliverables/ad-copy.md",
-      "sha256": "6ce48529fc7148a9c60c9df11810153016ab2d0c426231bfafd7e649ba6d53de",
-      "bytes": 4746
+      "sha256": "5a33e6b627aed16d806a4373f11b9a95e9092cc56a0d309af87e405ebb2a079e",
+      "bytes": 4956
     },
     {
       "path": "references/deliverables/marketing-plan.md",
@@ -239,13 +239,13 @@
     },
     {
       "path": "references/tracks/ad-copy/playbook.md",
-      "sha256": "0c531bf6c308fc159e7b38afed9f082ca8fa77c55c5ce80afd39f77c512382be",
-      "bytes": 14390
+      "sha256": "86c3903e5fe58b3efc55fffaeddf9888ca320f92b18ead80dca2bd814f590cd1",
+      "bytes": 16625
     },
     {
       "path": "references/tracks/ad-copy/quality-gates.json",
-      "sha256": "36a4cdc8266e7c93d8f4cae30bfaf4ed3d2ced82f4fb57507af9193d929e7dc0",
-      "bytes": 18335
+      "sha256": "3e6a77f4e465d0d4bfc2d1b4d7351c8201ba232f73a8d86dbbe8356f658dfef7",
+      "bytes": 18660
     },
     {
       "path": "references/tracks/marketing-plan/playbook.md",
@@ -296,6 +296,11 @@
       "path": "references/validation/v0.2.1-workflow-contract-hotfix-acceptance.json",
       "sha256": "9a835db007864b7d244f4feb319a96cee78a8b835c5a046eba5acc87e3b4275a",
       "bytes": 1398
+    },
+    {
+      "path": "references/validation/v0.2.10-acceptance.json",
+      "sha256": "6095acee1afc6ef7dd462de54dc46a18df808dc0b21948bcbe0fc916f02d486c",
+      "bytes": 1092
     },
     {
       "path": "references/validation/v0.2.2-acceptance.json",
@@ -384,8 +389,8 @@
     },
     {
       "path": "references/workflow/case-proposition-evidence-gate.md",
-      "sha256": "0a47f21ef8a2939e39719b0935832f6b06c1344a8de0c55442a7f7937bd63da2",
-      "bytes": 2847
+      "sha256": "8fa2b01accfd479ef3a3df608c315a27ad1c81b41434b8b4e184b15a8983a9c4",
+      "bytes": 3714
     },
     {
       "path": "references/workflow/common-competition-kernel.md",
@@ -399,8 +404,8 @@
     },
     {
       "path": "references/workflow/delivery-and-recovery.md",
-      "sha256": "4a3e75140f459280fc6979068e83d2175181511f3716bea35b089d4689279425",
-      "bytes": 3454
+      "sha256": "acc90a9d7951ffe3a65f10f3006fd5c86ef1c19537951796e8afbd070642eb83",
+      "bytes": 5220
     },
     {
       "path": "references/workflow/execution-to-requested-scope.md",
@@ -419,8 +424,8 @@
     },
     {
       "path": "references/workflow/user-review-checkpoints.md",
-      "sha256": "a52ce0a45bcada727164136ea103c7a87e5f5d4ff21341c85a194f72268d1478",
-      "bytes": 3224
+      "sha256": "546ecbbfbc277e16ef142c13da2b35ad5d7bbe84a414c7c23adb4e95c572e235",
+      "bytes": 3410
     },
     {
       "path": "references/workflow/user-stage-receipts.md",
@@ -429,8 +434,8 @@
     },
     {
       "path": "references/workflow/version-bound-review.md",
-      "sha256": "aa2bd7f1a5f358d38f3e299a81f29eefe3df5b937b8642bf12ca97281272b4c7",
-      "bytes": 8069
+      "sha256": "813a8fce3575a221837868ac605c861309a22c163fec2184b75cde2013cf5feb",
+      "bytes": 8221
     },
     {
       "path": "references/workflow/visual-generation-capability-gate.md",
@@ -539,14 +544,14 @@
     },
     {
       "path": "SKILL.md",
-      "sha256": "e1f6a5357eeec8f6659646a41f30d4b1c16777aa9c3fb6cf48ffef6dfaabb968",
-      "bytes": 18199
+      "sha256": "9927c85817e261619c06a50a53f7ab3d7c81d525d462b0219b7ea1a30b140772",
+      "bytes": 18784
     }
   ],
-  "milestone": "engineering-reliability",
+  "milestone": "copy-form-and-exploration",
   "internal_verification": {
-    "path": "references/validation/v0.2.9-acceptance.json",
-    "sha256": "17b3650e8beb4106378c17649be38b67997136d6c0c477a6442c41f765d2a3ff",
-    "bytes": 813
+    "path": "references/validation/v0.2.10-acceptance.json",
+    "sha256": "6095acee1afc6ef7dd462de54dc46a18df808dc0b21948bcbe0fc916f02d486c",
+    "bytes": 1092
   }
 }

@@ -1,6 +1,6 @@
 # 版本、审核范围与稳定文案合同
 
-用于三赛道的新运行及明确迁移的旧运行。运行清单使用`schema_version: 0.4.0`，`review_contract`指向运行目录内的[审核合同模板](../templates/review-contract.template.json)，结构见[Schema](../schemas/review-contract.schema.json)。旧清单仍按旧规则复测，但输出`legacy-not-verified`；历史通过不自动升级为本合同通过，不补造审核、时区或事件时间。
+用于三赛道的新正式运行及明确迁移的旧运行；普通探索笔记不是本合同的通过对象，衔接规则见[探索与正式运行](delivery-and-recovery.md#探索与正式运行衔接)。运行清单使用`schema_version: 0.4.0`，`review_contract`指向运行目录内的[审核合同模板](../templates/review-contract.template.json)，结构见[Schema](../schemas/review-contract.schema.json)。旧清单仍按旧规则复测，但输出`legacy-not-verified`；历史通过不自动升级为本合同通过，不补造审核、时区或事件时间。
 
 ## 先保存真实决定，再计算状态
 

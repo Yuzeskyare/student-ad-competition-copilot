@@ -13,6 +13,8 @@
 
 ## 文件与清单
 
+本节适用于正式作品运行。普通讨论或探索笔记按[探索与正式运行衔接](../workflow/delivery-and-recovery.md#探索与正式运行衔接)处理，不宣称满足完整运行合同。
+
 - 最终文案以UTF-8纯文本保存；系统文本框仍是赛事真实提交位置，TXT是可追溯工作载体。
 - 使用`zh-copy-content-codepoints-v1`：UTF-8去BOM、换行统一、NFC归一化，统计非空白Unicode码点；中文、字母、数字和标点计入，空格与换行不计。
 - 零宽字符、控制字符、首尾空白、HTML/Markdown图片、表格、字段式作者信息和不允许的emoji按profile处理。

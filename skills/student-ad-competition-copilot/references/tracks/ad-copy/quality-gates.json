@@ -177,7 +177,7 @@
           "check_id": "selection-rationale",
           "assessment": "human",
           "question": "选择是否同时考虑命题响应、人性张力、品牌归属、清晰度和风险？",
-          "pass_condition": "至少一个被拒方向及具体理由被保留。",
+          "pass_condition": "保留实际采用/拒绝理由；没有被拒方向时说明用户已明确方向或其他真实原因，不补造未考虑过的方向。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "directions",
           "evidence_required": true
@@ -307,8 +307,8 @@
         {
           "check_id": "long-copy-causality",
           "assessment": "human",
-          "question": "长文案/品牌故事是否有叙事因果、信息推进和品牌回收？",
-          "pass_condition": "没有情绪空转和结尾硬转。",
+          "question": "长文案/品牌故事是否有信息或情绪推进与品牌回收；依赖分节、分行或意象的作品，其节奏、意象联系和语体转换是否有可理解的作用？",
+          "pass_condition": "有具体句段观察，没有情绪空转、无意混乱和结尾硬转；允许有意跳跃、多意象与不对称，不以诗歌化、整齐或押韵代替判断。",
           "applies_when": "工作子类型为long-copy或brand-story。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "candidate-production",

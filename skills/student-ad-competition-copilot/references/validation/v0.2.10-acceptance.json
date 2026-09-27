@@ -1,0 +1,24 @@
+{
+  "skill_version": "0.2.10",
+  "status": "release-qualified",
+  "change_id": "copy-form-and-exploration",
+  "tests_run": 145,
+  "tests_passed": 145,
+  "runtime_self_checks": 8,
+  "skill_structure": "passed",
+  "markdown_links": "passed",
+  "scenario_walkthroughs": 12,
+  "behavior_evaluation": "same-executor application and self-review; not independent A/B testing",
+  "baseline_evidence": "v0.2.9 source inspection; original beta session and installed version unavailable",
+  "formal_contracts_unchanged": true,
+  "default_completion": "delivery_complete",
+  "canva_image_generation": "excluded-by-user",
+  "project_submission_ready": false,
+  "project_full_visual_contract_pass": false,
+  "boundaries": [
+    "No new schema or formal run scope; formal concept-only still requires its original evidence.",
+    "No token, time, award-quality or across-host improvement claim.",
+    "Missing-image handling tested by walkthrough; actual uploaded-image reading not retested.",
+    "Synthetic text examples and contract fixtures are not human artwork approval."
+  ]
+}
