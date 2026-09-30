@@ -86,7 +86,19 @@ def human_source(root, ref, quote):
             or not isinstance(source.get("text"), str) or not isinstance(quote, str)
             or not quote.strip() or quote not in source["text"]):
         raise ValueError("A traceable human source and exact quotation are required; simulations do not qualify")
-    return timestamp(source.get("occurred_at"))
+    at = timestamp(source.get("occurred_at"))
+    basis = source.get('time_basis')
+    if basis is not None:
+        if basis not in {'message', 'turn', 'review-event'}:
+            raise ValueError('Unknown human-source time basis')
+        if basis == 'turn':
+            if not isinstance(source.get('turn_id'), str) or not source['turn_id'].strip() or timestamp(source.get('turn_started_at')) != at:
+                raise ValueError('Turn time needs its real turn ID and matching started_at')
+        elif basis == 'review-event' and source.get('kind') != 'human-review':
+            raise ValueError('A review-event time must belong to a human-review event')
+        elif basis == 'message' and source.get('message_sent_at') is not None and timestamp(source['message_sent_at']) != at:
+            raise ValueError('Message send time differs from source time')
+    return at
 
 
 def decisions(root, contract):

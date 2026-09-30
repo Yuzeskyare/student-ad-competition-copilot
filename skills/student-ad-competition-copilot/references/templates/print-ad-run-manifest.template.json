@@ -25,5 +25,16 @@
     "run_status": "run-status.json",
     "visual_review": "05-reviews/visual-review.json"
   },
-  "review_contract": "05-reviews/review-contract.json"
+  "review_contract": "05-reviews/review-contract.json",
+  "series_plan": {
+    "mode": "series",
+    "units": [
+      "PA-01",
+      "PA-02",
+      "PA-03"
+    ],
+    "reason": "replace with the actual single-or-series rationale and member increments",
+    "user_requested_series": false,
+    "shared_mechanism": "replace with the selected visual mechanism"
+  }
 }

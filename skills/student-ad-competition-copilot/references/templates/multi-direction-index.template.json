@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "competition-season-brand-print-ad",
+  "target_directions": ["A", "C"],
+  "directions": [
+    {"id": "A", "manifest": "print-ad-run-manifest.json", "handoff": "06-delivery/A-handoff/handoff.json"},
+    {"id": "C", "manifest": "print-ad-run-manifest-C.json", "handoff": "06-delivery/C-handoff/handoff.json"}
+  ]
+}

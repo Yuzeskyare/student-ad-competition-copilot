@@ -15,6 +15,33 @@ def _check(name: str, passed: bool, evidence: object) -> dict:
     return {"name": name, "passed": bool(passed), "evidence": evidence}
 
 
+def check_summary(checks):
+    """A valid unfinished check is different from a failed requirement."""
+    for row in checks:
+        if row['passed'] or row.get('state') == 'in-progress':
+            continue
+        name, evidence = row['name'], row.get('evidence')
+        kind = None
+        if name in {'run-content-review', 'manual-content-review'} and isinstance(evidence, str) and evidence in {'pending', 'not-run'}:
+            kind = 'human'
+        elif name == 'run-method-complete' and evidence is False:
+            kind = 'work'
+        elif name == 'short-copy-prosody-review' and isinstance(evidence, dict) and evidence.get('status') in {'pending', 'not-run'}:
+            kind = 'work'
+        if kind:
+            row.update(state='in-progress', waiting_kind=kind)
+    unfinished = [r for r in checks if not r['passed'] and r.get('severity') != 'reminder']
+    waiting = [r for r in unfinished if r.get('state') == 'in-progress']
+    repairs = [r for r in unfinished if r.get('state') != 'in-progress']
+    return {
+        'status': 'failed' if repairs else ('in-progress' if waiting else 'passed'),
+        'repair_checks': [r['name'] for r in repairs],
+        'waiting_checks': [r['name'] for r in waiting],
+        'waiting_details': [{'name': r['name'], 'kind': r.get('waiting_kind', 'work'),
+                             'stage': r.get('stage'), 'evidence': r.get('evidence')} for r in waiting],
+    }
+
+
 def _load(path: Path) -> dict:
     value = json.loads(path.read_text(encoding="utf-8-sig"))
     if not isinstance(value, dict):
@@ -86,6 +113,7 @@ def validate_quality_gate_results(
     checks.append(_check("quality-gate-complete-set", set(result_by_id) == set(gate_by_id) and len(result_by_id) == len(result_items or []), {"expected": sorted(gate_by_id), "actual": sorted(result_by_id)}))
 
     continue_ready = scope_valid
+    unfinished_gates = []
     for gate_id, gate in gate_by_id.items():
         result = result_by_id.get(gate_id)
         if not isinstance(result, dict):
@@ -171,6 +199,10 @@ def validate_quality_gate_results(
             status_matches_scope,
             {"status": status, "expected": "continue" if gate_id in expected_completed else "not-run"},
         ))
+        if not status_matches_scope and status == 'not-run' and gate_id in expected_completed:
+            checks[-1].update(state='in-progress', stage=gate.get('stage'),
+                              waiting_kind='human' if gate.get('gate_type') == 'human' else 'work')
+            unfinished_gates.append(gate_id)
         ready_status = status in CONTINUE_STATES if gate_id in expected_completed else status == "not-run"
         continue_ready = (
             continue_ready and severities_valid and ready_status and logical
@@ -178,4 +210,6 @@ def validate_quality_gate_results(
         )
 
     checks.append(_check("quality-gates-ready", continue_ready, {gate_id: item.get("status") for gate_id, item in result_by_id.items()}))
+    if not continue_ready and unfinished_gates and all(item.get('status') in CONTINUE_STATES | {'not-run'} for item in result_by_id.values()):
+        checks[-1].update(state='in-progress', waiting_kind='aggregate')
     return checks

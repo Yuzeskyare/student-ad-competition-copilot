@@ -1,7 +1,10 @@
-# Allowlist the private distribution surface.
+# Allowlist the distribution surface.
 *
 !.gitignore
 !.gitattributes
 !README.md
+!README.en.md
+!LICENSE
+!LICENSING.md
 !skills/
 !skills/**

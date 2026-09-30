@@ -1,0 +1,13 @@
+{
+  "skill_version": "0.2.11",
+  "status": "release-qualified",
+  "base_version": "0.2.10",
+  "scope": "licensing-and-companion-capability-preflight",
+  "runtime_code_changed": false,
+  "knowledge_pack_changed": false,
+  "public_rights_clearance": false,
+  "runtime_verification": "Eight runtime self-checks and structure validation passed on the complete package.",
+  "project_submission_ready": false,
+  "project_full_visual_contract_pass": false,
+  "runtime_instructions_changed": true
+}

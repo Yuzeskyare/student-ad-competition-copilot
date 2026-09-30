@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.12",
+  "status": "release-qualified",
+  "change_id": "real-run-feedback-and-public-distribution",
+  "verification_scope": "Runtime contracts, complete knowledge preservation, existing A/C delivery replay and package integrity; instruction changes are documented behavior guidance.",
+  "tests": "Self-contained positive/negative contract fixtures plus development regression suite; exact logs and release receipts remain in the development audit.",
+  "project_submission_ready": false,
+  "project_full_visual_contract_pass": false,
+  "not_claimed": [
+    "New artwork production with this version",
+    "Cross-host installation tests",
+    "Award or creative-effectiveness validation"
+  ]
+}

@@ -8,7 +8,7 @@ import json
 import sys
 from pathlib import Path
 
-from quality_gate_contract import validate_quality_gate_results
+from quality_gate_contract import check_summary, validate_quality_gate_results
 from review_contract import validate_review_contract
 from visual_review_contract import validate_visual_review
 from visual_generation_capability_contract import validate_visual_generation_capability
@@ -82,6 +82,17 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
     checks.append(check("run-scope", run_scope in RUN_SCOPE_ARTIFACTS, run_scope))
     checks.extend(validate_visual_generation_capability(manifest, run_scope, run_dir))
     checks.append(check("identity-fields", all(isinstance(manifest.get(key), str) and manifest[key] for key in ("run_id", "competition", "brief_id", "selected_direction", "series_mode")), {key: manifest.get(key) for key in ("run_id", "competition", "brief_id", "selected_direction")}))
+    checks.append(check('series-mode-valid', manifest.get('series_mode') in {'single', 'series'}, manifest.get('series_mode')))
+    plan = manifest.get('series_plan')
+    valid = False
+    if plan is not None:
+        valid = isinstance(plan, dict) and plan.get('mode') == manifest.get('series_mode') and isinstance(plan.get('reason'), str) and bool(plan['reason'].strip())
+        units = plan.get('units') if isinstance(plan, dict) else None
+        valid = valid and isinstance(units, list) and all(isinstance(u, str) and u for u in units) and len(units) == len(set(units))
+        valid = valid and (len(units) >= 2 if manifest.get('series_mode') == 'series' else len(units) == 1)
+        valid = valid and type(plan.get('user_requested_series')) is bool and (not plan.get('user_requested_series') or plan['mode'] == 'series')
+        if valid and plan['mode'] == 'series':valid = isinstance(plan.get('shared_mechanism'), str) and bool(plan['shared_mechanism'].strip())
+        checks.append(check('series-plan-scope', valid, plan))
     method_status = manifest.get("method_validation_status", "not-claimed")
     checks.append(check("method-validation-status", method_status in {"not-claimed", "method-validated"}, method_status))
 
@@ -127,6 +138,14 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
             checks.append(check("used-methods-documented", all(item in method_text for item in used), used))
 
     checks.extend(validate_visual_review(run_dir, manifest))
+    if manifest.get('schema_version') == '0.4.0' and 'quality_gate_results' in resolved:
+        gates = load_json(resolved['quality_gate_results'])
+        series = next((r for r in gates.get('results', []) if r.get('gate_id') == 'print-ad.series-increment'), {})
+        checks.append(check('series-waiver-scope', not (manifest.get('series_mode') == 'series' and series.get('status') == 'waived'), series.get('status')))
+        if plan is not None and run_scope == 'delivery-candidate' and 'delivery_manifest' in resolved:
+            delivery = load_json(resolved['delivery_manifest'])
+            actual_units = [u for a in delivery.get('final_artifacts', []) for u in a.get('units', [])]
+            checks.append(check('series-delivery-coverage', valid and all(isinstance(u, str) for u in actual_units) and len(actual_units) == len(set(actual_units)) and set(actual_units) == set(plan['units']), actual_units))
     review_checks = validate_review_contract(run_dir, manifest)
     # Historical validation stays reproducible, but is never new-contract acceptance.
     if manifest.get("schema_version") == "0.4.0":
@@ -136,10 +155,11 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
         if item['name'] in {'aigc-use-declaration', 'aigc-use-resolved', 'artifact:aigc_record', 'submission-status-explicit'}:
             item['severity'] = 'reminder'
     failed = [item["name"] for item in checks if not item["passed"] and item.get('severity') != 'reminder']
+    progress = check_summary(checks) if manifest.get("schema_version") == "0.4.0" else {"status": "passed" if not failed else "failed"}
     return {
         "schema_version": "0.1.0", "run_id": manifest.get("run_id"),
         "run_dir": str(run_dir), "manifest": str(manifest_path.resolve()),
-        "status": "passed" if not failed else "failed", "checks_total": len(checks),
+        **progress, "checks_total": len(checks),
         "checks_passed": sum(bool(item["passed"]) for item in checks), "post_delivery_reminders": [item for item in checks if item.get("severity") == "reminder" and not item["passed"]], "failure_names": failed, "review_contract_status": "verified" if all(c["passed"] for c in review_checks) else ("failed" if manifest.get("schema_version") == "0.4.0" else "legacy-not-verified"), "checks": checks,
     }
 
@@ -167,7 +187,7 @@ def main() -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: result[key] for key in ("status", "checks_total", "checks_passed", "failure_names")}, ensure_ascii=False))
-    return 0 if result["status"] == "passed" else 1
+    return {"passed": 0, "in-progress": 2}.get(result["status"], 1)
 
 
 if __name__ == "__main__":

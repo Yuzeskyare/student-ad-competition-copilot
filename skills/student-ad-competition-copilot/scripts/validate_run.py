@@ -8,6 +8,7 @@ import sys
 sys.dont_write_bytecode=True
 from review_contract import bound_file, coverage, final_state, inside, load, read_contract
 from validate_submission_readiness import validate as validate_readiness
+from quality_gate_contract import check_summary
 
 TRACKS={'print-ad','ad-copy','marketing-plan'}
 
@@ -29,18 +30,7 @@ def repair_before_review(run_result):
     for name in run_result.get('failure_names',[]):
         row=checks.get(name,{})
         evidence=row.get('evidence')
-        waiting=False
-        if name in {'run-content-review','manual-content-review'}:
-            waiting=isinstance(evidence,str) and evidence in {'pending','not-run'}
-        elif name=='run-method-complete':
-            waiting=evidence is False
-        elif name=='short-copy-prosody-review' and isinstance(evidence,dict):
-            waiting=evidence.get('status') in ('pending','not-run')
-        elif name=='quality-gates-ready' and isinstance(evidence,dict):
-            waiting=bool(evidence) and all(s in ('pass','pass-with-boundaries','waived','not-run') for s in evidence.values())
-        elif name.startswith('quality-gate:') and name.endswith(':scope-status') and isinstance(evidence,dict):
-            gate_id=name.split(':')[1]
-            waiting=gate_id.endswith(('human-visual-quality','full-deck-human-quality','semantic-brand','subtype-quality')) and evidence.get('status')=='not-run'
+        waiting=row.get('state') == 'in-progress'
         if not waiting and row.get('severity')!='reminder':repairs.append(name)
     return repairs
 
@@ -139,6 +129,10 @@ def validate(root,manifest_path,handoff_path=None):
     content_checks=[r for r in run_result.get('checks',[]) if r['name'] in required]
     missing=required-{r['name'] for r in content_checks}
     if missing:errors.append('Missing required content checks: '+', '.join(sorted(missing)))
+    classified = check_summary(run_result.get('checks', []))
+    repairs = repair_before_review(run_result)
+    if run_result.get('errors'):
+        errors.extend(run_result['errors'])
     passed=run_result.get('status')=='passed' and not errors and current
     content_pass=content=='pass' and current and not missing and all(r['passed'] is True for r in content_checks)
     submission_ready=bool(passed and content_pass and technical and handoff and handoff['submission_ready'])
@@ -151,31 +145,71 @@ def validate(root,manifest_path,handoff_path=None):
     if manifest.get('schema_version')!='0.4.0':next_action='Preserve legacy results; explicitly migrate evidence before claiming current-contract acceptance.'
     elif errors:next_action='Repair the first evidence/identity error: '+errors[0]
     elif not current:next_action='Repair the current review contract before reusing or requesting a human decision.'
-    elif content=='pending' and manifest.get('run_scope')=='delivery-candidate' and repair_before_review(run_result):next_action='Repair the first failed run check before human review: '+repair_before_review(run_result)[0]
-    elif content=='pending' and manifest.get('run_scope')=='delivery-candidate' and not technical:next_action='Repair final-file technical validation before human review.'
-    elif content=='pending' and manifest.get('run_scope')=='delivery-candidate':next_action='Present current final objects for one scoped human content decision; reuse any existing valid decision.'
     elif content=='fail':next_action='Return to the layer identified by the current human rejection.'
-    elif run_result.get('failure_names'):next_action='Repair the first failed run check: '+run_result['failure_names'][0]
+    elif repairs:next_action='Repair the first failed run check: '+repairs[0]
+    elif content=='pending' and manifest.get('run_scope')=='delivery-candidate' and not technical:next_action='Repair final-file technical validation before human review.'
+    elif content=='pending' and any(r['kind']=='work' for r in classified['waiting_details']):next_action='Complete unfinished stage checks without remaking approved work: '+next(r['name'] for r in classified['waiting_details'] if r['kind']=='work')
+    elif content=='pending' and manifest.get('run_scope')=='delivery-candidate':next_action='Present current final objects for one scoped human content decision; reuse any existing valid decision.'
+    elif classified['waiting_checks']:next_action='Complete unfinished stage checks without remaking approved work: '+classified['waiting_checks'][0]
     elif manifest.get('run_scope')=='concept-only':next_action='None for the completed concept scope; enter production only if the requested target includes it.'
     elif manifest.get('run_scope')=='production-candidate':next_action='Review the completed production scope before the next requested delivery stage.'
     elif not handoff:next_action='Record current competition rules, final specifications and completed external citations for artwork delivery.'
     elif handoff['blocking_evidence_slots']:next_action='Fill the next applicable evidence slot: '+handoff['blocking_evidence_slots'][0]
     elif not delivery_complete:next_action='Complete the artwork delivery requirement: '+', '.join(handoff['delivery_blockers'])
     else:next_action='None: artwork delivery is complete. Rights and AIGC/platform matters are post-delivery reminders only.'
-    return dict(schema_version='1.0.0',run_id=manifest['run_id'],track=track,status='passed' if passed else 'failed',
+    state = 'failed' if errors or not current or repairs or content == 'fail' else ('passed' if passed else 'in-progress')
+    return dict(schema_version='1.1.0',run_id=manifest['run_id'],track=track,status=state,
+        repair_checks=repairs,waiting_checks=classified['waiting_checks'],waiting_details=classified['waiting_details'],
         technical_pass=bool(technical),content_pass=content_pass,content_review_status=content if current else 'unverified',
         method_validated=method,delivery_complete=delivery_complete,post_delivery_reminders=handoff['post_delivery_reminders'] if handoff else [],submission_ready=submission_ready,review_contract_status=run_result.get('review_contract_status'),
         run_validation=run_result,handoff=handoff,errors=errors,next_action=next_action)
 
 
+def validate_index(root, index_path):
+    """Resolve explicitly declared direction scopes; never infer them from root prose."""
+    root = root.resolve()
+    index = load(index_path)
+    if index.get('schema_version') != '1.0.0' or not isinstance(index.get('directions'), list) or not index['directions']:
+        raise ValueError('Direction index needs a version and nonempty directions')
+    ids = [row.get('id') for row in index['directions']]
+    targets = index.get('target_directions')
+    if any(not isinstance(i, str) or not i for i in ids) or len(set(ids)) != len(ids) or not isinstance(targets, list) or len(targets) != len(ids) or set(targets) != set(ids):
+        raise ValueError('Index targets must identify every unique direction exactly once')
+    results = []
+    for direction in index['directions']:
+        manifest_path = inside(root, direction['manifest'])
+        manifest = load(manifest_path)
+        if manifest.get('run_id') != index.get('run_id') or manifest.get('selected_direction') != direction['id']:
+            raise ValueError('Direction identity differs from its manifest')
+        result = validate(root, manifest_path, direction.get('handoff'))
+        results.append(dict(direction_id=direction['id'], manifest=direction['manifest'], **result))
+    failed = [r for r in results if r['status'] == 'failed']
+    unfinished = [r for r in results if not r['delivery_complete']]
+    chosen = (failed or unfinished or results)[0]
+    complete = not unfinished
+    return dict(schema_version='1.1.0', scope='multi-direction', run_id=index['run_id'],
+                status='failed' if failed else ('passed' if complete else 'in-progress'),
+                technical_pass=all(r['technical_pass'] for r in results), content_pass=all(r['content_pass'] for r in results),
+                method_validated=all(r['method_validated'] for r in results), delivery_complete=complete,
+                submission_ready=all(r['submission_ready'] for r in results), directions=results,
+                next_action='None: every declared direction has completed artwork delivery.' if complete else chosen['direction_id']+': '+chosen['next_action'])
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    for name in ('run-dir','manifest','output'):parser.add_argument('--'+name,required=True)
+    parser.add_argument('--run-dir', required=True, help='Root directory of this run')
+    scope = parser.add_mutually_exclusive_group(required=True)
+    for name in ('manifest','index'):scope.add_argument('--'+name,help='Path relative to --run-dir; must stay inside the run')
+    parser.add_argument('--output', required=True, help='New receipt relative to --run-dir; must stay inside the run')
     parser.add_argument('--handoff');args=parser.parse_args();root=Path(args.run_dir).resolve()
-    result=validate(root,inside(root,args.manifest),args.handoff);out=inside(root,args.output);out.parent.mkdir(parents=True,exist_ok=True)
+    if args.index and args.handoff:parser.error('--handoff belongs to one manifest; declare handoffs inside a direction index')
+    result=validate_index(root,inside(root,args.index)) if args.index else validate(root,inside(root,args.manifest),args.handoff)
+    out=inside(root,args.output)
+    if out.exists():parser.error('Use a new output receipt; do not overwrite historical evidence')
+    out.parent.mkdir(parents=True,exist_ok=True)
     out.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     print(json.dumps({k:result[k] for k in ('status','technical_pass','content_pass','method_validated','delivery_complete','submission_ready','next_action')},ensure_ascii=False))
-    return 0 if result['status']=='passed' else 1
+    return {'passed': 0, 'in-progress': 2}.get(result['status'], 1)
 
 
 if __name__=='__main__':raise SystemExit(main())

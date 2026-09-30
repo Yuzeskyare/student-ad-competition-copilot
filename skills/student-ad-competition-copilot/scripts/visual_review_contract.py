@@ -39,25 +39,31 @@ def image_file(root, ref):
         return image.convert('RGB')
 
 
-def observations(rows, required, view_ids):
+def observations(rows, required, view_ids, pending=None):
     require(isinstance(rows, list), 'Visual observations must be a list')
     mapped = {}
     for row in rows:
         key = row['check']
         require(key not in mapped, 'Duplicate visual check')
-        require(row.get('status') in {'pass', 'not-applicable'} and nonempty(row.get('observation')),
-                'Observed visual failures or pending checks cannot pass')
+        state = row.get('status')
+        require(state in {'pass', 'not-applicable', 'pending', 'not-run', 'fail'} and nonempty(row.get('observation')),
+                'Visual checks need a known status and a concrete observation or pending reason')
+        require(state != 'fail', 'Observed visual failure: '+str(key))
         if key in {'composition', 'positive-art-direction', 'frontstage-role', 'orientation-comparison',
                    'visual-only-meaning', 'three-second-recall', 'visible-element-delete-test'}:
-            require(row['status'] == 'pass', 'Core communication/design checks cannot be marked not-applicable')
+            require(state != 'not-applicable', 'Core communication/design checks cannot be marked not-applicable')
         require(isinstance(row.get('views'), list) and row['views'] and set(row['views']) <= view_ids,
                 'Observation must cite current pixel views')
         mapped[key] = row
+        if state in {'pending', 'not-run'}:
+            require(pending is not None, 'Visual check is unfinished: '+str(key))
+            pending.append({'check': key, 'kind': 'human' if key in {'three-second-recall', 'visual-only-meaning', 'visible-element-delete-test'} else 'work',
+                            'reason': row['observation']})
     require(required <= set(mapped), 'Missing applicable final-pixel observations: '+str(sorted(required-set(mapped))))
     return mapped
 
 
-def inspect_unit(root, unit, rows, track, proportional=False):
+def inspect_unit(root, unit, rows, track, proportional=False, pending=None):
     from PIL import Image, ImageChops
     target = unit['artifact']
     keys = artifact(root, target)
@@ -99,9 +105,9 @@ def inspect_unit(root, unit, rows, track, proportional=False):
         require(expected.size == actual.size and ImageChops.difference(expected, actual).getbbox() is None,
                 'Detail pixels are not derived from the declared current native region')
     required = BASE_CHECKS | ({'visual-only-meaning', 'three-second-recall', 'visible-element-delete-test'} if track == 'print-ad' else {'orientation-comparison'})
-    observations(expand_checks(unit['checks']) if proportional else unit['checks'], required, set(by_id))
+    observations(expand_checks(unit['checks']) if proportional else unit['checks'], required, set(by_id), pending)
     if proportional:
-        inspect_proportional(root, unit, by_id)
+        inspect_proportional(root, unit, by_id, pending)
         return keys
     inventory = unit['visible_elements']
     require(isinstance(inventory, list), 'Visible-element inventory is required, including raster text')
@@ -194,7 +200,7 @@ def inspect_unit(root, unit, rows, track, proportional=False):
             actual = product['actual_'+key]; interval = product['allowed_'+key]
             require(isinstance(actual, (int, float)) and math.isfinite(actual) and len(interval) == 2 and
                     0 < interval[0] <= actual <= interval[1], 'Product '+key+' violates the scene geometry contract')
-        observations(product['checks'], PRODUCT_CHECKS, set(by_id))
+        observations(product['checks'], PRODUCT_CHECKS, set(by_id), pending)
     for region in unit.get('preserved_regions', []):
         before = image_file(root, region['before']); after = image_file(root, region['after'])
         require(region['after']['sha256'] == native_view['file']['sha256'], 'Preserved-region check does not refer to the current render')
@@ -217,7 +223,7 @@ def expand_checks(rows):
     return expanded
 
 
-def inspect_proportional(root, unit, views):
+def inspect_proportional(root, unit, views, pending=None):
     """Validate applicable evidence, never infer that a model actually saw pixels."""
     def observed(row):
         require(nonempty(row.get('observation')), 'A concrete observation is required')
@@ -237,14 +243,17 @@ def inspect_proportional(root, unit, views):
     require(len(critical) == len(required) and {r.get('kind') for r in critical} == required,
             'Actively review key text, brand/product and data/citations on every page')
     for row in critical:
-        require(row.get('status') in {'pass', 'not-applicable'}, 'Critical content is unresolved')
+        require(row.get('status') in {'pass', 'not-applicable', 'pending', 'not-run'}, 'Critical content has failed or has an unknown status')
         observed(row)
-        if row['status'] == 'pass' and row['kind'] in {'brand-product', 'data-citations'}:
+        if row['status'] in {'pending', 'not-run'}:
+            require(pending is not None, 'Critical content is unfinished')
+            pending.append({'check': row['kind'], 'kind': 'work', 'reason': row['observation']})
+        if row['status'] != 'not-applicable' and row['kind'] in {'brand-product', 'data-citations'}:
             evidence = row.get('evidence')
             require(isinstance(evidence, list) and evidence, 'Key facts need traceable evidence')
             for ref in evidence:
                 bound_file(root, ref)
-        if row['status'] == 'pass' and row['kind'] == 'data-citations':
+        if row['status'] != 'not-applicable' and row['kind'] == 'data-citations':
             require(nonempty(row.get('reader_locator')),
                     'External research needs a reader-facing citation locator')
     issues = unit['issues']
@@ -293,12 +302,18 @@ def validate_visual_review(root, manifest):
             for ref in contract['production_requests']:
                 expected |= coverage(root, load(bound_file(root, ref))['representatives'])
         require(expected, 'Visual evidence needs explicit production or delivery scope')
-        actual = set()
+        actual = set(); pending = []
         for unit in pack['units']:
-            keys = inspect_unit(root, unit, rows, manifest['category'], pack['schema_version'] == '2.0.0')
+            unit_pending = []
+            keys = inspect_unit(root, unit, rows, manifest['category'], pack['schema_version'] == '2.0.0', unit_pending)
+            pending.extend(dict(item, units=unit['artifact']['units']) for item in unit_pending)
             require(not actual & keys, 'Duplicate reviewed visual unit')
             actual |= keys
         require(expected == actual, 'Visual evidence must cover every declared artwork/page, with no sample-to-full extrapolation')
+        if pending:
+            return [{'name': 'final-pixel-evidence', 'passed': False, 'state': 'in-progress',
+                     'waiting_kind': 'human' if all(p['kind'] == 'human' for p in pending) else 'work',
+                     'evidence': pending}]
         return [{'name':'final-pixel-evidence','passed':True,'evidence':'Current render coverage and applicable evidence checked; record validation does not certify visual judgment or human approval.'}]
     except (OSError, ValueError, KeyError, TypeError, AttributeError, ImportError) as exc:
         return [{'name':'final-pixel-evidence','passed':False,'evidence':str(exc)}]

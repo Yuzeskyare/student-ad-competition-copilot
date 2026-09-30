@@ -2,10 +2,13 @@
 name: student-ad-competition-copilot
 description: 为大广赛或学院奖解析真实命题、检索受控案例，并完成平面广告、广告文案或营销策划的证据化创作、原生交付与质量校验。
 metadata:
+  author: Edward Z
   short-description: 大广赛与学院奖平面、文案和策划校验
 ---
 
 # 学生广告赛事创作助手
+
+作者：[Edward Z](https://github.com/Yuzeskyare) · [项目主页](https://github.com/Yuzeskyare/student-ad-competition-copilot)
 
 先确认赛事、届次或赛季、官方类别、具体命题和用户要求，再按本页路由读取必要引用。不要一次加载其他赛道的方法，也不要把历史运行、研发文档或固定磁盘路径当作运行时依据。
 
@@ -13,21 +16,29 @@ metadata:
 
 1. 读取[公共内核](references/workflow/common-competition-kernel.md)，建立命题、证据、资产、前后台语言与状态边界；检索或解释受控历史案例时，再读取[历史案例命题关联门](references/workflow/case-proposition-evidence-gate.md)。
 2. 大广赛读取[大广赛适配器](references/competitions/daguangsai.md)；学院奖读取[学院奖适配器](references/competitions/academy-award.md)。
-3. 只读取当前赛道：
-   - 平面广告：[视觉生成能力前检](references/workflow/visual-generation-capability-gate.md) → [反卡片化设计门](references/workflow/content-shaped-layout-gate.md) → [Playbook](references/tracks/print-ad/playbook.md) → [质量门](references/tracks/print-ad/quality-gates.json) → [交付规范](references/deliverables/print-ad.md)；
+3. 按当前赛道与阶段读取，长文件只读取当前相关段落，出现工具截断时继续读取未取得的段落：
+   - 平面广告：[视觉生成能力前检](references/workflow/visual-generation-capability-gate.md) → [反卡片化设计门](references/workflow/content-shaped-layout-gate.md) → [Playbook](references/tracks/print-ad/playbook.md)的命题、方向与原型段；执行阶段门时再读取[质量门](references/tracks/print-ad/quality-gates.json)，确定作品形态与交付时读取[交付规范](references/deliverables/print-ad.md)；
    - 广告文案：[Playbook](references/tracks/ad-copy/playbook.md) → [质量门](references/tracks/ad-copy/quality-gates.json) → [交付规范](references/deliverables/ad-copy.md)；
    - 营销策划：[视觉生成能力前检](references/workflow/visual-generation-capability-gate.md) → [反卡片化设计门](references/workflow/content-shaped-layout-gate.md) → [Playbook](references/tracks/marketing-plan/playbook.md) → [质量门](references/tracks/marketing-plan/quality-gates.json) → [交付规范](references/deliverables/marketing-plan.md)。
 4. 再读取对应提交 profile 和命题官方素材。具体命题可以缩小赛事通用范围，不能静默扩大。
 
 不属于上述三个赛道的类别保留官方名称，并说明当前没有已验证的专用 Playbook，不套用近似流程。
 
+## 配套 Skill 与工具检查
+
+开始任务或更换宿主时，按本次赛道与交付要求查看当前可用的工具和 Skill，复用已有能力。需要生图或编辑时可使用 imagegen 或当前宿主的同类能力；制作可编辑 PPTX 时可使用 presentations；读取或检查 PDF 时可使用 pdf；外部资料检索优先使用已有搜索工具，确有平台访问需求时可使用可用的 agent-reach 等适配技能。名称仅为当前环境中的示例，不作为跨宿主的固定依赖；按所选配套 Skill 的实际说明调用。
+
+在本项目核对的 Codex 环境中，imagegen 来自系统预装技能，presentations、pdf 来自 OpenAI 官方运行环境；已在当前会话提供时直接使用，不建议重复下载或安装。agent-reach 属于第三方可选扩展。区分技能指令、宿主工具和 Python 运行库；其他宿主及不同客户端以实际提供的能力为准，不能把这些名称当作统一预装列表。
+
+仅在本次任务确实缺少所需能力时，说明缺口及其影响，并建议与当前宿主兼容的配套 Skill、插件或外部工具。现有能力足够时直接继续，不要求重复安装，不把安装建议新增为普遍确认关。安装指令文件不等于已获得图像生成、文件导出或联网服务，须确认底层工具实际可用；未获得安装授权时先提出建议。Python、Pillow、pypdf 是脚本运行依赖，按[工具与宿主适配](references/workflow/image-tool-adaptation.md#python-与命令执行约定)检查，不能与可选 Skill 混为一谈。广告文案的纯文本创作不要求生图或演示文稿能力；视觉任务仍遵循下方的生产路径前检。
+
 ## 新建或恢复运行
 
 先按[探索与正式运行衔接](references/workflow/delivery-and-recovery.md#探索与正式运行衔接)区分普通创意讨论、探索笔记与正式运行。只讨论方向或短样段时不强制建立完整运行；已有正式运行不得因缺失或失败而降级绕过验证。进入正式运行后，先判断当前任务是新建还是恢复。用户说“继续”“接着做”“推进下一步”“沿用上次”或当前工作区已有同一赛事、赛季、品牌、命题与类别的运行目录时，优先恢复，不另建重复运行。
 
-恢复正式运行时先读取当前赛道的运行清单、`run-status.json`、`quality-gate-results.json`和最近阶段产物，再确定唯一下一动作：
+恢复正式运行时先读取当前赛道的运行清单，再按其`artifacts.run_status`和`artifacts.quality_gate_results`读取声明文件及最近阶段产物，不固定读取根级同名文件。多个方向分别继承各自范围、合同与决定，通过[交付与恢复入口](references/workflow/delivery-and-recovery.md)中的显式方向索引汇总；根级旧进度文字不能重开已完成方向。再确定唯一下一动作：
 
-1. 有`fail`或`blocked`时，回到其声明的最近责任阶段；
+1. 有已观察的`fail`或真实`blocked`时，回到其声明的最近责任阶段；结构有效的待查项是`in-progress`，先完成独立检查，确需人工决定时才展示检查点，不按返工处理；
 2. 当前`run_scope`尚未完成时，继续首个未完成且依赖已满足的质量门；
 3. 当前范围已完成而用户目标更远时，进入下一运行范围；
 4. 用户要求的范围已经完成时，说明已经完成，不虚构后续工作。
@@ -55,6 +66,12 @@ metadata:
 ## 开放式视觉风格选择
 
 平面广告与营销策划在确定视觉方向及生图前读取[视觉风格选择](references/workflow/visual-style-direction.md)。未指定风格不默认摄影写实；高完成度不等于照片感。依据命题、受众、品牌与页面任务选择真实影响图片面貌的视觉语言，示例只启发、不构成白名单。沿用已有方向/代表稿审核，不新增风格枚举、打分表或审核轮次。
+
+## 平面范围与修改继承
+
+平面方向阶段主动判断单幅或系列，说明形态、计划成员、共享机制、变量与每幅增量；新正式运行在`series_plan`保存该范围。数量服从命题与用户约束，不默认单幅，也不强凑三幅。代表稿只验证机制和风格；通过后持续完成已授权范围，多个先后方向分别判断，不能把代表稿批准收窄为单幅最终交付。用户明确要求系列时不得单幅豁免。
+
+任何局部修订先绑定原句或画面位置、当前基线、本轮变化及已经认可的必须保留关系；修改后核对新旧要求同时满足。只在歧义会改变已认可内容且无法由上下文确定时等待必要澄清；独立准备继续，不能把未收到回答当成修改依据。执行细节复用[版本与反馈合同](references/workflow/version-bound-review.md)，不新增逐次人审或逐对象台账。
 
 ## 反卡片化设计硬约束
 
@@ -116,6 +133,8 @@ metadata:
 & "<workspace-python>" scripts/query_case_library.py --competition <赛事> --category <赛道> --problem "<当前问题>" --limit 8
 ```
 
+原问题查询无命中时保留该空结果，再提取少量短机制词另行查询，分别记录原问题、回退词与结果；仍无合格结果就保留空结果，不换隔离包或补造匹配。
+
 资格过滤必须先于匹配、搜索、排序和计数，`--full`也不能绕过；无合格支持的方法保持 provisional 隔离，独立运行规则按源码路径和哈希保留。查询结果只复用机制、诊断原则和失败边界，不复制原作构图、符号、文案、活动名、配色或品牌资产。标题、奖级、点赞或机器标签不能证明效果；营销策划的消费者洞察必须读取正文、字幕、评论、回复、弹幕、访谈或其他内容证据，并标明样本边界。无合格结果时保留空结果，不越过隔离状态凑数。
 
 方法卡的 `anti_signals`、`failure_modes`，案例的失败条件以及失败模式查询结果默认只是 `consider`：保留创意选择并设计检查，不得直接变成禁用风格、删稿指令或自动降级。只有目标尺寸、三秒观看、品牌替换、样机、事实核对或人工评审记录了具体失败，才按质量门执行 `return-on-observed-failure`；只有当前官方规则、身份、关键事实、保真资产或作品质量门明确规定时才是 `hard-stop`。完整裁定见公共内核“创意风险三级裁定”。
@@ -137,3 +156,7 @@ metadata:
 ## 统一交付与恢复
 
 正式运行按[交付与恢复入口](references/workflow/delivery-and-recovery.md)运行三赛道统一验证，生成保守交接记录并按实际证据回填，再依据结果给出阶段回执。
+
+## 许可与来源
+
+原创内容与脚本采用 CC BY-SA 4.0，见 [LICENSE](LICENSE)、[许可范围](LICENSING.md)和[第三方来源说明](THIRD_PARTY_NOTICES.md)。内置知识包及历史验证记录完整保留；已有计数不代表本轮独立复验。

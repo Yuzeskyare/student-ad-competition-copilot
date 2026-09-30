@@ -45,3 +45,19 @@
 只有用户另行要求实际投稿时才检查报名、平台字段、权利手续、披露、上传与回执；这些外部操作需要相应授权。旧`real-submission`记录仍按其历史字段验证，不自动把旧状态改为通过。作品完成不代表已经投稿、取得授权或完成平台申报。
 
 正文不自动增加AI、工具或排版制作说明。赛事规则若明确规定作品本身必须包含某元素，属于交付前规则检查；平台后台申报手续属于交付后提醒。两者不可混同。
+
+## 进行中与失败
+
+统一回执1.1.0保留technical_pass、content_pass、delivery_complete等独立字段，status增加in-progress。waiting_checks表示尚未完成，waiting_details.kind区分human、work与汇总项；repair_checks表示真实失败。机器尚未检查时先完成自检，真正依赖人工时合并展示一次当前范围确认；待审不产生内容或交付通过。坏哈希、越界路径、漏页、明确拒绝及未解决缺陷不能归为等待。
+
+CLI退出码为0（passed）、1（failed）、2（in-progress）；调用者同时读取JSON，不能把未知状态、成功执行或非零码自动当成作品失败或完成。旧回执不回写，新输出使用新文件路径。原始failure_names仍包含未通过的检查，恢复动作以类型化的等待／修复分类为准。
+
+## 多方向恢复
+
+单方向读取清单声明的状态与质量门路径，根级文件不默认代表所有方向。用户明确要求多个方向时，用[方向索引模板](../templates/multi-direction-index.template.json)列出目标方向、各自manifest及handoff；身份和范围分别核验，不能合并为超出赛事上限的单一系列。
+
+```powershell
+& "<workspace-python>" scripts/validate_run.py --run-dir "<运行目录>" --index "<方向索引.json>" --output "<新汇总回执.json>"
+```
+
+全部声明方向实际delivery_complete才产生汇总完成；否则只指向首个失败或尚未完成方向，不重开已完成方向。过期根级next_action和direction_progress属于待同步文字，不能覆盖各自当前合同及实际交付。单方向无需建立索引，未声明的方向不自动纳入或继承通过。

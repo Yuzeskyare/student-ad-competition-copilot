@@ -12,7 +12,7 @@ import zipfile
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
-from quality_gate_contract import validate_quality_gate_results
+from quality_gate_contract import check_summary, validate_quality_gate_results
 from review_contract import validate_review_contract
 from creative_iteration_contract import validate_creative_iteration
 from visual_review_contract import validate_visual_review
@@ -264,12 +264,13 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
         if item['name'] in {'aigc-use-declaration', 'aigc-use-resolved', 'artifact:aigc_record', 'submission-status-explicit'}:
             item['severity'] = 'reminder'
     failed = [item["name"] for item in checks if not item["passed"] and item.get('severity') != 'reminder']
+    progress = check_summary(checks) if manifest.get("schema_version") == "0.4.0" else {"status": "passed" if not failed else "failed"}
     return {
         "schema_version": "0.1.0",
         "run_id": manifest.get("run_id"),
         "run_dir": str(run_dir),
         "manifest": str(manifest_path.resolve()),
-        "status": "passed" if not failed else "failed",
+        **progress,
         "checks_total": len(checks),
         "checks_passed": sum(bool(item["passed"]) for item in checks), "post_delivery_reminders": [item for item in checks if item.get("severity") == "reminder" and not item["passed"]],
         "failure_names": failed, "review_contract_status": "verified" if all(c["passed"] for c in review_checks) else ("failed" if manifest.get("schema_version") == "0.4.0" else "legacy-not-verified"),
@@ -304,7 +305,7 @@ def main() -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: result[key] for key in ("status", "checks_total", "checks_passed", "failure_names")}, ensure_ascii=False))
-    return 0 if result["status"] == "passed" else 1
+    return {"passed": 0, "in-progress": 2}.get(result["status"], 1)
 
 
 if __name__ == "__main__":

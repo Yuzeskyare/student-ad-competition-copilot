@@ -359,6 +359,43 @@
     "review_contract": {
       "type": "string",
       "minLength": 1
+    },
+    "series_plan": {
+      "type": "object",
+      "required": [
+        "mode",
+        "units",
+        "reason",
+        "user_requested_series"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "single",
+            "series"
+          ]
+        },
+        "units": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "user_requested_series": {
+          "type": "boolean"
+        },
+        "shared_mechanism": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     }
   },
   "allOf": [
