@@ -16,6 +16,8 @@ Provide the brief, brand assets, and creative requirements. `student-ad-competit
 
 Deliverables depend on the brief, available assets, and tool capabilities. The skill can also handle brief analysis, creative discussion, or revisions on their own. Its default scope ends at artwork delivery and does not include registration or platform uploads.
 
+This skill is under active development, with plans to support more competition tracks in future releases. Follow me on Xiaohongshu (ID: **7230966199**) for version updates and development progress.
+
 ## Why use this skill
 
 The skill connects brief analysis, creative development, production, and file export into an automated workflow, keeping the agent working toward delivery of the finished work.
@@ -173,8 +175,6 @@ References include sources or analytical evidence for use in the current task. O
 **[Edward Z](https://github.com/Yuzeskyare)**
 
 Xiaohongshu ID: **7230966199**
-
-This skill is under active development, with plans to support more competition tracks in future releases. Follow me on Xiaohongshu for version updates and development progress.
 
 ## Issues and suggestions
 
