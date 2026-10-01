@@ -174,6 +174,8 @@ References include sources or analytical evidence for use in the current task. O
 
 Xiaohongshu ID: **7230966199**
 
+This skill is under active development, with plans to support more competition tracks in future releases. Follow me on Xiaohongshu for version updates and development progress.
+
 ## Issues and suggestions
 
 When reporting a problem, include the skill version, AI tool, steps taken, expected result, and observed behavior, together with relevant errors or screenshots. For feature suggestions, describe the use case and the problem you would like to address.
