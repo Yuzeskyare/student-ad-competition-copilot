@@ -32,7 +32,7 @@ You supply the materials and approve key directions and the final work. The agen
 
 ### 1. Download the skill
 
-Open the [v0.2.13 download page](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/tag/v0.2.13) and download `student-ad-competition-copilot-v0.2.13.zip` from the release assets.
+Open the [v0.2.14 download page](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/tag/v0.2.14) and download `student-ad-competition-copilot-v0.2.14.zip` from the release assets.
 
 ### 2. Ask your AI agent to install it
 
@@ -40,7 +40,7 @@ In an agent chat that can work with local files, attach the ZIP or provide its f
 
 ```text
 Install the Daguangsai & Academy Award Skill (student-ad-competition-copilot).
-Version: v0.2.13
+Version: v0.2.14
 Package: [attach the ZIP or provide its full local path]
 Follow this agent's installation procedure and keep the complete skill package,
 including all supporting files. Back up any existing version before updating.

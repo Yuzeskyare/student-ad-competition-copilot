@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.14",
+  "status": "release-qualified",
+  "change_id": "print-scene-and-first-copy-preflight",
+  "runtime_self_checks": 8,
+  "verification_scope": "Exact two-paragraph candidate; runtime self-checks, structure, manifest, ZIP and isolated extraction.",
+  "creative_evidence": "The user described the third sequential copy revision as very good. Other outputs and final images were not approved.",
+  "historical_contract_evidence": "Ten synthetic boundary checks passed against byte-identical runtime scripts; reused, not newly rerun.",
+  "project_submission_ready": false,
+  "project_full_visual_contract_pass": false,
+  "not_claimed": [
+    "Universal creative improvement",
+    "Causal instruction effects",
+    "Strict A/B comparison",
+    "Original-chat replay",
+    "Actual image production or typesetting",
+    "Current official-brief verification"
+  ]
+}

@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.13",
+  "skill_version": "0.2.14",
   "status": "stable-release",
   "built_at": "2026-10-01",
-  "stable_release": "0.2.12",
+  "stable_release": "0.2.13",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -274,8 +274,8 @@
     },
     {
       "path": "references/tracks/print-ad/playbook.md",
-      "bytes": 19120,
-      "sha256": "88f82d4115d5674afea507b242abb156278c0f77c7a61ec7a9a3d7d2c7b8d393"
+      "bytes": 19889,
+      "sha256": "d205ff7a0853a6035d23cebc57bb318197f85caf53af22dc6821801d10e64bd8"
     },
     {
       "path": "references/tracks/print-ad/quality-gates.json",
@@ -331,6 +331,11 @@
       "path": "references/validation/v0.2.13-acceptance.json",
       "bytes": 1045,
       "sha256": "772312e1c629d1cd07d086dfefffc4dadd33d54dd34bb5e68ba6b5bb93ae3a26"
+    },
+    {
+      "path": "references/validation/v0.2.14-acceptance.json",
+      "bytes": 933,
+      "sha256": "2e728a7a310ef456698a26929c6cdfa70df61c4727358579dcaca1b506499d8c"
     },
     {
       "path": "references/validation/v0.2.2-acceptance.json",
@@ -583,18 +588,12 @@
       "sha256": "7842499365f21cc0314cea64bc133961a961572d8b49b42c8f5a5beb98bf6c42"
     }
   ],
-  "milestone": "beta-feedback-2-copy-preflight-and-feedback-inheritance",
-  "base_version": "0.2.12",
-  "base_manifest_sha256": "f2cfeb72cee198033c27c2f47a65625588db5dcaabef76f9e2a5f5b828b423bf",
-  "baseline_internal_verification": {
-    "path": "references/validation/v0.2.12-acceptance.json",
-    "bytes": 745,
-    "sha256": "098569ff3454a9f25f83a30b734ba57838f5da1f2ef70d272b150fd9dda5e672"
-  },
-  "promoted_candidate_manifest_sha256": "e00eae3fb9e70ef5f570f62e301fef1919fb8896e6c95c2d8c4ca02f5e865642",
+  "milestone": "print-scene-and-first-copy-preflight",
+  "base_version": "0.2.13",
+  "promoted_candidate_manifest_sha256": "ca6bf69a4b1f4cb121b4ad63e79a186864c673c5ec2687a0360a289f36e32223",
   "internal_verification": {
-    "path": "references/validation/v0.2.13-acceptance.json",
-    "bytes": 1045,
-    "sha256": "772312e1c629d1cd07d086dfefffc4dadd33d54dd34bb5e68ba6b5bb93ae3a26"
+    "path": "references/validation/v0.2.14-acceptance.json",
+    "bytes": 933,
+    "sha256": "2e728a7a310ef456698a26929c6cdfa70df61c4727358579dcaca1b506499d8c"
   }
 }
