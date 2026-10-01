@@ -67,7 +67,7 @@ The custom skill import entry point in Doubao Work has not yet been verified; co
 
 ## Preparation
 
-> **Recommended setup:** To get more out of this skill and achieve better creative results, use **Codex** with **GPT 6.1 Sol** and set reasoning effort to **High or higher**.
+**Recommended setup:** To get more out of this skill and achieve better creative results, use **Codex** with **GPT 6.1 Sol** and set reasoning effort to **High or higher**.
 
 ### Provide the brief and assets
 
