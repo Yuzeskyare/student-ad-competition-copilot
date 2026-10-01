@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.12",
+  "skill_version": "0.2.13",
   "status": "stable-release",
-  "built_at": "2026-09-30",
-  "stable_release": "0.2.10",
+  "built_at": "2026-10-01",
+  "stable_release": "0.2.12",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -254,8 +254,8 @@
     },
     {
       "path": "references/tracks/ad-copy/playbook.md",
-      "bytes": 16625,
-      "sha256": "86c3903e5fe58b3efc55fffaeddf9888ca320f92b18ead80dca2bd814f590cd1"
+      "bytes": 18106,
+      "sha256": "48dda2b2798a0e8499d75001bfccd72a7164c05d092c01a86c51bd5011633658"
     },
     {
       "path": "references/tracks/ad-copy/quality-gates.json",
@@ -326,6 +326,11 @@
       "path": "references/validation/v0.2.12-acceptance.json",
       "bytes": 745,
       "sha256": "098569ff3454a9f25f83a30b734ba57838f5da1f2ef70d272b150fd9dda5e672"
+    },
+    {
+      "path": "references/validation/v0.2.13-acceptance.json",
+      "bytes": 1045,
+      "sha256": "772312e1c629d1cd07d086dfefffc4dadd33d54dd34bb5e68ba6b5bb93ae3a26"
     },
     {
       "path": "references/validation/v0.2.2-acceptance.json",
@@ -520,7 +525,7 @@
     {
       "path": "scripts/validate_ad_copy_run.py",
       "bytes": 15973,
-      "sha256": "ee496fe0616d619fd2028dd792471217afa0e17ba5d078d8b2b47055fcae4824"
+      "sha256": "4ef8c1723abb7a563b581ec6cbe0fb143d24a5984a0d9bd85ee8ff950f781a3b"
     },
     {
       "path": "scripts/validate_knowledge_pack.py",
@@ -578,12 +583,18 @@
       "sha256": "7842499365f21cc0314cea64bc133961a961572d8b49b42c8f5a5beb98bf6c42"
     }
   ],
-  "milestone": "real-run-feedback-and-public-distribution",
-  "internal_verification": {
+  "milestone": "beta-feedback-2-copy-preflight-and-feedback-inheritance",
+  "base_version": "0.2.12",
+  "base_manifest_sha256": "f2cfeb72cee198033c27c2f47a65625588db5dcaabef76f9e2a5f5b828b423bf",
+  "baseline_internal_verification": {
     "path": "references/validation/v0.2.12-acceptance.json",
     "bytes": 745,
     "sha256": "098569ff3454a9f25f83a30b734ba57838f5da1f2ef70d272b150fd9dda5e672"
   },
-  "base_version": "0.2.10",
-  "incorporates_prepared_version": "0.2.11"
+  "promoted_candidate_manifest_sha256": "e00eae3fb9e70ef5f570f62e301fef1919fb8896e6c95c2d8c4ca02f5e865642",
+  "internal_verification": {
+    "path": "references/validation/v0.2.13-acceptance.json",
+    "bytes": 1045,
+    "sha256": "772312e1c629d1cd07d086dfefffc4dadd33d54dd34bb5e68ba6b5bb93ae3a26"
+  }
 }

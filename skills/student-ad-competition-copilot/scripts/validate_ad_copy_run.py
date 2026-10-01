@@ -254,7 +254,7 @@ def self_check() -> int:
         "python_executable": sys.executable,
         "run_scope_artifacts": {key: list(value) for key, value in RUN_SCOPE_ARTIFACTS.items()},
         "run_scope_gates": {key: sorted(value) for key, value in RUN_SCOPE_GATES.items()},
-        "candidate_range": [3, 5],
+        "candidate_range": [1, 5],
         "prosody_review_subtypes": sorted(PROSODY_REVIEW_SUBTYPES),
     }
     print(json.dumps(payload, ensure_ascii=False))

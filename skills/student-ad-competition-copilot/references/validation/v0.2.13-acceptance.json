@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.13",
+  "status": "release-qualified",
+  "change_id": "beta-feedback-2-copy-preflight-and-feedback-inheritance",
+  "verification_scope": "Exact r3 playbook and diagnostic repair; eight runtime self-checks, skill structure and complete package integrity.",
+  "creative_evidence": "Direct user comparison of eight synthetic pairs supports retaining r3 guidance, with mixed and unsatisfactory cases explicitly retained. Model-only closure was superseded by this human review.",
+  "historical_contract_evidence": "44 core synthetic checks passed before promotion; validation functions are unchanged. These checks were not rerun or claimed as new release tests.",
+  "project_submission_ready": false,
+  "project_full_visual_contract_pass": false,
+  "not_claimed": [
+    "Universal creative improvement",
+    "Causal effect of each instruction",
+    "Strict human blinding",
+    "Final approval of revised samples",
+    "Replay of the original beta conversation",
+    "New cross-host tests"
+  ]
+}

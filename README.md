@@ -32,7 +32,7 @@
 
 ### 1. 下载 Skill
 
-打开 [v0.2.12 下载页](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/tag/v0.2.12)，下载附件 `student-ad-competition-copilot-v0.2.12.zip`。
+打开 [v0.2.13 下载页](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/tag/v0.2.13)，下载附件 `student-ad-competition-copilot-v0.2.13.zip`。
 
 ### 2. 交给 AI 安装
 
@@ -40,7 +40,7 @@
 
 ```text
 请帮我安装大广赛学院奖 Skill（student-ad-competition-copilot）。
-版本：v0.2.12
+版本：v0.2.13
 安装包：[附上 ZIP，或填写下载文件的完整路径]
 请按照当前 Agent 的安装方式，安装完整技能包，保留全部配套文件。
 如果已有同名 Skill，先备份再更新。
