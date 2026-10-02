@@ -8,7 +8,7 @@ If you find this project helpful, please give it a ⭐ Star at the top right of 
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/license-CC_BY--SA_4.0-blue?style=flat-square)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/Yuzeskyare/student-ad-competition-copilot?style=flat-square)](https://github.com/Yuzeskyare/student-ad-competition-copilot/stargazers)
 
-Let your AI agent automate the creative workflow from brief analysis to production, delivering competition work prepared to the brief's requirements.
+An AI creation skill for **[Daguangsai](https://www.sun-ada.net/)** and China's **[Academy Award student advertising competition](https://www.5iidea.com/xyj)**. Let your AI agent automate the creative workflow from brief analysis to production, delivering competition work prepared to the brief's requirements.
 
 Provide the brief, brand assets, and creative requirements. `student-ad-competition-copilot` directs the agent through research, concept development, production, and revision, then delivers the work after content review and file checks.
 

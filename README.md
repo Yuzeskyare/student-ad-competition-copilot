@@ -8,7 +8,7 @@
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/license-CC_BY--SA_4.0-blue?style=flat-square)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/Yuzeskyare/student-ad-competition-copilot?style=flat-square)](https://github.com/Yuzeskyare/student-ad-competition-copilot/stargazers)
 
-让 AI Agent 自动完成从命题解析到作品制作的创作流程，交付按赛事要求制作的参赛作品。
+面向 **[大广赛](https://www.sun-ada.net/)** 和 **[学院奖](https://www.5iidea.com/xyj)** 的 AI 创作 Skill，让 AI Agent 自动完成从命题解析到作品制作的创作流程，交付按赛事要求制作的参赛作品。
 
 提供命题资料、品牌素材和创作要求，`student-ad-competition-copilot` 即可驱动 AI Agent 分析命题、检索参考、构思创意、制作与修改作品，完成审阅和文件检查后交付。
 
