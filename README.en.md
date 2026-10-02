@@ -30,7 +30,9 @@ This skill is under active development, with plans to support more competition t
 
 ### 1. Download the skill
 
-Open the [v0.2.14 download page](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/tag/v0.2.14) and download `student-ad-competition-copilot-v0.2.14.zip` from the release assets.
+Click [Download the v0.2.14 installation package (ZIP)](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/download/v0.2.14/student-ad-competition-copilot-v0.2.14.zip) and save the file to your computer.
+
+If you use the [release page](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/tag/v0.2.14), expand **Assets** near the bottom and click `student-ad-competition-copilot-v0.2.14.zip`. Use this ZIP for installation; `Source code (zip)` and `Source code (tar.gz)` are archives of the repository source.
 
 ### 2. Ask your AI agent to install it
 

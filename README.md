@@ -30,7 +30,9 @@
 
 ### 1. 下载 Skill
 
-打开 [v0.2.14 下载页](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/tag/v0.2.14)，下载附件 `student-ad-competition-copilot-v0.2.14.zip`。
+点击 [下载 v0.2.14 安装包（ZIP）](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/download/v0.2.14/student-ad-competition-copilot-v0.2.14.zip)，将文件保存到电脑。
+
+如果通过 [版本下载页](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/tag/v0.2.14) 下载，请展开页面下方的 **Assets（附件）**，点击 `student-ad-competition-copilot-v0.2.14.zip`。用于安装的是这个 ZIP；`Source code (zip)` 和 `Source code (tar.gz)` 是仓库源码压缩包。
 
 ### 2. 交给 AI 安装
 
