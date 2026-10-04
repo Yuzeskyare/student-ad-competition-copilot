@@ -146,6 +146,13 @@
     },
     "award_review_requested": {
       "type": "boolean"
+    },
+    "execution_profile": {
+      "const": "bound-production-v1"
+    },
+    "execution_control": {
+      "type": "string",
+      "minLength": 1
     }
   },
   "allOf": [

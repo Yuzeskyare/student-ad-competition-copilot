@@ -184,6 +184,46 @@ def validate_file(path: Path, profile: dict, Image, ImageSequence) -> tuple[dict
     return result, checks
 
 
+def source_resolution_report(manifest_path, Image):
+    """Measure source pixels at their placed size, separately from export metadata."""
+    import math
+    document = json.loads(manifest_path.read_text(encoding='utf-8-sig'))
+    layers = document.get('layers')
+    if not isinstance(layers, list) or not layers:
+        raise ValueError('Source resolution manifest needs nonempty layers')
+    reports = []
+    for layer in layers:
+        if layer.get('kind') not in {'raster', 'vector'} or not layer.get('path'):
+            raise ValueError('Each source needs its path and raster/vector kind')
+        source = (manifest_path.parent / layer['path']).resolve()
+        if not source.is_file():
+            raise ValueError(f'Source file not found: {source}')
+        report = dict(path=str(source), kind=layer['kind'])
+        if layer['kind'] == 'vector':
+            report.update(effective_ppi=None, boundary='Declared vector elements only; embedded raster layers must be listed separately')
+        else:
+            with Image.open(source) as image:
+                image.load()
+                pixels = list(image.size)
+            crop = layer.get('used_pixel_bounds', [0, 0, *pixels])
+            if (not isinstance(crop, list) or len(crop) != 4 or not all(type(x) is int for x in crop)
+                    or not 0 <= crop[0] < crop[2] <= pixels[0] or not 0 <= crop[1] < crop[3] <= pixels[1]):
+                raise ValueError('Used pixel bounds must stay within the original raster')
+            size = layer.get('placed_mm')
+            if not isinstance(size, list) or len(size) != 2 or not all(type(v) in (int,float) and math.isfinite(v) and v > 0 for v in size):
+                raise ValueError('Raster sources need their actual placed width and height in mm')
+            ppi = [(crop[i+2]-crop[i]) / (size[i]/25.4) for i in (0,1)]
+            report.update(source_pixels=pixels, used_pixel_bounds=crop, placed_mm=size, effective_ppi=ppi)
+            minimum = layer.get('minimum_ppi')
+            if minimum is not None:
+                if (type(minimum) not in (int,float) or not math.isfinite(minimum) or minimum <= 0
+                        or not isinstance(layer.get('requirement_basis'), str) or not layer['requirement_basis'].strip()):
+                    raise ValueError('A minimum source PPI needs a positive value and a task-specific requirement basis')
+                report.update(minimum_ppi=minimum, requirement_basis=layer['requirement_basis'], meets_requirement=min(ppi) >= minimum)
+        reports.append(report)
+    return reports
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--competition", choices=["daguangsai", "academy-award"])
@@ -191,6 +231,7 @@ def main() -> int:
     parser.add_argument("--include", default="*", help="Glob selecting artwork files inside input-dir")
     parser.add_argument("--aigc-used", choices=["yes", "no", "unknown"], default="unknown")
     parser.add_argument("--aigc-record", type=Path)
+    parser.add_argument("--source-manifest", type=Path, help="Optional source layers with actual placed_mm; independent of exported canvas DPI")
     parser.add_argument("--profiles", type=Path, default=DEFAULT_PROFILES)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--self-check", action="store_true")
@@ -233,6 +274,13 @@ def main() -> int:
         else:
             checks.append(check("aigc-use-declared", True, "no"))
 
+    source_report = None
+    if args.source_manifest:
+        try:
+            source_report = source_resolution_report(args.source_manifest, Image)
+            checks.append(check('source-resolution', all(r.get('meets_requirement', True) for r in source_report), source_report))
+        except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
+            checks.append(check('source-resolution', False, str(exc)))
     failures = [item for item in checks if not item["passed"] and item["severity"] == "error"]
     warnings = [item for item in checks if not item["passed"] and item["severity"] == "warning"]
     technical_status = "pass" if not failures else "fail"
@@ -243,6 +291,8 @@ def main() -> int:
         rule_evidence = {"source_url": profile["source_url"], "checked_at": profile["checked_at"]}
     payload = {
         "schema_version": "0.1.1",
+        "source_resolution": source_report,
+        "source_resolution_assessment": "provided-layers-only" if args.source_manifest else "not-performed",
         "competition": args.competition,
         "profile_snapshot": profile["snapshot"],
         "technical_validation_status": technical_status,

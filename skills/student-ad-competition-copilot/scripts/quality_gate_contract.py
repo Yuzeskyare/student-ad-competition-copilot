@@ -81,8 +81,10 @@ def validate_quality_gate_results(
     checks: list[dict] = []
     definitions_path = Path(__file__).resolve().parents[1] / "references" / "tracks" / track / "quality-gates.json"
     try:
-        definitions = _load(definitions_path)
         results = _load(result_path)
+        if track == "print-ad" and results.get("definition_set_id") == "print-ad.0.1.0":
+            definitions_path = definitions_path.with_name("quality-gates-v0.1.0.json")
+        definitions = _load(definitions_path)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         return [_check("quality-gate-files-readable", False, str(exc))]
 
@@ -168,6 +170,8 @@ def validate_quality_gate_results(
             logical = logical and bool(failed)
         elif status == "not-run":
             logical = logical and not passed and not failed
+        elif status == "in-progress":
+            logical = logical and not failed and not required_checks <= passed
         elif status == "waived":
             logical = logical and gate.get("waiver_policy", {}).get("allowed") is True and not passed and not failed
         else:
@@ -178,11 +182,14 @@ def validate_quality_gate_results(
             (gate.get("gate_type") not in {"human", "hybrid"} or "human" in reviewer_types)
             and (gate.get("gate_type") not in {"machine", "hybrid"} or "machine" in reviewer_types)
         )
+        if status == "in-progress":
+            completed_types = {c['assessment'] for c in gate['checks'] if c['check_id'] in passed}
+            reviewer_ok = completed_types <= reviewer_types
         checks.append(_check(f"quality-gate:{gate_id}:reviewer", reviewer_ok, sorted(item for item in reviewer_types if item)))
 
         evidence_ok = True
         evidence_report = []
-        if status != "not-run":
+        if status != "not-run" and (status != "in-progress" or passed):
             evidence_paths = result.get("evidence_paths", [])
             evidence_ok = isinstance(evidence_paths, list) and bool(evidence_paths)
             for relative in evidence_paths if isinstance(evidence_paths, list) else []:
@@ -192,16 +199,18 @@ def validate_quality_gate_results(
                 evidence_ok = evidence_ok and exists
         checks.append(_check(f"quality-gate:{gate_id}:evidence", evidence_ok, evidence_report))
         status_matches_scope = (
-            status != "not-run" if gate_id in expected_completed else status == "not-run"
+            status not in {"not-run", "in-progress"} if gate_id in expected_completed else status == "not-run"
         )
         checks.append(_check(
             f"quality-gate:{gate_id}:scope-status",
             status_matches_scope,
             {"status": status, "expected": "continue" if gate_id in expected_completed else "not-run"},
         ))
-        if not status_matches_scope and status == 'not-run' and gate_id in expected_completed:
+        if not status_matches_scope and status in {'not-run', 'in-progress'} and gate_id in expected_completed:
+            remaining = [c for c in gate['checks'] if c['check_id'] in required_checks - passed]
             checks[-1].update(state='in-progress', stage=gate.get('stage'),
-                              waiting_kind='human' if gate.get('gate_type') == 'human' else 'work')
+                              waiting_kind='human' if remaining and all(c['assessment'] == 'human' for c in remaining) else 'work')
+            checks[-1]['evidence']['remaining_check_ids'] = [c['check_id'] for c in remaining]
             unfinished_gates.append(gate_id)
         ready_status = status in CONTINUE_STATES if gate_id in expected_completed else status == "not-run"
         continue_ready = (
@@ -210,6 +219,6 @@ def validate_quality_gate_results(
         )
 
     checks.append(_check("quality-gates-ready", continue_ready, {gate_id: item.get("status") for gate_id, item in result_by_id.items()}))
-    if not continue_ready and unfinished_gates and all(item.get('status') in CONTINUE_STATES | {'not-run'} for item in result_by_id.values()):
+    if not continue_ready and unfinished_gates and all(item.get('status') in CONTINUE_STATES | {'not-run', 'in-progress'} for item in result_by_id.values()):
         checks[-1].update(state='in-progress', waiting_kind='aggregate')
     return checks

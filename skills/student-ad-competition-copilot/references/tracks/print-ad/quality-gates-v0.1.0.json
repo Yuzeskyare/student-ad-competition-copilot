@@ -2,7 +2,7 @@
   "$schema": "../../schemas/track-quality-gates.schema.json",
   "document_type": "gate-definitions",
   "schema_version": "0.1.0",
-  "definition_set_id": "print-ad.0.2.0",
+  "definition_set_id": "print-ad.0.1.0",
   "track": "print-ad",
   "playbook": "playbook.md",
   "gates": [
@@ -163,7 +163,7 @@
           "check_id": "visual-only-meaning",
           "assessment": "human",
           "question": "遮住标题和说明后，核心动作或因果是否仍可识别？",
-          "pass_condition": "实际画面呈现主要对象关系；作者观察与真实用户反馈分开记录，独立受众测试仅在实际进行时声明。",
+          "pass_condition": "陌生观看者能描述主要对象关系。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "prototype",
           "evidence_required": true
@@ -172,7 +172,7 @@
           "check_id": "product-in-relation",
           "assessment": "human",
           "question": "产品在视觉关系中做了什么？",
-          "pass_condition": "产品或品类特征参与动作与意义；准确摆放、放大、设备用途正确或增加手脚不能单独证明创意成立。",
+          "pass_condition": "产品作用能通过画面而非说明复述。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "prototype",
           "evidence_required": true
@@ -363,7 +363,7 @@
         "review-board"
       ],
       "required_outputs": [
-        "communication-clarity-review",
+        "three-second-review",
         "brand-replacement-review",
         "full-size-review",
         "human-decision",
@@ -371,10 +371,10 @@
       ],
       "checks": [
         {
-          "check_id": "communication-clarity",
+          "check_id": "three-second-meaning",
           "assessment": "human",
-          "question": "实际观看后能否理解主要动作与传播判断，判断方法是否如实记录？",
-          "pass_condition": "画面无需作者长解释；定性认可与作者观察分别记录，不冒充计时或独立受众实测。",
+          "question": "短时观看后能否说出发生了什么和主要判断？",
+          "pass_condition": "回答不依赖创作者解释。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "prototype",
           "evidence_required": true

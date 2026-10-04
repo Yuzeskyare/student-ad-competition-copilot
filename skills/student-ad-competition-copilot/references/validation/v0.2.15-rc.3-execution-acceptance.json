@@ -1,0 +1,38 @@
+{
+  "candidate": "0.2.15-rc.3",
+  "status": "local-candidate",
+  "tests": [
+    {
+      "suite": "related",
+      "exit_code": 0,
+      "tests": 130
+    },
+    {
+      "suite": "review",
+      "exit_code": 0,
+      "tests": 33
+    },
+    {
+      "suite": "visual",
+      "exit_code": 0,
+      "tests": 55
+    },
+    {
+      "suite": "delivery",
+      "exit_code": 0,
+      "tests": 10
+    }
+  ],
+  "total_tests": 228,
+  "new_integration_tests": 40,
+  "feedback_items": 47,
+  "scope": "Dispatch inputs/control, current source relationships, lifecycle, local export and prior contracts",
+  "limitations": [
+    "Does not sandbox arbitrary scripts or intercept arbitrary host tools.",
+    "Bound evidence does not authenticate human or host identity.",
+    "Visual observations remain human/model judgments; no new artwork quality trial.",
+    "Historical records are readable but do not inherit new dispatch checks."
+  ],
+  "installed": false,
+  "published": false
+}

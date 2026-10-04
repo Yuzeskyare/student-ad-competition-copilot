@@ -45,5 +45,7 @@
     "run_status": "run-status.json"
   },
   "review_contract": "05-reviews/review-contract.json",
-  "revision_mode": "initial"
+  "revision_mode": "initial",
+  "execution_profile": "bound-production-v1",
+  "execution_control": "05-reviews/execution-control.json"
 }

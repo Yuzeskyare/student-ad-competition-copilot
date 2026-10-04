@@ -66,6 +66,18 @@
     },
     "challenge": {
       "type": "object"
+    },
+    "production_cancellations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/file"
+      }
+    },
+    "production_events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/file"
+      }
     }
   },
   "$defs": {
@@ -108,6 +120,83 @@
           "items": {
             "type": "string",
             "minLength": 1
+          }
+        },
+        "current_source": {
+          "type": "object",
+          "required": [
+            "native",
+            "preview",
+            "purpose",
+            "render_record",
+            "process_review"
+          ],
+          "properties": {
+            "native": {
+              "type": "object",
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            },
+            "preview": {
+              "type": "object",
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            },
+            "render_record": {
+              "type": "object",
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            },
+            "purpose": {
+              "enum": [
+                "creative-master",
+                "submission-version"
+              ]
+            },
+            "process_review": {
+              "type": "object",
+              "required": [
+                "render",
+                "status",
+                "observation"
+              ]
+            }
           }
         }
       }

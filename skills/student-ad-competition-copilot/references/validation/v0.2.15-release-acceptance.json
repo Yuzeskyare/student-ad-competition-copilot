@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.15",
+  "status": "release-qualified",
+  "change_id": "feedback-driven-creation-and-current-artwork-operations",
+  "promoted_candidate": "0.2.15-rc.4",
+  "candidate_manifest_sha256": "08b8431062a92f1c75d756a2830d85709e62ca04706d8203c7d3a102b46cb9d7",
+  "regression_tests_reused": 260,
+  "new_candidate_behavior_tests": 32,
+  "runtime_scripts_changed_since_candidate": false,
+  "trial_records_preserved": 58,
+  "historical_feedback_preserved": 47,
+  "real_source_render_comparisons": 3,
+  "project_submission_ready": false,
+  "project_full_visual_contract_pass": false,
+  "limits": [
+    "No new creative forward task after rc.4",
+    "No independent audience or brand-irreplaceability proof",
+    "No cross-device, print-proof or live quota-stop test",
+    "The original trial concept gate has a stale evidence hash, detected but not rewritten"
+  ],
+  "promotion_basis": "Verified candidate bytes and explicit user authorization to install and publish; not a new creative approval."
+}

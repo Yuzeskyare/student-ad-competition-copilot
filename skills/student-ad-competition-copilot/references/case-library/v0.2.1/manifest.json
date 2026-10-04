@@ -1,5 +1,5 @@
 {
-  "built_at": "2026-09-16",
+  "built_at": "2026-10-03",
   "content_policy": {
     "eligibility_input_fingerprint": "dcd5bedd99acdcb7fd6fad0e3a49ad65f939a70efc0a440ac6c35e20c44b5bf0",
     "eligibility_state_fingerprint": "32bcc13e50831676f47ccdb64a188f8a851e1d95fcc7e1c74dd54d1b4d12da60",
@@ -23,7 +23,7 @@
       "bytes": 113720,
       "path": "compliance-boundaries.jsonl",
       "records": 200,
-      "sha256": "1ab9e179a796edf7ffcdc866828ea86f67982fa90b1adc370390b265559194b0"
+      "sha256": "c30decf74e61f00b513959b335f59d15750e3b1575c8925658d3c18c88091365"
     },
     {
       "bytes": 207178,

@@ -129,6 +129,88 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "run_id",
+        "run_scope",
+        "units"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "2.1.0"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "run_scope": {
+          "enum": [
+            "production-candidate",
+            "delivery-candidate"
+          ]
+        },
+        "units": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "artifact",
+              "render_record",
+              "checks",
+              "critical_review",
+              "issues"
+            ],
+            "properties": {
+              "artifact": {
+                "type": "object"
+              },
+              "render_record": {
+                "type": "object"
+              },
+              "checks": {
+                "type": "array"
+              },
+              "preserved_regions": {
+                "type": "array"
+              },
+              "critical_review": {
+                "type": "array",
+                "minItems": 3
+              },
+              "issues": {
+                "type": "array"
+              },
+              "audience_tests": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "path",
+                    "sha256"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }

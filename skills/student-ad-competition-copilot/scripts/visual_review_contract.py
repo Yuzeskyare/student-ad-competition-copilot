@@ -2,7 +2,7 @@
 from datetime import datetime, timezone
 import math
 
-from review_contract import artifact, bound_file, coverage, inside, load, read_contract, timestamp
+from review_contract import artifact, bound_file, cancelled_requests, coverage, inside, latest, load, read_contract, timestamp
 
 BASE_CHECKS = {'composition', 'occlusion', 'text-legibility', 'residue', 'frontstage-role',
                'source-visibility', 'crop-safety', 'positive-art-direction'}
@@ -50,20 +50,20 @@ def observations(rows, required, view_ids, pending=None):
                 'Visual checks need a known status and a concrete observation or pending reason')
         require(state != 'fail', 'Observed visual failure: '+str(key))
         if key in {'composition', 'positive-art-direction', 'frontstage-role', 'orientation-comparison',
-                   'visual-only-meaning', 'three-second-recall', 'visible-element-delete-test'}:
+                   'visual-only-meaning', 'three-second-recall', 'communication-clarity', 'visible-element-delete-test'}:
             require(state != 'not-applicable', 'Core communication/design checks cannot be marked not-applicable')
         require(isinstance(row.get('views'), list) and row['views'] and set(row['views']) <= view_ids,
                 'Observation must cite current pixel views')
         mapped[key] = row
         if state in {'pending', 'not-run'}:
             require(pending is not None, 'Visual check is unfinished: '+str(key))
-            pending.append({'check': key, 'kind': 'human' if key in {'three-second-recall', 'visual-only-meaning', 'visible-element-delete-test'} else 'work',
+            pending.append({'check': key, 'kind': 'human' if key in {'three-second-recall', 'communication-clarity', 'visual-only-meaning', 'visible-element-delete-test'} else 'work',
                             'reason': row['observation']})
     require(required <= set(mapped), 'Missing applicable final-pixel observations: '+str(sorted(required-set(mapped))))
     return mapped
 
 
-def inspect_unit(root, unit, rows, track, proportional=False, pending=None):
+def inspect_unit(root, unit, rows, track, proportional=False, pending=None, qualitative=False):
     from PIL import Image, ImageChops
     target = unit['artifact']
     keys = artifact(root, target)
@@ -104,8 +104,24 @@ def inspect_unit(root, unit, rows, track, proportional=False, pending=None):
         actual = images[view['id']]
         require(expected.size == actual.size and ImageChops.difference(expected, actual).getbbox() is None,
                 'Detail pixels are not derived from the declared current native region')
-    required = BASE_CHECKS | ({'visual-only-meaning', 'three-second-recall', 'visible-element-delete-test'} if track == 'print-ad' else {'orientation-comparison'})
-    observations(expand_checks(unit['checks']) if proportional else unit['checks'], required, set(by_id), pending)
+    communication = 'communication-clarity' if qualitative else 'three-second-recall'
+    required = BASE_CHECKS | ({'visual-only-meaning', communication, 'visible-element-delete-test'} if track == 'print-ad' else {'orientation-comparison'})
+    checked = observations(expand_checks(unit['checks']) if proportional else unit['checks'], required, set(by_id), pending)
+    if qualitative:
+        require('three-second-recall' not in checked, 'Use communication-clarity; timed tests belong in optional audience_tests')
+        if track == 'print-ad':
+            judgment = checked[communication]
+            if judgment['status'] == 'pass':
+                method = judgment.get('assessment_method')
+                require(method in {'author-inspection', 'user-acceptance'}, 'Declare the actual qualitative assessment method')
+                if method == 'user-acceptance':
+                    decision = rows.get(judgment.get('human_decision'))
+                    current = latest([r for r in rows.values() if r['stage'] in {'representative', 'final'}
+                                      and keys <= coverage(root, r['reviewed_artifacts'])])
+                    require(decision is not None and decision == current and decision['decision'] == 'pass'
+                            and keys <= coverage(root, decision['reviewed_artifacts']),
+                            'User acceptance must cite an actual decision for this version and scope')
+        inspect_audience_tests(root, unit, keys)
     if proportional:
         inspect_proportional(root, unit, by_id, pending)
         return keys
@@ -223,6 +239,28 @@ def expand_checks(rows):
     return expanded
 
 
+def inspect_audience_tests(root, unit, keys):
+    """Optional test records never arise from a qualitative acceptance checkbox."""
+    tests = unit.get('audience_tests', [])
+    require(isinstance(tests, list), 'audience_tests must be a list of bound records')
+    for ref in tests:
+        record = load(bound_file(root, ref))
+        require(artifact(root, record['artifact']) == keys, 'Audience test must bind the reviewed version/unit')
+        require(record.get('method') in {'timed-recall', 'untimed-comprehension'}, 'Unknown audience test method')
+        require(nonempty(record.get('prompt')) and type(record.get('blinded')) is bool,
+                'Record the actual prompt and whether the test was blinded')
+        if record['method'] == 'timed-recall':
+            duration = record.get('exposure_seconds')
+            require(type(duration) in (int, float) and math.isfinite(duration) and duration > 0,
+                    'A timed test needs its actual exposure duration')
+        answers = record.get('responses')
+        require(isinstance(answers, list) and answers and all(
+            isinstance(a, dict) and nonempty(a.get('participant_id')) and nonempty(a.get('response')) for a in answers),
+            'Keep actual participant responses; approval alone is not recall evidence')
+        require(len({a['participant_id'] for a in answers}) == len(answers), 'Duplicate audience participant')
+        bound_file(root, record['source'])
+
+
 def inspect_proportional(root, unit, views, pending=None):
     """Validate applicable evidence, never infer that a model actually saw pixels."""
     def observed(row):
@@ -264,7 +302,8 @@ def inspect_proportional(root, unit, views, pending=None):
         ids.add(issue['id'])
         require(nonempty(issue.get('problem')) and nonempty(issue.get('affected_scope')),
                 'Record the observed problem and its affected scope')
-        require(issue.get('status') == 'resolved', 'Observed issue remains unresolved')
+        require(issue.get('status') == 'resolved', 'Observed issue remains unresolved: '+issue['problem']+
+                '; scope='+issue['affected_scope']+'; return to '+str(issue.get('return_stage', 'the responsible creative/production stage')))
         observed(issue)
         # Measurements are conditional on a concrete need, not required for every object.
         for measure in issue.get('measurements', []):
@@ -293,19 +332,29 @@ def validate_visual_review(root, manifest):
         root = root.resolve()
         contract, rows = read_contract(root, manifest)
         pack = load(inside(root, manifest['artifacts']['visual_review']))
-        require(pack.get('schema_version') in {'1.0.0', '2.0.0'} and pack.get('run_id') == manifest['run_id'] and
+        require(pack.get('schema_version') in {'1.0.0', '2.0.0', '2.1.0'} and pack.get('run_id') == manifest['run_id'] and
                 pack.get('run_scope') == manifest['run_scope'], 'Visual evidence identity/scope mismatch')
         if manifest['run_scope'] == 'delivery-candidate':
             expected = coverage(root, contract['final_artifacts'])
         else:
             expected = set()
+            cancelled = cancelled_requests(root, contract)
+            selected = manifest.get('visual_review_request_ids')
+            if selected is not None:
+                require(isinstance(selected,list) and selected and all(isinstance(x,str) and x for x in selected)
+                        and len(set(selected))==len(selected),'Select explicit unique current production request IDs')
+                known={load(bound_file(root,r))['id'] for r in contract['production_requests']}
+                require(set(selected)<=known and not set(selected)&set(cancelled),'Visual scope names unknown or cancelled requests')
             for ref in contract['production_requests']:
-                expected |= coverage(root, load(bound_file(root, ref))['representatives'])
+                request = load(bound_file(root, ref))
+                if request['id'] not in cancelled and (selected is None or request['id'] in selected):
+                    expected |= coverage(root, request['representatives'])
         require(expected, 'Visual evidence needs explicit production or delivery scope')
         actual = set(); pending = []
         for unit in pack['units']:
             unit_pending = []
-            keys = inspect_unit(root, unit, rows, manifest['category'], pack['schema_version'] == '2.0.0', unit_pending)
+            keys = inspect_unit(root, unit, rows, manifest['category'], pack['schema_version'] != '1.0.0', unit_pending,
+                                qualitative=pack['schema_version'] == '2.1.0')
             pending.extend(dict(item, units=unit['artifact']['units']) for item in unit_pending)
             require(not actual & keys, 'Duplicate reviewed visual unit')
             actual |= keys
@@ -314,6 +363,9 @@ def validate_visual_review(root, manifest):
             return [{'name': 'final-pixel-evidence', 'passed': False, 'state': 'in-progress',
                      'waiting_kind': 'human' if all(p['kind'] == 'human' for p in pending) else 'work',
                      'evidence': pending}]
-        return [{'name':'final-pixel-evidence','passed':True,'evidence':'Current render coverage and applicable evidence checked; record validation does not certify visual judgment or human approval.'}]
+        return [{'name':'final-pixel-evidence','passed':True,
+                 'evidence':'Current render coverage and applicable evidence checked; record validation does not certify visual judgment, human approval or an audience experiment.',
+                 'assessment_protocol': pack['schema_version'],
+                 'audience_test_performed': 'not-inferred-from-check-status'}]
     except (OSError, ValueError, KeyError, TypeError, AttributeError, ImportError) as exc:
         return [{'name':'final-pixel-evidence','passed':False,'evidence':str(exc)}]

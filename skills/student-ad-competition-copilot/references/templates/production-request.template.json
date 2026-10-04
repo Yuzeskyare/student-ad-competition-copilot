@@ -1,0 +1,19 @@
+{
+  "id": "replace-with-new-request-id",
+  "execution_profile": "bound-production-v1",
+  "operation": "local",
+  "output_scope": [
+    "replace-with-actual-member"
+  ],
+  "representatives": [],
+  "command": [],
+  "input_files": [],
+  "no_file_inputs_reason": null,
+  "brand_asset_mode": "restricted",
+  "asset_scope": {
+    "basis": null,
+    "allowed_assets": [],
+    "used_origins": []
+  },
+  "output_files": []
+}

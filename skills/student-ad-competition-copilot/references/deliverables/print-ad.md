@@ -26,12 +26,20 @@
 
 ## 技术验证
 
+### 源层分辨率与可编辑范围
+
+分别报告导出画布像素/DPI、生成场景源像素及实际放置尺寸、官方产品素材、原生文字/矢量层。栅格有效PPI=实际使用的源像素÷放置英寸；裁切按所用像素区域计算，旋转按源层自身的放置宽高计算，不能用旋转后外接框。1055×1491铺满A3约90ppi，即使导出1754×2481并写入150dpi，原生场景细节仍未增加。规格通过仅代表已检查的文件条件。
+
+需要确定性计算时，validate_submission.py 可加 --source-manifest <源层JSON>。JSON含 layers 数组：每层 path（相对该JSON或绝对路径）和 kind（raster / vector）；栅格另含 placed_mm:[宽,高]，可选 used_pixel_bounds:[左,上,右,下]。有真实源层清晰度要求时才写 minimum_ppi 和 requirement_basis；否则只报告，不设统一最低PPI。向量声明不认证内部没有位图，嵌入的栅格层须独立列出。未提供清单时报告 not-performed，不以导出DPI暗示源层已验证。
+
+分组嵌图SVG须说明哪些文字/产品/背景可独立编辑，不能称为全矢量或PSD。有效PPI不足的实际影响按最终画面与使用规格判断；仅披露不能豁免已明确的硬规格。
+
 命令中的解释器占位符、路径和不同 shell 写法见[统一执行约定](../workflow/image-tool-adaptation.md#python-与命令执行约定)。
 
 ```powershell
 & "<workspace-python>" scripts/validate_submission.py --self-check
 & "<workspace-python>" scripts/validate_submission.py --competition <赛事> --input-dir <成稿目录> --include <实际作品glob> --aigc-used <yes|no|unknown> [--aigc-record <记录>] --output <结果.json>
-& "<workspace-python>" scripts/validate_print_ad_run.py --run-dir <运行目录> --output <运行验收.json>
+& "<workspace-python>" scripts/validate_print_ad_run.py --run-dir <运行目录> --path-base run-dir --output <新的运行验收.json>
 ```
 
 机器结果只证明文件规格、路径、哈希和记录完整性。作品交付前使用交付证据合同核对当前赛事规则、实际提交规格与外部研究引用。素材/字体使用依据与AIGC/平台申报在完成后提醒；报名、上传、回执不在默认范围。

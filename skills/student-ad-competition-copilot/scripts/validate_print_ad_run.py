@@ -73,8 +73,12 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
     checks: list[dict] = []
     try:
         manifest = load_json(manifest_path)
-    except Exception as exc:
-        return {"schema_version": "0.1.0", "status": "failed", "checks": [], "errors": [str(exc)]}
+    except (OSError, ValueError) as exc:
+        reason = f"{manifest_path}: {exc}"
+        return {"schema_version": "0.1.0", "status": "failed",
+                "checks": [check("manifest-readable", False, reason)],
+                "checks_total": 1, "checks_passed": 0,
+                "failure_names": ["manifest-readable"], "errors": [reason]}
 
     checks.append(check("manifest-schema", manifest.get("schema_version") in {"0.1.0", "0.2.0", "0.3.0", "0.4.0"}, manifest.get("schema_version")))
     checks.append(check("category-print-ad", manifest.get("category") == "print-ad", manifest.get("category")))
@@ -137,6 +141,8 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
             method_text = method_path.read_text(encoding="utf-8-sig")
             checks.append(check("used-methods-documented", all(item in method_text for item in used), used))
 
+    from review_contract import concept_evidence_checks
+    checks.extend(concept_evidence_checks(run_dir, manifest))
     checks.extend(validate_visual_review(run_dir, manifest))
     if manifest.get('schema_version') == '0.4.0' and 'quality_gate_results' in resolved:
         gates = load_json(resolved['quality_gate_results'])
@@ -167,8 +173,10 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-dir", type=Path)
-    parser.add_argument("--manifest", type=Path)
-    parser.add_argument("--output", type=Path)
+    parser.add_argument("--manifest", type=Path, help="Absolute path or relative to --path-base (default: cwd, for compatibility)")
+    parser.add_argument("--output", type=Path, help="New receipt path; same --path-base as --manifest")
+    parser.add_argument("--path-base", choices=("cwd", "run-dir"), default="cwd",
+                        help="Use run-dir for the unified-entrypoint convention; legacy cwd remains the default")
     parser.add_argument("--self-check", action="store_true")
     args = parser.parse_args()
     if args.self_check:
@@ -182,11 +190,15 @@ def main() -> int:
     if args.run_dir is None or args.output is None:
         parser.error("--run-dir and --output are required unless --self-check is used")
     run_dir = args.run_dir.resolve()
-    manifest = args.manifest.resolve() if args.manifest else run_dir / "print-ad-run-manifest.json"
+    base = run_dir if args.path_base == "run-dir" else Path.cwd()
+    manifest = (base / args.manifest).resolve() if args.manifest else run_dir / "print-ad-run-manifest.json"
+    output = (base / args.output).resolve()
+    if output.exists():
+        parser.error("Use a new output receipt; do not overwrite historical evidence")
     result = validate(run_dir, manifest)
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({key: result[key] for key in ("status", "checks_total", "checks_passed", "failure_names")}, ensure_ascii=False))
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({key: result.get(key, []) for key in ("status", "checks_total", "checks_passed", "failure_names", "errors")}, ensure_ascii=False))
     return {"passed": 0, "in-progress": 2}.get(result["status"], 1)
 
 

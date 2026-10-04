@@ -35,6 +35,11 @@
     ],
     "reason": "replace with the actual single-or-series rationale and member increments",
     "user_requested_series": false,
-    "shared_mechanism": "replace with the selected visual mechanism"
-  }
+    "shared_mechanism": "replace with the selected visual mechanism",
+    "member_roles": [],
+    "shared_art_direction": "replace with actual common visual language",
+    "scope_basis": []
+  },
+  "execution_profile": "bound-production-v1",
+  "execution_control": "05-reviews/execution-control.json"
 }

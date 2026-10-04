@@ -10,27 +10,40 @@ from review_contract import digest, inside
 
 
 def main():
+    for stream in (sys.stdout,sys.stderr):
+        if hasattr(stream,'reconfigure'):stream.reconfigure(encoding='utf-8')
     parser=argparse.ArgumentParser(description=__doc__)
-    for name in ('run-dir','source','version','unit','native','renderer','execution-evidence','output-dir'):
+    for name in ('run-dir','source','version','unit','renderer','execution-evidence','output-dir'):
         parser.add_argument('--'+name,required=True)
+    parser.add_argument('--native',required=True,help='Existing raster render (PNG/JPEG), not SVG; --source identifies the editable source')
     parser.add_argument('--target-renderer-verified',action='store_true')
-    parser.add_argument('--crop',action='append',type=lambda s:[int(v) for v in s.split(',')])
+    group=parser.add_mutually_exclusive_group()
+    group.add_argument('--crop',action='append',type=lambda s:[int(v) for v in s.split(',')],metavar='LEFT,TOP,RIGHT,BOTTOM',help='Pixel edges, NOT width/height; repeat for multiple details')
+    group.add_argument('--crop-xywh',action='append',type=lambda s:[int(v) for v in s.split(',')],metavar='LEFT,TOP,WIDTH,HEIGHT',help='Explicit alternative; never inferred from --crop values')
     parser.add_argument('--full-page-detail',action='store_true',help='Explicit legacy/full-page enlargement when needed')
     parser.add_argument('--zoom',type=float,default=2,help='Detail enlargement from 1.5 to 4 inclusive (default: 2)')
     parser.add_argument('--thumbnail-width',type=int,default=320)
     args=parser.parse_args()
-    from PIL import Image
+    from PIL import Image, UnidentifiedImageError
     root=Path(args.run_dir).resolve()
     source,native,evidence=[inside(root,v) for v in (args.source,args.native,args.execution_evidence)]
     if not all(p.is_file() for p in (source,native,evidence)):parser.error('Source, native render and renderer execution evidence must exist')
     dest=inside(root,args.output_dir)
     if dest.exists():parser.error('Use a new output directory; do not overwrite reviewed views')
-    image=Image.open(native).convert('RGB')
+    try:
+        with Image.open(native) as source_image:
+            image=source_image.convert('RGB')
+    except (UnidentifiedImageError,OSError) as exc:
+        parser.error('--native must be a readable raster render; render SVG in the target application first: '+str(exc))
     crops=args.crop or ([[0,0,image.width,image.height]] if args.full_page_detail else [])
+    if args.crop_xywh:
+        if any(len(c)!=4 or c[2]<=0 or c[3]<=0 for c in args.crop_xywh):
+            parser.error('--crop-xywh requires left,top,positive-width,positive-height')
+        crops=[[x,y,x+w,y+h] for x,y,w,h in args.crop_xywh]
     if not 1.5<=args.zoom<=4 or args.thumbnail_width<1:parser.error('--zoom must be from 1.5 to 4; --thumbnail-width must be positive')
     for crop in crops:
         if len(crop)!=4 or not 0<=crop[0]<crop[2]<=image.width or not 0<=crop[1]<crop[3]<=image.height:
-            parser.error('Crop must lie within native render, in pixels')
+            parser.error(f'Crop {crop} must lie within {image.width}x{image.height}; --crop uses left,top,right,bottom. For width/height use --crop-xywh. Example full image: --crop 0,0,{image.width},{image.height}')
     def ref(path):return {'path':path.relative_to(root).as_posix(),'sha256':digest(path)}
     dest.mkdir(parents=True)
     views=[{'id':'native','scale':'native','file':ref(native)}]
@@ -46,7 +59,7 @@ def main():
             'target_renderer_verified':args.target_renderer_verified,'execution_evidence':ref(evidence),
             'created_at':datetime.now(timezone.utc).isoformat(),'views':views}
     output=dest/'render-record.json';output.write_text(json.dumps(record,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    print(json.dumps({'render_record':ref(output),'views':len(views),'visual_quality_assessed':False},ensure_ascii=False))
+    print(json.dumps({'render_record':ref(output),'views':len(views),'files':[v['file'] for v in views],'visual_quality_assessed':False},ensure_ascii=False))
 
 
 if __name__=='__main__':

@@ -179,8 +179,55 @@ def read_contract(root, manifest):
     return contract, decisions(root, contract)
 
 
-def preflight(root, manifest, request_id):
+def concept_evidence_checks(root, manifest):
+    """Check explicit top-level concept-gate evidence refs; no recursive history rewrite."""
+    if manifest.get('execution_profile') != 'bound-production-v1':
+        return []
+    relative = manifest.get('artifacts', {}).get('concept_gate')
+    if not relative:
+        return []
+    try:
+        document = load(inside(root, relative))
+        evidence = document.get('evidence', [])
+        refs = [r for r in evidence if isinstance(r, dict) and 'path' in r and 'sha256' in r] if isinstance(evidence, list) else []
+        for ref in refs:
+            bound_file(root, ref)
+        return [dict(name='concept-evidence-bindings', passed=True, evidence=dict(explicit_refs_checked=len(refs)))]
+    except (OSError,ValueError,KeyError,TypeError,AttributeError) as exc:
+        return [dict(name='concept-evidence-bindings', passed=False, evidence=str(exc))]
+
+
+def validate_request_inputs(root, request):
+    """Optional byte bindings protect local scripts and scoped brand assets.
+
+    These checks cannot detect undeclared inputs or authenticate the supplied
+    scope evidence. Historical requests without these fields remain readable.
+    """
+    inputs = request.get('input_files', [])
+    if not isinstance(inputs, list):
+        raise ValueError('input_files must be a list of bound files')
+    for ref in inputs:
+        bound_file(root, ref)
+    if 'asset_scope' not in request:
+        return
+    scope = request['asset_scope']
+    if not isinstance(scope, dict):
+        raise ValueError('asset_scope must be a scope record')
+    bound_file(root, scope.get('basis'))
+    allowed, used = scope.get('allowed_assets'), scope.get('used_origins')
+    if not isinstance(allowed, list) or not isinstance(used, list):
+        raise ValueError('Asset scope needs allowed_assets and used_origins lists')
+    allowed_hashes = {ref['sha256'] for ref in allowed if bound_file(root, ref)}
+    for ref in used:
+        bound_file(root, ref)
+        if ref['sha256'] not in allowed_hashes:
+            raise ValueError('Used brand asset is outside the bound allowed asset set')
+
+
+def preflight(root, manifest, request_id, *, for_dispatch=False):
     contract, rows = read_contract(root, manifest)
+    if request_id in cancelled_requests(root, contract):
+        raise ValueError("Production request was cancelled before execution; create a new request to resume")
     matches = []
     for ref in contract.get("production_requests", []):
         request = load(bound_file(root, ref))
@@ -189,11 +236,54 @@ def preflight(root, manifest, request_id):
     if len(matches) != 1:
         raise ValueError("Production request ID must resolve exactly once")
     request, row = request_decision(root, matches[0], rows)
+    validate_request_inputs(root, request)
+    control = None
+    if for_dispatch:
+        from execution_contract import dispatch_inputs, validate_events
+        events = validate_events(root, contract)
+        if matches[0]['sha256'] in events:
+            raise ValueError('Production already started; resume its actual call, do not dispatch again')
+        for receipt_ref in contract['production_receipts']:
+            existing = load(bound_file(root, receipt_ref))
+            if existing.get('request_sha256') == matches[0]['sha256'] and existing.get('action_started_at'):
+                raise ValueError('Production already started; use a new request for an authorized retry')
+        control = dispatch_inputs(root, manifest, contract, request)
     return {"schema_version": "1.0.0", "run_id": manifest["run_id"], "status": "authorized",
             "request_id": request_id, "request_sha256": matches[0]["sha256"],
             "decision_id": row["id"], "decision_sha256": fingerprint(row),
             "authorization_kind": row["stage"], "checked_at": datetime.now(timezone.utc).isoformat(),
-            "content_pass_granted": False, "request": request}
+            "content_pass_granted": False, "dispatch_checked": for_dispatch,
+            "execution_control": control, "request": request}
+
+
+def cancelled_requests(root, contract):
+    """Keep an unexecuted request and its reason without inventing a production receipt."""
+    cancelled = {}
+    requests = {ref['sha256']: load(bound_file(root, ref)) for ref in contract['production_requests']}
+    receipts = [load(bound_file(root, ref)) for ref in contract['production_receipts']]
+    refs = contract.get('production_cancellations', [])
+    from execution_contract import validate_events
+    started_events = validate_events(root, contract)
+    if not isinstance(refs, list):
+        raise ValueError("Production cancellations must be bound records")
+    for ref in refs:
+        record = load(bound_file(root, ref))
+        request = requests.get(record.get('request_sha256'))
+        if (not request or record.get('request_id') != request.get('id')
+                or record.get('executed') is not False
+                or not isinstance(record.get('reason'), str) or not record['reason'].strip()
+                or timestamp(record.get('cancelled_at')) > datetime.now(timezone.utc)):
+            raise ValueError("Cancellation needs a matching unexecuted request, reason and actual time")
+        if request['id'] in cancelled:
+            raise ValueError("Duplicate production cancellation")
+        if record['request_sha256'] in started_events:
+            raise ValueError('Started external production cannot be cancelled before execution')
+        if any(r.get('request_sha256') == record['request_sha256'] and
+               (r.get('executed') is True or r.get('action_started_at') or
+                r.get('production_state') in {'running', 'completed', 'failed'}) for r in receipts):
+            raise ValueError("Started production cannot be classified as cancelled before execution")
+        cancelled[request['id']] = record
+    return cancelled
 
 
 def validate_receipts(root, contract, rows):
@@ -202,10 +292,15 @@ def validate_receipts(root, contract, rows):
     if not isinstance(requests, list) or not requests or not isinstance(receipts, list):
         raise ValueError("Production/delivery requires requests and preproduction receipts")
     parsed = [load(bound_file(root, ref)) for ref in receipts]
+    from execution_contract import PROFILE, validate_events
+    events = validate_events(root, contract)
+    cancelled = cancelled_requests(root, contract)
     ids = []
     for ref in requests:
         request = load(bound_file(root, ref))
         ids.append(request["id"])
+        if request['id'] in cancelled:
+            continue
         # Verify the original decision, not a later final approval; a later
         # rejection affects current content state without rewriting history.
         matching = [r for r in parsed if r.get("request_sha256") == ref["sha256"] and r.get("request_id") == request["id"]]
@@ -231,8 +326,25 @@ def validate_receipts(root, contract, rows):
                       and receipt.get("decision_sha256") == fingerprint(row))
         if not valid:
             raise ValueError("Receipt is stale, precedes approval, or does not bind the production inputs")
+        if request.get('execution_profile') == PROFILE:
+            if not any(r.get('dispatch_checked') is True for r in matching):
+                raise ValueError('New production needs dispatch-time checks, not a historical authorization check')
+            if request.get('operation') == 'local':
+                finished = [r for r in matching if r.get('production_state') in {'completed', 'failed'}]
+                if not finished:
+                    raise ValueError('Local production has not finished')
+                for receipt in finished:
+                    if receipt['production_state'] == 'completed':
+                        if {r['path'] for r in receipt.get('outputs', [])} != set(request['output_files']):
+                            raise ValueError('Completed production must bind declared outputs')
+                        for output in receipt['outputs']:
+                            bound_file(root, output)
+            elif events.get(ref['sha256'], {}).get('state') not in {'saved', 'failed'}:
+                raise ValueError('External production has no finished host lifecycle evidence')
     if len(set(ids)) != len(ids):
         raise ValueError("Duplicate production request IDs")
+    if not set(ids) - set(cancelled):
+        raise ValueError("Production/delivery needs an active production request, not only cancellations")
 
 
 def validate_copy(root, manifest, contract, rows):
@@ -359,6 +471,8 @@ def validate_review_contract(root, manifest):
                 delivery = load(inside(root, manifest["artifacts"]["delivery_manifest"]))
                 if coverage(root, delivery.get("final_artifacts")) != coverage(root, refs):
                     raise ValueError("Reviewed print series differs from the actual delivery manifest")
+                from current_artwork_contract import validate_current
+                validate_current(root, manifest, contract)
             # Gate declarations cannot override pending or rejected content.
             gates = load(inside(root, manifest["artifacts"]["quality_gate_results"]))
             definitions = load(Path(__file__).resolve().parents[1] / "references/tracks" / manifest["category"] / "quality-gates.json")

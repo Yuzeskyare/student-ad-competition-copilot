@@ -30,9 +30,9 @@ This skill is under active development, with plans to support more competition t
 
 ### 1. Download the skill
 
-Click [Download the v0.2.14 installation package (ZIP)](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/download/v0.2.14/student-ad-competition-copilot-v0.2.14.zip) and save the file to your computer.
+Click [Download the v0.2.15 installation package (ZIP)](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/download/v0.2.15/student-ad-competition-copilot-v0.2.15.zip) and save the file to your computer.
 
-If you use the [release page](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/tag/v0.2.14), expand **Assets** near the bottom and click `student-ad-competition-copilot-v0.2.14.zip`. Use this ZIP for installation; `Source code (zip)` and `Source code (tar.gz)` are archives of the repository source.
+If you use the [release page](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/tag/v0.2.15), expand **Assets** near the bottom and click `student-ad-competition-copilot-v0.2.15.zip`. Use this ZIP for installation; `Source code (zip)` and `Source code (tar.gz)` are archives of the repository source.
 
 ### 2. Ask your AI agent to install it
 
@@ -40,7 +40,7 @@ In an agent chat that can work with local files, attach the ZIP or provide its f
 
 ```text
 Install the Daguangsai & Academy Award Skill (student-ad-competition-copilot).
-Version: v0.2.14
+Version: v0.2.15
 Package: [attach the ZIP or provide its full local path]
 Follow this agent's installation procedure and keep the complete skill package,
 including all supporting files. Back up any existing version before updating.

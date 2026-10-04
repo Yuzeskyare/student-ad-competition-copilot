@@ -164,7 +164,7 @@
       ],
       "properties": {
         "gate_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*\\.[a-z0-9]+(?:-[a-z0-9]+)*$"},
-        "status": {"enum": ["not-run", "pass", "pass-with-boundaries", "fail", "waived"]},
+        "status": {"enum": ["not-run", "in-progress", "pass", "pass-with-boundaries", "fail", "waived"]},
         "evidence_paths": {
           "type": "array",
           "uniqueItems": true,

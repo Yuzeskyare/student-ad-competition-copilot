@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.15-rc.2",
+  "status": "local-candidate",
+  "checked_at": "2026-10-03",
+  "change_id": "two-trials-evidence-assets-source-and-recovery",
+  "feedback_items": {
+    "inherited_trial": 22,
+    "five_brief_issues": 25,
+    "requirements": 8,
+    "regression_groups": 9
+  },
+  "verification": {
+    "related_regressions": 90,
+    "review_contract_regressions": 33,
+    "visual_contract_regressions": 55,
+    "delivery_contract_regressions": 10,
+    "runtime_self_checks": 8,
+    "historical_print_run": "passed; approved artifacts preserved, delivery_complete true, method_validated false",
+    "new_five_brief_regressions": 25,
+    "closed_artworks_readonly": {
+      "artworks": 14,
+      "files": 42,
+      "dependency_references": 26,
+      "matching": true
+    },
+    "svg_scan": "14 sources inspected; no checked process-label candidates; not a new render or pixel approval"
+  },
+  "compatibility": {
+    "visual_protocols": [
+      "1.0.0",
+      "2.0.0",
+      "2.1.0"
+    ],
+    "print_gate_definitions": [
+      "print-ad.0.1.0",
+      "print-ad.0.2.0"
+    ],
+    "legacy_cli_default": "cwd",
+    "new_cli_option": "--path-base run-dir"
+  },
+  "not_claimed": [
+    "Independent audience or timed recall testing",
+    "New image generation or improved creative performance",
+    "Replay of the original production conversation",
+    "New live external asynchronous tool testing",
+    "New font-subsetting rendering experiment",
+    "Installation, remote publication or competition submission",
+    "New live quota-stop/cancellation or host-event adapter test",
+    "Automatic detection of undeclared assets, call authenticity, aliases or visual defects"
+  ]
+}

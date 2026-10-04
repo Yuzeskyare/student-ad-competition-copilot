@@ -394,8 +394,57 @@
         "shared_mechanism": {
           "type": "string",
           "minLength": 1
+        },
+        "member_roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "unit",
+              "benefit_or_action",
+              "contribution"
+            ]
+          }
+        },
+        "shared_art_direction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope_basis": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "sha256"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
         }
       }
+    },
+    "visual_review_request_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1},
+      "description": "Explicit current production requests only; delivery still covers all final_artifacts. Omitted preserves legacy production coverage."
+    },
+    "execution_profile": {
+      "const": "bound-production-v1"
+    },
+    "execution_control": {
+      "type": "string",
+      "minLength": 1
     }
   },
   "allOf": [

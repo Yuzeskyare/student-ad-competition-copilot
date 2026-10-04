@@ -1,0 +1,33 @@
+{
+  "candidate": "0.2.15-rc.4",
+  "status": "local-candidate",
+  "total_tests": 260,
+  "new_behavior_tests": 32,
+  "trial_records": 58,
+  "historical_feedback": 47,
+  "work_packages": [
+    "K1",
+    "K2",
+    "K3",
+    "K4",
+    "K5",
+    "K6"
+  ],
+  "real_evidence_members": 3,
+  "actual_scope": [
+    "Current-set snapshot and human-event idempotency",
+    "Actual lifecycle chain append",
+    "Explicit production scope selector without reducing delivery coverage",
+    "Crop coordinates/raster input/UTF-8 paths",
+    "Exact native text object edits and real SVG rerender",
+    "Evidence versus current-files export"
+  ],
+  "limits": [
+    "No new creative task or independent user evaluation",
+    "Source rendering does not add native image detail",
+    "No cross-device/print-proof or live stop-signal test",
+    "Structural guards do not certify semantic quality or host identity"
+  ],
+  "installed": false,
+  "published": false
+}
