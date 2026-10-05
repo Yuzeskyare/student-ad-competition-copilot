@@ -30,9 +30,9 @@
 
 ### 1. 下载 Skill
 
-点击 [下载 v0.2.15 安装包（ZIP）](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/download/v0.2.15/student-ad-competition-copilot-v0.2.15.zip)，将文件保存到电脑。
+点击 [下载 v0.2.16 安装包（ZIP）](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/download/v0.2.16/student-ad-competition-copilot-v0.2.16.zip)，将文件保存到电脑。
 
-如果通过 [版本下载页](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/tag/v0.2.15) 下载，请展开页面下方的 **Assets（附件）**，点击 `student-ad-competition-copilot-v0.2.15.zip`。用于安装的是这个 ZIP；`Source code (zip)` 和 `Source code (tar.gz)` 是仓库源码压缩包。
+如果通过 [版本下载页](https://github.com/Yuzeskyare/student-ad-competition-copilot/releases/tag/v0.2.16) 下载，请展开页面下方的 **Assets（附件）**，点击 `student-ad-competition-copilot-v0.2.16.zip`。用于安装的是这个 ZIP；`Source code (zip)` 和 `Source code (tar.gz)` 是仓库源码压缩包。
 
 ### 2. 交给 AI 安装
 
@@ -40,7 +40,7 @@
 
 ```text
 请帮我安装大广赛学院奖 Skill（student-ad-competition-copilot）。
-版本：v0.2.15
+版本：v0.2.16
 安装包：[附上 ZIP，或填写下载文件的完整路径]
 请按照当前 Agent 的安装方式，安装完整技能包，保留全部配套文件。
 如果已有同名 Skill，先备份再更新。

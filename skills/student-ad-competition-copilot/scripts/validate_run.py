@@ -35,6 +35,30 @@ def repair_before_review(run_result):
     return repairs
 
 
+def technical_diagnostics(root, manifest, contract):
+    """Explain print report binding without changing acceptance or approvals."""
+    if manifest.get('category') != 'print-ad':
+        return []
+    try:
+        report_path = inside(root, manifest['artifacts']['technical_validation'])
+        report = load(report_path)
+        expected = {(str(inside(root, r['path'])), r['sha256']) for r in contract['final_artifacts']}
+        actual = {(str(Path(r['path']).resolve()), r['sha256']) for r in report['files']}
+        result = []
+        if not expected:
+            result.append({'code': 'empty-current-artifacts'})
+        if expected != actual:
+            result.append({'code': 'technical-artifact-binding-mismatch',
+                'expected_only': [dict(path=p, sha256=h) for p,h in sorted(expected-actual)],
+                'reported_only': [dict(path=p, sha256=h) for p,h in sorted(actual-expected)]})
+        if report.get('technical_validation_status') != 'pass' or report.get('failure_names'):
+            result.append({'code': 'file-profile-not-passed', 'status': report.get('technical_validation_status'),
+                           'failure_names': report.get('failure_names', [])})
+        return result
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+        return [{'code': 'technical-report-unavailable-or-invalid', 'reason': str(exc)}]
+
+
 def technical_state(root,manifest,run_result,contract):
     checks={r['name']:r['passed'] for r in run_result.get('checks',[])}
     if manifest['category']=='ad-copy':
@@ -45,7 +69,7 @@ def technical_state(root,manifest,run_result,contract):
         expected={(str(inside(root,r['path'])),r['sha256']) for r in contract['final_artifacts']}
         actual={(str(Path(r['path']).resolve()),r['sha256']) for r in report['files']}
         return bool(expected) and expected==actual and report.get('technical_validation_status')=='pass' and not report.get('failure_names')
-    except (OSError,ValueError,KeyError,TypeError):return False
+    except (OSError,ValueError,KeyError,TypeError,AttributeError):return False
 
 
 def inspect_handoff(root,manifest,contract,content,technical,path):
@@ -160,6 +184,7 @@ def validate(root,manifest_path,handoff_path=None):
     state = 'failed' if errors or not current or repairs or content == 'fail' else ('passed' if passed else 'in-progress')
     return dict(schema_version='1.1.0',run_id=manifest['run_id'],track=track,status=state,
         repair_checks=repairs,waiting_checks=classified['waiting_checks'],waiting_details=classified['waiting_details'],
+        technical_diagnostics=technical_diagnostics(root,manifest,contract),
         technical_pass=bool(technical),content_pass=content_pass,content_review_status=content if current else 'unverified',
         method_validated=method,delivery_complete=delivery_complete,post_delivery_reminders=handoff['post_delivery_reminders'] if handoff else [],submission_ready=submission_ready,review_contract_status=run_result.get('review_contract_status'),
         run_validation=run_result,handoff=handoff,errors=errors,next_action=next_action)

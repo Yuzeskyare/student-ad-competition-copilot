@@ -134,6 +134,7 @@ def self_check(profiles: Path) -> int:
 def validate_file(path: Path, profile: dict, Image, ImageSequence) -> tuple[dict, list[dict]]:
     with Image.open(path) as image:
         image_format = image.format
+        image.load()  # Detect damaged pixel data, not only a readable header.
         size = image.size
         dpi = dpi_tuple(image)
         frames = [
@@ -141,9 +142,9 @@ def validate_file(path: Path, profile: dict, Image, ImageSequence) -> tuple[dict
             for index, frame in enumerate(ImageSequence.Iterator(image))
         ]
         allowed_modes = set(profile["allowed_modes_by_format"].get(image_format, []))
-        frames_valid = bool(frames) and all(
-            frame["mode"] in allowed_modes and tuple(frame["size"]) == size for frame in frames
-        )
+        mode_rule_available = image_format in profile["allowed_modes_by_format"]
+        frames_valid = bool(frames) and all(frame["mode"] in allowed_modes for frame in frames)
+        frame_sizes_valid = bool(frames) and all(tuple(frame["size"]) == size for frame in frames)
         geometry = geometry_result(size, dpi, profile)
         require_metadata = bool(profile.get("require_dpi_metadata"))
         minimum_dpi_passed = (
@@ -162,8 +163,12 @@ def validate_file(path: Path, profile: dict, Image, ImageSequence) -> tuple[dict
             "sha256": sha256(path),
         }
     checks = [
+        check(f"{path.name}:extension", path.suffix.lower() in {v.lower() for v in profile["allowed_extensions"]}, path.suffix.lower()),
         check(f"{path.name}:format", image_format in profile["allowed_formats"], image_format),
-        check(f"{path.name}:color-mode", frames_valid, {"allowed_modes": sorted(allowed_modes), "frames": frames}),
+        check(f"{path.name}:color-mode", frames_valid, {"allowed_modes": sorted(allowed_modes), "frames": frames,
+            "actual_mode": result["mode"], "mode_rule_available": mode_rule_available,
+            "reason": "evaluated-against-format-rule" if mode_rule_available else "mode-not-independently-evaluated: no rule for actual format"}),
+        check(f"{path.name}:frame-size-consistency", frame_sizes_valid, {"canvas_size": list(size), "frames": frames}),
         check(
             f"{path.name}:minimum-dpi",
             minimum_dpi_passed,
@@ -254,15 +259,19 @@ def main() -> int:
     except RuntimeError as exc:
         print(f"DEPENDENCY ERROR: {exc}", file=sys.stderr)
         return 2
-    allowed_extensions = {value.lower() for value in profile["allowed_extensions"]}
-    files = sorted(
-        path for path in args.input_dir.glob(args.include)
-        if path.is_file() and path.suffix.lower() in allowed_extensions
-    )
+    # Selection defines artwork scope; compliance must not silently remove files.
+    files = sorted(path for path in args.input_dir.glob(args.include) if path.is_file())
     checks = [check("series-count", 1 <= len(files) <= profile["max_files"], {"found": len(files), "max": profile["max_files"]})]
     file_results = []
     for path in files:
-        result, file_checks = validate_file(path, profile, Image, ImageSequence)
+        try:
+            result, file_checks = validate_file(path, profile, Image, ImageSequence)
+        except (OSError, ValueError, SyntaxError, Image.DecompressionBombError) as exc:
+            result = {"path": str(path.resolve()), "sha256": sha256(path),
+                      "bytes": path.stat().st_size, "decode_error": str(exc)}
+            file_checks = [check(f"{path.name}:image-readable", False, str(exc)),
+                           check(f"{path.name}:extension", path.suffix.lower() in
+                                 {v.lower() for v in profile["allowed_extensions"]}, path.suffix.lower())]
         file_results.append(result)
         checks.extend(file_checks)
     if profile.get("aigc_record_required_when_used"):

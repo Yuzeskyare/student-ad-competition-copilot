@@ -46,6 +46,10 @@ guard_production 的 status:authorized 仅表示授权前检；production_state 
 
 挑战稿不直接覆盖基线。决定替换时保存`challenge`：`baseline_sha256`、`trigger_kind`（observed-failure / explicit-user-change / award-ceiling-review）、`trigger_evidence`、`comparison`和`replacement_decision_id`。对照JSON绑定`baseline_sha256`与`challenger_sha256`，分别写`clarity_delta`、`mechanism_delta`、`brand_delta`、`voice_delta`、`explanation_cost_delta`。增益不成立则保留基线；确需替换时，必须有晚于基线批准且覆盖新稿的最终内容决定。冲奖判断的创作准则另由文案Playbook处理，机器不能通过“字段齐全”评定增益成立。
 
+## 技术派生文件
+
+保留认可原件不等于禁止另存技术派生稿。新文件hash变化后，不能直接复制原final批准；预期需要的导出应在最终审核前完成。认可后才发现规格问题时，另存并核对受影响内容，沿现有范围审核，不伪造继承。RGB像素相同不证明色彩管理、透明背景或印刷完全相同；JPEG、缩放、裁切与色彩转换不自动视为无影响。本合同未提供自动批准技术派生件的能力。
+
 ## 最终对象与状态同步
 
 文案交付先按命题在`brief_constraints`明确`creative_explanation_required`布尔值。`copy_delivery`含`copy`、需要时的`explanation`、最终`submission`三个作品引用，以及`submission_layout`。例如`[{"artifact":"copy"}, "\n\n", {"artifact":"explanation"}]`按顺序精确拼接；每个组成对象只能出现一次。实际投稿复制文本必须与拼接结果完全一致。无解说要求时可只包含正文。解说作为独立内容对象审核，更新正文后不能借旧哈希/旧批准交付。
@@ -63,6 +67,8 @@ guard_production 的 status:authorized 仅表示授权前检；production_state 
 指代能从原句或画面确定时直接执行；若解释不同会改掉已认可内容，先保留基线并继续独立准备，等待必要澄清。修改后核对旧认可和新要求同时满足；新反馈不自动撤回旧反馈。文字范围例如“今日计划后三行”只覆盖该三条事项，不能扩展到共同标题或加粗句。最终批准仍绑定修改后的实际版本和范围。
 
 局部修订前先用一句话绑定“基线版本／原句或区域／本轮修改／必须保留关系”，复用现有记录，不增加逐对象台账。修改后既检查新增要求，也检查保留关系：例如曲线、浪花、产品与主张是否仍相互承接；不只验证某个对象仍存在。用户“采用卖点版，但继续修改排版”只认可明确的内容层，不能登记整稿最终通过；后续只重开实际受影响内容，最终决定覆盖看过的新版本与成员。
+
+正式生产前优先回查宿主可得消息或回合记录，按下节已有类型转换。缺ID/时间须定位具体来源与缺项，不用当前时间补齐，也不让用户重复说“通过”凑字段。补回历史来源不追认缺失的生产前检；旧坏合同保留，新工作从有效的新运行或快照开始，引用旧作作为输入，不自动迁移历史通过。
 
 ## 宿主可得时间依据
 

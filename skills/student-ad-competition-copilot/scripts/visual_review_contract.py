@@ -325,6 +325,17 @@ def inspect_proportional(root, unit, views, pending=None):
                 'Previously approved region changed during a local repair')
 
 
+def validate_pack_identity(pack, manifest):
+    require(isinstance(pack, dict), 'Visual evidence must be an object')
+    require(pack.get('schema_version') in ('1.0.0', '2.0.0', '2.1.0'),
+            'Visual evidence identity/scope mismatch: schema_version unsupported or missing; expected 1.0.0/2.0.0/2.1.0')
+    for key in ('run_id', 'run_scope'):
+        require(pack.get(key) == manifest[key],
+                f'Visual evidence {key} mismatch: expected {manifest[key]!r}, actual {pack.get(key)!r}')
+    require(isinstance(pack.get('units'), list) and bool(pack['units']),
+            'Visual evidence units must be a nonempty array covering every declared unit; use the visual-review template')
+
+
 def validate_visual_review(root, manifest):
     if manifest.get('schema_version') != '0.4.0' or manifest.get('category') not in {'print-ad', 'marketing-plan'} or manifest.get('run_scope') == 'concept-only':
         return []
@@ -332,8 +343,7 @@ def validate_visual_review(root, manifest):
         root = root.resolve()
         contract, rows = read_contract(root, manifest)
         pack = load(inside(root, manifest['artifacts']['visual_review']))
-        require(pack.get('schema_version') in {'1.0.0', '2.0.0', '2.1.0'} and pack.get('run_id') == manifest['run_id'] and
-                pack.get('run_scope') == manifest['run_scope'], 'Visual evidence identity/scope mismatch')
+        validate_pack_identity(pack, manifest)
         if manifest['run_scope'] == 'delivery-candidate':
             expected = coverage(root, contract['final_artifacts'])
         else:

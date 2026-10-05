@@ -40,10 +40,15 @@ def load(path):
     return value
 
 
-def timestamp(value):
-    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+def timestamp(value, location="timestamp"):
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{location}: missing ISO time; recover the real message/turn source, never substitute observation time")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError(f"{location}: invalid ISO time; normalize the actual host event with its explicit unit") from exc
     if parsed.tzinfo is None:
-        raise ValueError("Decision time must include timezone; do not invent missing historical times")
+        raise ValueError(f"{location}: Decision time must include timezone; do not invent missing historical times")
     return parsed
 
 
@@ -86,13 +91,13 @@ def human_source(root, ref, quote):
             or not isinstance(source.get("text"), str) or not isinstance(quote, str)
             or not quote.strip() or quote not in source["text"]):
         raise ValueError("A traceable human source and exact quotation are required; simulations do not qualify")
-    at = timestamp(source.get("occurred_at"))
+    at = timestamp(source.get("occurred_at"), f"human source {ref.get('path')}.occurred_at")
     basis = source.get('time_basis')
     if basis is not None:
         if basis not in {'message', 'turn', 'review-event'}:
             raise ValueError('Unknown human-source time basis')
         if basis == 'turn':
-            if not isinstance(source.get('turn_id'), str) or not source['turn_id'].strip() or timestamp(source.get('turn_started_at')) != at:
+            if not isinstance(source.get('turn_id'), str) or not source['turn_id'].strip() or timestamp(source.get('turn_started_at'), f"human source {ref.get('path')}.turn_started_at") != at:
                 raise ValueError('Turn time needs its real turn ID and matching started_at')
         elif basis == 'review-event' and source.get('kind') != 'human-review':
             raise ValueError('A review-event time must belong to a human-review event')
@@ -109,7 +114,7 @@ def decisions(root, contract):
     for row in rows:
         if not isinstance(row, dict) or not isinstance(row.get("id"), str) or not row["id"].strip() or row["id"] in by_id:
             raise ValueError("Decisions need unique nonempty IDs")
-        at = timestamp(row.get("checked_at"))
+        at = timestamp(row.get("checked_at"), f"decision {row['id']}.checked_at")
         if at > datetime.now(timezone.utc):
             raise ValueError("Future decisions cannot authorize work")
         if human_source(root, row.get("source"), row.get("quote")) != at:

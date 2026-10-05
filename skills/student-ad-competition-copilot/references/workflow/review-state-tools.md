@@ -17,6 +17,14 @@ project从合同的final_artifacts生成当前索引、审核摘要、交付成�
 
 生产候选的像素检查默认兼容旧规则，覆盖所有非取消请求的代表对象。恢复多轮生产而只检查当前请求时，可在运行清单显式设置`visual_review_request_ids`为实际当前请求ID；旧请求及回执保留，指定ID不得缺失、重复或已取消。它只选择生产代表审核范围，不豁免历史生产回执或扩大人审。交付候选始终覆盖全部final_artifacts，不读取此选择。不能为了消除错误随意换run_scope；完成生产、进入当前作品交付检查后才按实际阶段切换。
 
+## 准备新的生产请求
+
+`review_state.py --run-dir <运行根> --manifest <有效清单> --action request --payload <请求输入.json> --destination <新快照目录>`
+
+输入为`{"request":{生产请求模板的实际字段},"input_paths":[实际运行内文件路径],"decision":{已有合同格式的真实生产授权决定}}`。request中不要另填input_files，由input_paths计算实际hash；无文件依赖时传空列表并在request说明no_file_inputs_reason。decision明确提供来源、原话、代表对象及范围，stage只能为production-authorization或representative，decision为pass；工具填production_request_sha256，不推断自然语言授权或扩大范围。来源、代表对象及品牌范围引用仍需真实hash，不能刷新旧hash掩盖变化。
+
+输出保留旧合同、生成不可变production-request.json及新合同快照；请求ID、输入、输出路径、代表覆盖和来源须有效。新请求不能覆盖已有文件或预订其他请求输出。准备成功不是authorized或completed；下一步仍用新manifest做实际guard。同源新请求可复用已有授权，超出原文范围须由执行者核对。输入文件清单无法自动发现脚本隐含依赖，需如实提供。
+
 ## 真实事件与已有反馈
 
 ```text

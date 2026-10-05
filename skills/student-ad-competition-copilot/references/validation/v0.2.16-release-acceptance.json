@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.16",
+  "status": "release-qualified",
+  "change_id": "typography-readability-and-evidence-diagnostics",
+  "promoted_candidate": "0.2.16-rc.5",
+  "candidate_manifest_sha256": "1b88414338bebc065ad0a2cb1f86fcfd7fc4f5200ff9a140c53230210393de54",
+  "regression_tests_reused": 113,
+  "runtime_scripts_changed_since_candidate": false,
+  "real_trial": "rc.4 four first-presented works approved",
+  "historical_58_47_26": "unchanged; no blanket closure",
+  "project_submission_ready": false,
+  "limits": [
+    "Four historical unified runs remain failed",
+    "No rc.5 new-artwork trial",
+    "No universal first-draft, independent audience, cross-device or print validation"
+  ],
+  "promotion_basis": "Verified candidate bytes and explicit user authorization to publish and install.",
+  "release_binding_repair": [
+    {
+      "id": "boundary-policy-current-brief-version",
+      "source": "references/workflow/common-competition-kernel.md",
+      "before": "dcff7769349c40de93dad50391a20cc33f41e188a744ddf936bbd935891c19fb",
+      "after": "788ccefe684e50b9ccd1314b3ca187876469966e02a584ad8406dcccc46b1203",
+      "quote_unchanged": true
+    },
+    {
+      "id": "boundary-policy-no-copy",
+      "source": "references/workflow/common-competition-kernel.md",
+      "before": "dcff7769349c40de93dad50391a20cc33f41e188a744ddf936bbd935891c19fb",
+      "after": "788ccefe684e50b9ccd1314b3ca187876469966e02a584ad8406dcccc46b1203",
+      "quote_unchanged": true
+    }
+  ]
+}

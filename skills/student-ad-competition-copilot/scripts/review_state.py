@@ -5,7 +5,8 @@ import hashlib
 import json
 from pathlib import Path
 from review_contract import (inside, load, digest, bound_file, read_contract, decisions,
-                             final_state, coverage, human_source, concept_evidence_checks)
+                             final_state, coverage, human_source, concept_evidence_checks,
+                             validate_request_inputs)
 from current_artwork_contract import validate_current, required
 from execution_contract import validate_events
 
@@ -73,9 +74,71 @@ def prepare_event(root, contract, payload):
     return event,None,True
 
 
+def prepare_request(root, contract, payload, target):
+    """Bind explicit inputs; never infer authorization, execute, or certify content."""
+    if not isinstance(payload, dict) or set(payload) != {'request', 'input_paths', 'decision'}:
+        raise ValueError('Request payload needs request, input_paths and explicit decision')
+    request = copy.deepcopy(payload['request'])
+    row = copy.deepcopy(payload['decision'])
+    if not isinstance(request, dict) or not isinstance(row, dict):
+        raise ValueError('Request and decision must be objects')
+    if 'input_files' in request or 'production_request_sha256' in row:
+        raise ValueError('Input hashes and request binding are calculated; do not supply stale bindings')
+    ident = request.get('id')
+    if not isinstance(ident, str) or not ident.strip():
+        raise ValueError('Request needs a nonempty ID')
+    existing = [load(bound_file(root, r)) for r in contract['production_requests']]
+    if any(r.get('id') == ident for r in existing):
+        raise ValueError('Duplicate request ID; preserve prior requests')
+    if request.get('execution_profile') != 'bound-production-v1' or not request.get('operation'):
+        raise ValueError('Request needs bound-production-v1 and an operation')
+    scope = request.get('output_scope')
+    if (not isinstance(scope, list) or not scope or
+            not all(isinstance(s, str) and s.strip() for s in scope) or len(set(scope)) != len(scope)):
+        raise ValueError('Production output scope must be explicit and unique')
+    paths = payload['input_paths']
+    if not isinstance(paths, list):
+        raise ValueError('input_paths must be a list')
+    inputs = [inside(root, p) for p in paths]
+    if len(set(inputs)) != len(inputs) or any(not p.is_file() for p in inputs):
+        raise ValueError('Input paths must be unique existing files')
+    request['input_files'] = [reference(root, p) for p in inputs]
+    if not inputs and not request.get('no_file_inputs_reason'):
+        raise ValueError('Empty inputs need an applicable reason')
+    mode = request.get('brand_asset_mode')
+    if mode not in {'restricted', 'not-used'}:
+        raise ValueError('Declare restricted or not-used brand assets')
+    if mode == 'restricted' and not (isinstance(request.get('asset_scope'), dict) and request['asset_scope'].get('used_origins')):
+        raise ValueError('Restricted assets need actual asset_scope and used_origins')
+    if mode == 'not-used' and (not request.get('brand_asset_reason') or request.get('asset_scope', {}).get('used_origins')):
+        raise ValueError('not-used needs an actual reason and no used origins')
+    validate_request_inputs(root, request)
+    command = request.get('command')
+    if request['operation'] == 'local' or command is not None:
+        if not isinstance(command, list) or not command or not all(isinstance(v, str) and v for v in command):
+            raise ValueError('Local request needs a command array')
+    outputs = request.get('output_files')
+    if not isinstance(outputs, list) or not outputs:
+        raise ValueError('Declare concrete output_files')
+    outputs = [inside(root, p) for p in outputs]
+    reserved = {inside(root, p) for r in existing for p in r.get('output_files', [])}
+    if len(set(outputs)) != len(outputs) or any(p.exists() or p in reserved or p == target or target in p.parents for p in outputs):
+        raise ValueError('Outputs must be new unique paths outside snapshot and prior requests')
+    if row.get('stage') not in {'representative', 'production-authorization'} or row.get('decision') != 'pass':
+        raise ValueError('Explicit representative or production authorization is required; no final verdict inferred')
+    if not coverage(root, request.get('representatives')) <= coverage(root, row.get('reviewed_artifacts')):
+        raise ValueError('Decision does not cover request representatives')
+    row['production_request_sha256'] = hashlib.sha256(encoded(request)).hexdigest()
+    append_decision(root, contract, row)
+    return request
+
+
 def snapshot(root, manifest, action, payload, destination):
     root=root.resolve()
-    contract,rows=read_contract(root,manifest)
+    try:
+        contract,rows=read_contract(root,manifest)
+    except (ValueError, KeyError, TypeError, AttributeError) as exc:
+        raise ValueError(f'Invalid starting contract: {exc}. Recover real evidence or use a valid new run; this operation cannot repair or certify past production.') from exc
     contract=copy.deepcopy(contract); result_manifest=copy.deepcopy(manifest)
     target=inside(root,destination)
     if target.exists(): raise ValueError('Use a new snapshot directory; previous records are immutable')
@@ -84,7 +147,10 @@ def snapshot(root, manifest, action, payload, destination):
         data=encoded(value);path=target/name
         staged[path]=data
         return dict(path=path.relative_to(root).as_posix(),sha256=hashlib.sha256(data).hexdigest())
-    if action=='event':
+    if action=='request':
+        request=prepare_request(root,contract,payload,target)
+        contract['production_requests'].append(add('production-request.json',request))
+    elif action=='event':
         event,existing,added=prepare_event(root,contract,payload)
         if added:
             ref=add('production-event.json',event)
@@ -114,6 +180,9 @@ def snapshot(root, manifest, action, payload, destination):
     status.update(content_review_status=state,review_decision_ids=sorted(ids))
     # Overall gate/delivery status is deliberately not promoted by this helper.
     artifacts['run_status']=add('run-status.json',status)['path']
+    if action=='request':
+        status.update(status='in-progress',delivery_complete=False,technical_validation_status='not-run')
+        add('run-status.json',status)
     if action=='project':
         status.update(status='in-progress',delivery_complete=False)
         # Replace the staged status bytes before the final commit; old technical
@@ -149,7 +218,7 @@ def snapshot(root, manifest, action, payload, destination):
     return dict(status='snapshot-created',manifest=reference(root,committed),content_status=state,
                 ancillary_checks=concept_evidence_checks(root,result_manifest),
                 members=len(refs),approval_granted=False,run_scope=result_manifest['run_scope'],
-                next_action='Use this manifest for subsequent work; run existing quality and visual checks. The snapshot is not a delivery pass.')
+                next_action=('Run guard_production using this manifest immediately before the actual call; this request is not dispatch authorization or content approval.' if action=='request' else 'Use this manifest for subsequent work; run existing quality and visual checks. The snapshot is not a delivery pass.'))
 
 
 def inspect_current(root,manifest):
@@ -172,8 +241,8 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--run-dir',required=True,type=Path)
     p.add_argument('--manifest',required=True,help='Run-relative manifest')
-    p.add_argument('--action',required=True,choices=['inspect','project','event','decision'])
-    p.add_argument('--payload',help='Run-relative JSON; event: {request_id,evidence}; decision: exact existing-contract row; project: optional {final_artifacts,series_plan}')
+    p.add_argument('--action',required=True,choices=['inspect','project','event','decision','request'])
+    p.add_argument('--payload',help='Run-relative JSON; request: {request,input_paths,decision}; event: {request_id,evidence}; decision: existing-contract row; project: optional {final_artifacts,series_plan}')
     p.add_argument('--destination',help='New run-relative snapshot directory; manifest.json is the commit marker')
     args=p.parse_args()
     try:

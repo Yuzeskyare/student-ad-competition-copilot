@@ -219,7 +219,7 @@
       "order": 40,
       "stage": "production",
       "gate_type": "hybrid",
-      "purpose": "保证生成层、官方资产和确定性文字各自承担正确职责。",
+      "purpose": "保证生成视觉、官方资产、创意字形和准确信息各自承担正确职责。",
       "applicability": {
         "mode": "always"
       },

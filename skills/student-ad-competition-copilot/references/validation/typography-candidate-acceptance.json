@@ -1,0 +1,18 @@
+{
+  "version": "0.2.16-rc.5",
+  "status": "implemented-targeted-checks-passed",
+  "tests": {
+    "focused": 3,
+    "unified-regressions": 28,
+    "file-and-request-regressions": 17,
+    "visual": 55,
+    "delivery": 10
+  },
+  "total": 113,
+  "read_only_real_replays": 4,
+  "real_replays_expected_status": "failed",
+  "new_artwork_trial": "not-run",
+  "installed": false,
+  "published": false,
+  "historical_58_47_26": "unchanged"
+}
