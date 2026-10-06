@@ -4,6 +4,8 @@
 
 ## 新生产
 
+当前平面技术检查优先使用`validate_submission.py --competition <赛事> --run-dir <运行根> --manifest <当前相对清单> --output <新报告>`。入口核验当前绑定并读取原始文件，不复制改名、不将PNG检查套给JPEG；旧目录入口保留。当前清单不完整时修复真实来源，不通过另建副本绕过。技术检查不产生内容认可。
+
 复用运行清单和真实授权。新请求使用[生产请求模板](../templates/production-request.template.json)，execution_profile=bound-production-v1，声明input_files、具体output_files及brand_asset_mode。本地脚本与命令文件参数必须绑定；纯文本/内联代码确无文件输入时说明no_file_inputs_reason，代码由请求hash绑定。restricted给出asset_scope的原始范围依据、允许原件和使用原件；派生文件仍绑定input_files。not-used只用于实际未用品牌资产并写brand_asset_reason，不是绕过白名单的选项。
 
 运行清单声明execution_control，依据[控制模板](../templates/execution-control.template.json)填写实际run_id、active/stopped/unresolved及not-requested/active/revoked监测状态。模板默认未解除，执行者依据已有授权和实际停止事实填写，不把字段变成新审批。未要求监测不查额度。主动监测的latest_signal绑定实际JSON，包含decision=continue/stop/unknown及basis；先单独读信号再决定工作，不能在无分支的读取批次内继续制作。停止或未知信号不能分派。

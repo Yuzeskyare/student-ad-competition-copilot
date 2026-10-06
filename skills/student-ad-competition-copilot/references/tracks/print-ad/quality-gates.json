@@ -2,7 +2,7 @@
   "$schema": "../../schemas/track-quality-gates.schema.json",
   "document_type": "gate-definitions",
   "schema_version": "0.1.0",
-  "definition_set_id": "print-ad.0.2.0",
+  "definition_set_id": "print-ad.0.3.0",
   "track": "print-ad",
   "playbook": "playbook.md",
   "gates": [
@@ -38,8 +38,8 @@
         {
           "check_id": "single-task",
           "assessment": "human",
-          "question": "是否只有一个主要传播判断，并明确人群、场景和可见关系？",
-          "pass_condition": "任务可以用一句话复述且主次明确。",
+          "question": "主要传播目的是否符合当前命题分支，且人群、困扰、产品价值与主次明确？",
+          "pass_condition": "任务有当前命题依据；支持的行为与应减少的困扰未读反，不以主题字面或执行专项替换传播目的。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "brief",
           "evidence_required": true
@@ -107,8 +107,8 @@
         {
           "check_id": "product-role",
           "assessment": "human",
-          "question": "每个方向中产品是否参与意义形成？",
-          "pass_condition": "产品作用可见且不是后贴角标。",
+          "question": "产品或品类利益如何支持表达，品牌如何得到准确归属？",
+          "pass_condition": "完整图文中的产品联系有依据；包装可在信息区回应，不强制物理动作，也不以摆放/接线证明意义。 普通场景加标准广告语不单独构成创意，需有与任务相关的具体观察或判断。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "directions",
           "evidence_required": true
@@ -162,8 +162,8 @@
         {
           "check_id": "visual-only-meaning",
           "assessment": "human",
-          "question": "遮住标题和说明后，核心动作或因果是否仍可识别？",
-          "pass_condition": "实际画面呈现主要对象关系；作者观察与真实用户反馈分开记录，独立受众测试仅在实际进行时声明。",
+          "question": "图像承担的表达是否可见，完整图文是否共同成立？",
+          "pass_condition": "暂遮文字用于诊断依赖，不普遍要求去字后完整成义；静态/情绪/文字机制按实际关系判断，作者额外长说明不能救失败。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "prototype",
           "evidence_required": true
@@ -171,8 +171,8 @@
         {
           "check_id": "product-in-relation",
           "assessment": "human",
-          "question": "产品在视觉关系中做了什么？",
-          "pass_condition": "产品或品类特征参与动作与意义；准确摆放、放大、设备用途正确或增加手脚不能单独证明创意成立。",
+          "question": "产品特征或利益与本次判断有何联系？",
+          "pass_condition": "利益与品牌归属成立，或产品确实参与动作；不强制包装充当机关，不凭放大、位置和接触认定说服。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "prototype",
           "evidence_required": true
@@ -180,8 +180,8 @@
         {
           "check_id": "thumbnail-hierarchy",
           "assessment": "human",
-          "question": "缩略图下主焦点、动作与品牌确认路径是否清楚，且构图不依赖无语义卡片、UI面板或仪表盘骨架？",
-          "pass_condition": "主阅读顺序在目标浏览尺度保持；局部卡片具有真实对象或内容关系依据，并有例外记录。",
+          "question": "实际浏览尺度的阅读顺序是否清楚，容器或界面是否有语义？",
+          "pass_condition": "焦点和品牌确认可辨；整体真实界面可以成立，无关卡片骨架仍失败。",
           "failure_severity": "hard-stop",
           "return_to_stage": "prototype",
           "evidence_required": true
@@ -196,15 +196,15 @@
         },
         {
           "stop_id": "abstract-action",
-          "condition": "形式隐喻存在，但看不出谁对谁做了什么。",
+          "condition": "所选表达的关键关系在实际图文中不成立；动作型看不出必要作用，静态型缺少预期对比或联系。",
           "return_to_stage": "prototype",
-          "required_resolution": "显化动作、对象、方向或结果。"
+          "required_resolution": "回到具体失败层重建；不强制所有表达拟人化或添加动作。"
         },
         {
           "stop_id": "generic-card-shell",
           "condition": "主要构图依赖重复圆角卡片、网页UI面板或仪表盘外壳，且不能证明真实对象或内容关系语义。",
           "return_to_stage": "prototype",
-          "required_resolution": "移除模板骨架，按视觉动作和空间关系重建；确有语义的局部例外须记录并复核。"
+          "required_resolution": "移除无语义模板，按内容重建；真实界面按实际整体范围核验，不强制局部化。"
         }
       ],
       "waiver_policy": {

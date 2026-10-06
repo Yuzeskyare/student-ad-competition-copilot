@@ -41,15 +41,32 @@ def searchable_text(value) -> str:
     return str(value or "")
 
 
-def query_terms(text: str) -> list[str]:
-    return [value.lower() for value in re.findall(r"[\w\u3400-\u9fff]+", text) if value.strip()]
+def query_terms(text: str, vocabulary=()) -> list[str]:
+    """Lexical candidates, not semantic segmentation; preserve original phrases."""
+    terms = [value.lower() for value in re.findall(r"[\w\u3400-\u9fff]+", text) if value.strip()]
+    lower = text.lower()
+    terms.extend(word.lower() for word in vocabulary if len(word) >= 2 and word.lower() in lower)
+    return sorted(set(terms))
+
+
+METHOD_FIELDS = {'name': 8, 'aliases': 8, 'problem': 5, 'mechanism': 4, 'steps': 1}
+
+
+def match_details(row: dict, terms: list[str]) -> list[dict]:
+    if not row.get('method_id'):
+        return [{'field': 'record', 'term': term, 'weight': 3}
+                for term in terms if term in searchable_text(row).lower()]
+    return [{'field': field, 'term': term, 'weight': weight}
+            for field, weight in METHOD_FIELDS.items()
+            for term in terms if term in searchable_text(row.get(field, '')).lower()]
 
 
 def score(row: dict, terms: list[str]) -> int:
     if not terms:
         return int(row.get("occurrence_count", 1))
-    haystack = searchable_text(row).lower()
-    return sum(3 for term in terms if term in haystack)
+    matches = match_details(row, terms)
+    return sum(max(m['weight'] for m in matches if m['term'] == term)
+               for term in {m['term'] for m in matches})
 
 
 def in_scope(row: dict, competition: str | None, category: str | None) -> bool:
@@ -123,6 +140,7 @@ def main() -> int:
     parser.add_argument("--competition", choices=["daguangsai", "academy-award"])
     parser.add_argument("--category", choices=["print-ad", "ad-copy", "marketing-plan"])
     parser.add_argument("--query", default="")
+    parser.add_argument("--term", action="append", default=[], help="Explicit lexical keyword; repeat as needed while preserving the original --problem")
     parser.add_argument("--problem", default="")
     parser.add_argument("--mechanism", default="")
     parser.add_argument("--risk", default="")
@@ -147,7 +165,13 @@ def main() -> int:
     if not eligibility_path.is_file():
         raise SystemExit("Knowledge pack has no eligible-evidence projection; historical packs may be validated but cannot be queried by this candidate runtime.")
     eligibility = json.loads(eligibility_path.read_text(encoding="utf-8-sig"))
-    terms = query_terms(" ".join([args.query, args.problem, args.mechanism, args.risk]))
+    original_query = " ".join([args.query, args.problem, args.mechanism, args.risk])
+    # Discover names/aliases only from eligible methods in this scope.
+    vocabulary = []
+    for row in jsonl_rows(pack / KINDS['method']):
+        if eligible_for_runtime('method', row, eligibility) and in_scope(row, args.competition, args.category):
+            vocabulary.extend([row.get('name', ''), *row.get('aliases', [])])
+    terms = query_terms(original_query + ' ' + ' '.join(args.term), vocabulary)
     selected_kinds = list(KINDS) if args.kind == "all" else [args.kind]
     candidates = []
     excluded_before_matching = {kind: 0 for kind in selected_kinds}
@@ -178,6 +202,9 @@ def main() -> int:
             "category": args.category,
             "terms": terms,
             "reference_role": args.reference_role,
+            "original": original_query.strip(),
+            "explicit_terms": args.term,
+            "matching": "lexical-with-eligible-name-alias-expansion",
         },
         "risk_policy": RISK_POLICY,
         "available_matches": len(candidates),
@@ -186,12 +213,14 @@ def main() -> int:
             {
                 "kind": item["kind"],
                 "score": item["score"],
+                "match_details": match_details(item['record'], terms),
                 "risk_level": risk_level(item["kind"]),
                 "record": runtime_view(item["kind"], item["record"], args.full),
             }
             for item in candidates[: args.limit]
         ],
         "empty_reason": None if candidates else "No eligible bundled knowledge matched; quarantined and unreviewed records were not searched.",
+        "effectiveness_boundary": "Scores rank positive lexical matches, not applicability or creative quality. Source/validation/negative-only mentions do not recommend a method. If empty, extract explicit keywords from the original problem or acknowledge a knowledge gap; do not replace the problem with a preferred technique.",
     }
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.17",
+  "status": "release-qualified",
+  "change_id": "creative-judgment-method-retrieval-and-current-file-validation",
+  "promoted_candidate": "0.2.17-rc.1",
+  "candidate_manifest_sha256": "62015bcfda6630a9aa2e0cdf0c5303fe6869a20a2bfe449c28d94a4a8e50bb46",
+  "regression_tests_reused": 248,
+  "runtime_scripts_changed_since_candidate": false,
+  "real_trial": "not-run for this version; existing approved run replayed read-only",
+  "P0": "open",
+  "historical_58_47_26": "unchanged; no blanket closure",
+  "project_submission_ready": false,
+  "limits": [
+    "Historical failures and evidence gaps remain unchanged",
+    "No new-version real-artwork trial; P0 remains open",
+    "Forward evaluations are proposals, not generated artwork",
+    "No universal first-draft, independent audience, cross-device or print validation"
+  ],
+  "promotion_basis": "Verified candidate bytes and explicit user authorization to publish the update; local installation synchronized with the established release workflow."
+}

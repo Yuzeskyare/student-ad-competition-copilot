@@ -229,10 +229,28 @@ def source_resolution_report(manifest_path, Image):
     return reports
 
 
+def current_files(run_dir, manifest_path):
+    """Select original files from a bound current set, never stage copies."""
+    from review_contract import load, read_contract, bound_file, inside
+    from current_artwork_contract import required, validate_current
+    root = run_dir.resolve()
+    manifest = load(inside(root, manifest_path))
+    contract, _ = read_contract(root, manifest)
+    if manifest.get('category') != 'print-ad' or not required(manifest, contract, root):
+        raise ValueError('An explicit bound current print set is required')
+    validate_current(root, manifest, contract)
+    files = [bound_file(root, ref) for ref in contract['final_artifacts']]
+    if not files or len(set(files)) != len(files):
+        raise ValueError('Current files must be nonempty and unique')
+    return files, manifest.get('competition')
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--competition", choices=["daguangsai", "academy-award"])
     parser.add_argument("--input-dir", type=Path)
+    parser.add_argument('--run-dir', type=Path, help='Use the original files in a bound current print set')
+    parser.add_argument('--manifest', help='Run-relative current manifest; requires --run-dir')
     parser.add_argument("--include", default="*", help="Glob selecting artwork files inside input-dir")
     parser.add_argument("--aigc-used", choices=["yes", "no", "unknown"], default="unknown")
     parser.add_argument("--aigc-record", type=Path)
@@ -246,11 +264,24 @@ def main() -> int:
 
     if args.self_check:
         return self_check(args.profiles)
-    for name in ("competition", "input_dir", "output"):
+    for name in ("competition", "output"):
         if getattr(args, name) is None:
             parser.error(f"--{name.replace('_', '-')} is required unless --self-check is used")
-    if not args.input_dir.is_dir():
-        parser.error(f"Input directory does not exist: {args.input_dir}")
+    if args.run_dir or args.manifest:
+        if not (args.run_dir and args.manifest) or args.input_dir or args.include != '*':
+            parser.error('Use --run-dir and --manifest together, without --input-dir/--include')
+        try:
+            files, competition = current_files(args.run_dir, args.manifest)
+            if competition != args.competition:
+                raise ValueError('Competition differs from the current manifest')
+        except (ValueError, OSError, KeyError, TypeError) as exc:
+            parser.error(str(exc))
+    else:
+        if not args.input_dir or not args.input_dir.is_dir():
+            parser.error('--input-dir must be an existing directory, or use a current manifest')
+        files = sorted(path for path in args.input_dir.glob(args.include) if path.is_file())
+    if args.output.resolve() in {path.resolve() for path in files}:
+        parser.error('Report output must not overwrite an artwork')
 
     profiles_document = json.loads(args.profiles.read_text(encoding="utf-8-sig"))
     profile = profiles_document["profiles"][args.competition]
@@ -260,7 +291,6 @@ def main() -> int:
         print(f"DEPENDENCY ERROR: {exc}", file=sys.stderr)
         return 2
     # Selection defines artwork scope; compliance must not silently remove files.
-    files = sorted(path for path in args.input_dir.glob(args.include) if path.is_file())
     checks = [check("series-count", 1 <= len(files) <= profile["max_files"], {"found": len(files), "max": profile["max_files"]})]
     file_results = []
     for path in files:

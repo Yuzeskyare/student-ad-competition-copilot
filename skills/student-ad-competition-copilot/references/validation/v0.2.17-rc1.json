@@ -1,0 +1,21 @@
+{
+  "version": "0.2.17-rc.1",
+  "status": "implemented-targeted-validation-passed",
+  "tests": {
+    "new": 9,
+    "existing": 174,
+    "visual": 55,
+    "delivery": 10
+  },
+  "total_tests": 248,
+  "self_checks": 8,
+  "real_current_set": "passed-original-paths",
+  "legacy_approved_run": "passed-read-only",
+  "historical_queries_replayed": 9,
+  "independent_proposals": "see-external-forward-evidence-not-image-validation",
+  "real_artwork_trial": "not-run",
+  "installed": false,
+  "published": false,
+  "P0": "open",
+  "historical_58_47_26_and_TY": "unchanged"
+}

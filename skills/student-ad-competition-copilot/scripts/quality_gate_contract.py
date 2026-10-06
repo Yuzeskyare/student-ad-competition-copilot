@@ -82,8 +82,11 @@ def validate_quality_gate_results(
     definitions_path = Path(__file__).resolve().parents[1] / "references" / "tracks" / track / "quality-gates.json"
     try:
         results = _load(result_path)
-        if track == "print-ad" and results.get("definition_set_id") == "print-ad.0.1.0":
-            definitions_path = definitions_path.with_name("quality-gates-v0.1.0.json")
+        if track == "print-ad":
+            legacy = {'print-ad.0.1.0': 'quality-gates-v0.1.0.json',
+                      'print-ad.0.2.0': 'quality-gates-v0.2.0.json'}
+            if results.get('definition_set_id') in legacy:
+                definitions_path = definitions_path.with_name(legacy[results['definition_set_id']])
         definitions = _load(definitions_path)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         return [_check("quality-gate-files-readable", False, str(exc))]
