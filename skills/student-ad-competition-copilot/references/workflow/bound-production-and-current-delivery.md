@@ -10,7 +10,7 @@
 
 运行清单声明execution_control，依据[控制模板](../templates/execution-control.template.json)填写实际run_id、active/stopped/unresolved及not-requested/active/revoked监测状态。模板默认未解除，执行者依据已有授权和实际停止事实填写，不把字段变成新审批。未要求监测不查额度。主动监测的latest_signal绑定实际JSON，包含decision=continue/stop/unknown及basis；先单独读信号再决定工作，不能在无分支的读取批次内继续制作。停止或未知信号不能分派。
 
-guard_production每次都做严格分派检查；review_contract.preflight不带for_dispatch只核历史授权，dispatch_checked=false不能替代分派回执。恢复旧运行另存新请求，复用确实覆盖该动作的真实授权并重绑，不篡改原决定、不重复要求机械确认。实质扩大范围仍依真实授权处理。
+guard_production每次都做严格分派检查，包括首次本地合成、原生叠图和后续导出；不能只检查生图而漏掉第一次合成。review_contract.preflight不带for_dispatch只核历史授权，dispatch_checked=false不能替代分派回执。恢复旧运行另存新请求，复用确实覆盖该动作的真实授权并重绑，不篡改原决定、不重复要求机械确认。实质扩大范围仍依真实授权处理。
 
 输入、已存在输出和已绑定作品不覆盖；每次派生稿、脚本修订、回执使用新路径。守卫完成本地命令后核所有声明输出存在并保存hash，返回0但缺输出仍failed。检查不是操作系统沙箱，无法发现任意脚本未声明读取或约束宿主直调；实际输入必须如实声明，不能声称全面拦截。
 
@@ -36,6 +36,8 @@ request准备不授予新权限，不替代前检或内容验收；正式来源�
 
 execution_contract.normalize_event仅按明确seconds/milliseconds/iso和message/turn/review-event转换时间，保留original_event/original_time；原ID缺失仍空。human_source继续检查真实来源条件，观察时间不能顶替发送时间，turn依据保留原turn_id和turn_started_at。
 
+宿主未暴露调用ID或完整事件时，不建立虚假的started/returned/saved事件链。源绑定可使用下方tool-output-observation-v1保存实际工具参数、原始返回和输出文件依据；它只支持可观测来源绑定，不能让完整外部生命周期检查自动通过。正式合同需要而无法取得的事件仍如实未核验，不改写历史失败。
+
 ## 当前平面集合
 
 在审核合同final_artifacts原成员引用内增加current_source，不建立第二套最终名单：
@@ -44,7 +46,7 @@ execution_contract.normalize_event仅按明确seconds/milliseconds/iso和message
 |---|---|
 | native、preview | 准确文件引用；每成员一个独立作品，格式副本不增加units |
 | purpose | creative-master或用户明确要求的submission-version；后者绑定purpose_authorization原文与purpose_quote，命题页不能充用户授权 |
-| scene | 有位图主场景时给node_id、file、call_id、provenance；provenance含真实调用的call_id/output。无主场景写no_scene_reason，不拿logo代场景 |
+| scene | 有位图主场景时给node_id、file、provenance；ID已暴露时沿用真实call_id/output。未暴露时call_id=null，provenance按下方可观测返回协议保存，不能拿文件ID代替。无主场景写no_scene_reason，不拿logo代场景 |
 | render_record | source等于native；execution_evidence绑定渲染执行；render为实际回渲染图；compared_artifact为该成员path/sha256/version/units；correspondence=matched及observation来自实际比较，不强求不同渲染器逐像素零差 |
 | process_review | render为同一回渲染图，status=clear及observation来自看图；SVG候选逐项candidate_dispositions含text、classification与reason。只有确为not-visible或non-production-copy才记录；真正制作字局部修复，不能标required-disclosure绕过 |
 | dependency_root | 明确运行内依赖根，`.`表示运行根；允许根内兄弟字体。不自动放宽到磁盘 |
@@ -53,6 +55,12 @@ execution_contract.normalize_event仅按明确seconds/milliseconds/iso和message
 series_plan沿用有效units；member_roles逐项unit、benefit_or_action与contribution，shared_art_direction描述共同美术，scope_basis引用实际命题/用户范围。记录存在不证明语义增量与美术统一，仍并排看全组。后来的三幅要求从生效时继承，不倒推此前违规。
 
 统一平面交付自动调用current_artwork_contract及SVG扫描，未解决的源关系/制作字候选不能通过。旧运行不自动追认新能力。展示、续作和归档从此集合取文件。`scripts/export_current_artwork.py --run-dir <运行根> --manifest <运行相对清单> --destination <新目录>`仅复制已核当前图源、预览、关联证据及实际依赖，生成CURRENT-ARTWORKS.json；目标已有则拒绝。失败选择保留，不重绘认可稿掩盖错选；复制不授予批准，不等于投稿发布。
+
+call_id不可得时，scene.provenance绑定JSON：profile=tool-output-observation-v1、实际tool_name、parameters和raw_return两个文件引用、output与scene.file一致、call_id=null、observed_at为真实本地观察时间；unavailable_metadata记录call_id和host_event_time不可得的原因。返回暴露文件ID时保存output_file_id并可定位于原始返回；未暴露时用null和output_file_id_unavailable_reason。工具模型或其他设置不可得时如实在原始记录说明，不猜测。原参数、返回和图都要绑定字节，观察时间不是宿主事件时间；检查不认证转录真实性或内容质量。
+
+证据引用默认相对运行根；交接同时提供绝对path与relative_path时，bound_file先解析相对路径，再核对两者指向同一根内文件并检查hash。冲突、越界与字节变化仍失败，不能把绝对路径直接当成授权。
+
+封存过程证据时，在上述导出命令加--seal，保持package-kind=evidence。先保存作者真实完成及过程收口依据，再将execution_control置stopped、结束监测并绑定closeout_evidence；该记录含相同run_id、status=completed、open_production_requests=[]及真实basis。封存检查正式生产已经终结，复制后再次核对全部关联文件。此清单只覆盖关联证据，不是操作系统锁，也不证明未关联的晚到文件不存在；仍须等待实际作者终态，晚到材料另存差异，不覆盖首次封存。
 
 ## 已知缺陷后的动作
 

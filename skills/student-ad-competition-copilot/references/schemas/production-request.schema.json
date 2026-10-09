@@ -125,6 +125,21 @@
           }
         }
       }
+    },
+    "main_visual_action": {
+      "enum": [
+        "create",
+        "replace",
+        "layout-only",
+        "local-composite"
+      ]
+    },
+    "main_visual_source": {
+      "enum": [
+        "generated",
+        "edited",
+        "user-asset"
+      ]
     }
   },
   "allOf": [

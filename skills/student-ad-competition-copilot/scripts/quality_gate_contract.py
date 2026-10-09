@@ -84,7 +84,18 @@ def validate_quality_gate_results(
         results = _load(result_path)
         if track == "print-ad":
             legacy = {'print-ad.0.1.0': 'quality-gates-v0.1.0.json',
-                      'print-ad.0.2.0': 'quality-gates-v0.2.0.json'}
+                      'print-ad.0.2.0': 'quality-gates-v0.2.0.json',
+                      'print-ad.0.3.0': 'quality-gates-v0.3.0.json',
+                      'print-ad.0.4.0': 'quality-gates-v0.4.0.json',
+                      'print-ad.0.5.0': 'quality-gates-v0.5.0.json',
+                      'print-ad.0.6.0': 'quality-gates-v0.6.0.json',
+                      'print-ad.0.7.0': 'quality-gates-v0.7.0.json',
+                      'print-ad.0.8.0': 'quality-gates-v0.8.0.json',
+                      'print-ad.0.9.0': 'quality-gates-v0.9.0.json',
+                      'print-ad.0.10.0': 'quality-gates-v0.10.0.json',
+                      'print-ad.0.11.0': 'quality-gates-v0.11.0.json',
+                      'print-ad.0.12.0': 'quality-gates-v0.12.0.json',
+                      'print-ad.0.13.0': 'quality-gates-v0.13.0.json'}
             if results.get('definition_set_id') in legacy:
                 definitions_path = definitions_path.with_name(legacy[results['definition_set_id']])
         definitions = _load(definitions_path)

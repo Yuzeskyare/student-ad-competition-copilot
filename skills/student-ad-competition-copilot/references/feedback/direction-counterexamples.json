@@ -1,0 +1,162 @@
+{
+  "schema_version": "1.0.0",
+  "library_id": "human-feedback-counterexamples-v1",
+  "use": "方向套路筛的机制反例；候选与任一条机制相同即判套路并直接拦截，任何新转折或利益依据均不得放行。仅按条目定义的对象关系匹配，保留真人判词的原范围，不能冒充真人对未见方向的评价。",
+  "entries": [
+    {
+      "entry_id": "FB-01",
+      "mechanism": "产品横置为桥面，连接运动路径的断口，使人或载具跨过。",
+      "judgement_verbatim": "R2的创意相对弱，但是能用；R3目前创意跟画面的结合跑通了，成立",
+      "date": "2026-10-07",
+      "judgement_scope": "仅引用前半句对桥接运动路径的偏弱判定；后半句是另一作品的认可，不构成反例。不是全面禁用桥接。",
+      "sources": [
+        {
+          "round": "rc.3 round-01",
+          "file": "creative-runs/skill-validation-v0218rc3-round-01/control/user-feedback.json",
+          "sha256": "fe2c62e76194c9258b4861bdfb9ef8739cfad3506549aee382d2b3c7b1c8b982",
+          "locator": "artworks.verbatim / artworks.R2"
+        },
+        {
+          "round": "rc.3 round-01",
+          "file": "creative-runs/skill-validation-v0218rc3-round-01/control/controller-observation.md",
+          "sha256": "0b5cd7327d9f3e2e7ea1c2a04e3b5edcd74f3ce10387b7ca88817c8c9b742b26",
+          "locator": "R2 横置产品接跑道缺口"
+        }
+      ]
+    },
+    {
+      "entry_id": "FB-02",
+      "mechanism": "产品充当门轴或共同转轴，门扇围绕产品打开。",
+      "judgement_verbatim": "合适",
+      "date": "2026-10-07",
+      "judgement_scope": "真人确认独立检查尺度，明确包括转轴关系没画实的失败；这是核心关系表达失败的认可，不是单独的创意强弱判词。后来接受套路筛方案也不等于逐张否定作品。",
+      "sources": [
+        {
+          "round": "rc.3 round-01",
+          "file": "creative-runs/skill-validation-v0218rc3-round-01/control/user-feedback.json",
+          "sha256": "fe2c62e76194c9258b4861bdfb9ef8739cfad3506549aee382d2b3c7b1c8b982",
+          "locator": "calibration.verbatim / question_answered / scope"
+        },
+        {
+          "round": "rc.3 round-01",
+          "file": "creative-runs/skill-validation-v0218rc3-round-01/control/controller-observation.md",
+          "sha256": "0b5cd7327d9f3e2e7ea1c2a04e3b5edcd74f3ce10387b7ca88817c8c9b742b26",
+          "locator": "rc.2 R1 校准：门扇与产品有间隔，转轴没画实"
+        },
+        {
+          "round": "rc.10 round-01",
+          "file": "creative-runs/skill-validation-v0218rc10-round-01/control/user-feedback.json",
+          "sha256": "02dccbb51e3c0f1fc845321bc0ccc3e4aa993e50d7d4c58abe88c3e837521647",
+          "locator": "verbatim / R1"
+        },
+        {
+          "round": "rc.10 round-01",
+          "file": "creative-runs/skill-validation-v0218rc10-round-01/control/controller-observation.md",
+          "sha256": "2c76ec413b3173ded5d3b717068bcb764661d701819f169a9f2389eaca3fb28e",
+          "locator": "R1 / 发现的漏洞"
+        },
+        {
+          "round": "rc.10 round-01",
+          "file": "creative-runs/skill-validation-v0218rc10-round-01/R1/output/runs/academy-award-2026-autumn-shuanglu-print-ad/02-direction/direction-response.raw.json",
+          "sha256": "160b73671b22438468aebe0898da75654b94fb09b3a09308a2f8a0d2a1ea6788",
+          "locator": "trope_screen D2 / FB-02 / new_twist"
+        },
+        {
+          "round": "rc.10 round-01",
+          "file": "creative-runs/skill-validation-v0218rc10-round-01/R1/output/runs/academy-award-2026-autumn-shuanglu-print-ad/02-direction/direction-response-r2.raw.json",
+          "sha256": "78d08cf3c44997a1623b92e84ed7d7b53087e10d82a50acad87593521a24297d",
+          "locator": "trope_screen D2 / FB-02 / new_twist"
+        }
+      ],
+      "additional_feedback": {
+        "date": "2026-10-08",
+        "judgement_verbatim": "R1非常非常非常非常非常差，史诗级的差；R2画面传达创意的效果很有限",
+        "judgement_scope": "仅前半句评价rc.10 R1：再次电池当门轴且额度用尽后原生矢量重建粗糙；后半句属于R2，不用于门轴判词。"
+      }
+    },
+    {
+      "entry_id": "FB-03",
+      "mechanism": "产品作为卷动或折叠空间的机械中心，把远处对象拉到手边。",
+      "judgement_verbatim": "我同意你的建议，另外，R1透明的重影车之外还有线条指向，创意也不够",
+      "date": "2026-10-08",
+      "judgement_scope": "偏弱判定绑定折叠空间作品及其线条、重影说明手段；卷轴是同类机械空间收拢的抽象归纳，未声称真人逐项看过卷轴方向句。",
+      "sources": [
+        {
+          "round": "rc.5 round-01",
+          "file": "creative-runs/skill-validation-v0218rc5-round-01/control/user-feedback.json",
+          "sha256": "d4c049b0556e50a68a34d337ff9a8c700f144048cf8c1e7924a30e409da6f315",
+          "locator": "verbatim / R1"
+        },
+        {
+          "round": "rc.5 round-01",
+          "file": "creative-runs/skill-validation-v0218rc5-round-01/control/controller-observation.md",
+          "sha256": "b79868b1ffba8745af2b760bc56efdc23b5bde3bcf575b01ec30ff8dc4cf9b8b",
+          "locator": "R1 停车场折叠收向手持设备"
+        }
+      ]
+    },
+    {
+      "entry_id": "FB-04",
+      "mechanism": "通过递送或交接产品，让接收者继续行动。",
+      "judgement_verbatim": "作者指的是codex吗，R1的判断正确；R2，你的判断正确，没有被握住，创意也偏常规的“递水，而且水瓶跟人的比例失调；R3你的判断正确",
+      "date": "2026-10-07",
+      "judgement_scope": "原话确认为常规递送，并指出握持和比例问题；保留整句原话以免改写真人判词。",
+      "sources": [
+        {
+          "round": "rc.2 round-01",
+          "file": "creative-runs/skill-validation-v0218rc2-round-01/control/user-feedback.json",
+          "sha256": "1f8c89d92a0c7878da9fda109733f1d039f7b8408f8392ba51b35b870e51d4dd",
+          "locator": "verbatim / R2"
+        },
+        {
+          "round": "rc.2 round-01",
+          "file": "creative-runs/skill-validation-v0218rc2-round-01/control/controller-observation.md",
+          "sha256": "52448db546057099f54da5c0312a535ed1264db429025487f637eb94fd8bc256",
+          "locator": "R2 递接动作"
+        }
+      ]
+    },
+    {
+      "entry_id": "FB-05",
+      "mechanism": "产品作为前景贴图与场景并列，未成为人物动作或场景作用的真实支点。",
+      "judgement_verbatim": "作者指的是codex吗，R1的判断正确；R2，你的判断正确，没有被握住，创意也偏常规的“递水，而且水瓶跟人的比例失调；R3你的判断正确",
+      "date": "2026-10-07",
+      "judgement_scope": "真人认可总控对R3的失败判断：声称产品参与核心关系，实际只是前景贴图。不要扩大为产品在前景一律失败。",
+      "sources": [
+        {
+          "round": "rc.2 round-01",
+          "file": "creative-runs/skill-validation-v0218rc2-round-01/control/user-feedback.json",
+          "sha256": "1f8c89d92a0c7878da9fda109733f1d039f7b8408f8392ba51b35b870e51d4dd",
+          "locator": "verbatim / R3"
+        },
+        {
+          "round": "rc.2 round-01",
+          "file": "creative-runs/skill-validation-v0218rc2-round-01/control/controller-observation.md",
+          "sha256": "52448db546057099f54da5c0312a535ed1264db429025487f637eb94fd8bc256",
+          "locator": "R3 人物实际坐在岩石上，产品前景贴图"
+        }
+      ]
+    },
+    {
+      "entry_id": "FB-06",
+      "mechanism": "依靠箭头、指向线或透明重影说明产品与目标的关系，主体动作本身未演出关系。",
+      "judgement_verbatim": "我同意你的建议，另外，R1透明的重影车之外还有线条指向，创意也不够",
+      "date": "2026-10-08",
+      "judgement_scope": "R1明确指出线条、重影及创意不足；R2同意退化为箭头图解的观察。辅助元素存在不等于失败，依靠说明代替主体作用才是该机制。",
+      "sources": [
+        {
+          "round": "rc.5 round-01",
+          "file": "creative-runs/skill-validation-v0218rc5-round-01/control/user-feedback.json",
+          "sha256": "d4c049b0556e50a68a34d337ff9a8c700f144048cf8c1e7924a30e409da6f315",
+          "locator": "verbatim / R1 / R2 / approved"
+        },
+        {
+          "round": "rc.5 round-01",
+          "file": "creative-runs/skill-validation-v0218rc5-round-01/control/controller-observation.md",
+          "sha256": "b79868b1ffba8745af2b760bc56efdc23b5bde3bcf575b01ec30ff8dc4cf9b8b",
+          "locator": "R2 被逼向图解及总结"
+        }
+      ]
+    }
+  ]
+}

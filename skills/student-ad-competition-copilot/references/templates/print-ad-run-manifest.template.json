@@ -41,5 +41,105 @@
     "scope_basis": []
   },
   "execution_profile": "bound-production-v1",
-  "execution_control": "05-reviews/execution-control.json"
+  "execution_control": "05-reviews/execution-control.json",
+  "creative_contract": "print-core-v4",
+  "direction_adoption": {
+    "direction_id": "PA-01",
+    "adopted_at": "replace-after-retrieval-record-exists",
+    "method_retrieval": {
+      "path": "02-direction/method-retrieval.json",
+      "sha256": "replace-with-actual-file-sha256"
+    },
+    "blind_review": {
+      "path": "02-direction/direction-blind-review.json",
+      "sha256": "REPLACE_WITH_ACTUAL_SHA256"
+    },
+    "selection_mode": "user",
+    "selection_record": {
+      "path": "02-direction/direction-selection.json",
+      "sha256": "REPLACE_WITH_ACTUAL_SHA256"
+    },
+    "claim_lock": {
+      "path": "02-direction/core-claim-lock.json",
+      "sha256": "REPLACE_WITH_ACTUAL_SHA256"
+    }
+  },
+  "core_creative_review": {
+    "assessments": [
+      {
+        "id": "replace-after-viewing-actual-artwork",
+        "artifact": {
+          "path": "replace-current-artwork",
+          "sha256": "replace-actual-sha256",
+          "version": "replace-current-version",
+          "units": [
+            "replace-one-unit"
+          ]
+        },
+        "render_record": {
+          "path": "replace-target-render-record",
+          "sha256": "replace-actual-sha256"
+        },
+        "observed_image": {
+          "path": "replace-native-view",
+          "sha256": "replace-actual-sha256"
+        },
+        "official_product_asset": {
+          "path": "replace-official-product-asset",
+          "sha256": "replace-actual-sha256"
+        },
+        "core_action": "replace-visible-core-action-or-relation",
+        "checked_at": "replace-after-actual-pixel-inspection",
+        "assessment_method": "independent-review",
+        "answers": {
+          "product_in_core_relation": {
+            "answer": null,
+            "observation": "待查看：官方产品是否进入核心动作或关系，而非旁置、角落或贴图？",
+            "blind_read_sha256": "replace-saved-blind-record-sha256",
+            "comparison_evidence": []
+          },
+          "action_depicted_without_copy": {
+            "answer": null,
+            "observation": "待查看：不读文案，是否能从可见结构认出核心动词？",
+            "blind_read_sha256": "replace-saved-blind-record-sha256",
+            "comparison_evidence": []
+          },
+          "product_action_understood_in_three_seconds": {
+            "answer": null,
+            "observation": "待独立查看：陌生人三秒内能否说出关系？未实测时如实登记检查者预测。",
+            "blind_read_sha256": "replace-saved-blind-record-sha256",
+            "comparison_evidence": []
+          },
+          "claimed_relation_depicted": {
+            "answer": null,
+            "observation": "待独立查看：声称的握持、承坐等关系是否兑现？有意夸张与超现实可以为是。",
+            "blind_read_sha256": "replace-saved-blind-record-sha256",
+            "comparison_evidence": []
+          },
+          "creative_scene_not_generic": {
+            "answer": null,
+            "observation": "待独立查看：去掉创意仍是普通场景吗？原问答是则本正向字段为false。",
+            "blind_read_sha256": "replace-saved-blind-record-sha256",
+            "comparison_evidence": []
+          }
+        },
+        "independent_check": {
+          "path": "05-reviews/replace-independent-check.json",
+          "sha256": "replace-actual-sha256"
+        },
+        "direction_id": "PA-01",
+        "core_claim_sha256": "replace-adoption-statement-utf8-sha256"
+      }
+    ],
+    "current_assessment_ids": [
+      "replace-after-viewing-actual-artwork"
+    ],
+    "completed_draft_render_records": [
+      {
+        "path": "replace-target-render-record",
+        "sha256": "replace-actual-sha256"
+      }
+    ]
+  },
+  "direction_contract": "print-direction-v6"
 }

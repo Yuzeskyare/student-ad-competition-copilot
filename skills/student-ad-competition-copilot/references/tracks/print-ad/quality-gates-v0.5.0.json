@@ -2,7 +2,7 @@
   "$schema": "../../schemas/track-quality-gates.schema.json",
   "document_type": "gate-definitions",
   "schema_version": "0.1.0",
-  "definition_set_id": "print-ad.0.14.0",
+  "definition_set_id": "print-ad.0.5.0",
   "track": "print-ad",
   "playbook": "playbook.md",
   "gates": [
@@ -81,29 +81,26 @@
       "order": 20,
       "stage": "directions",
       "gate_type": "hybrid",
-      "purpose": "起点覆盖与独立方向筛：反馈机制反例、新转折的产品利益可见性及参考排序。",
+      "purpose": "确保候选方向在洞察、因果或视觉机制上真正不同。",
       "applicability": {
         "mode": "always"
       },
       "required_inputs": [
         "brief-evidence",
-        "visual-territory-research",
-        "qualified-anonymous-case-mechanisms",
-        "human-feedback-counterexamples-with-hash"
+        "visual-territory-research"
       ],
       "required_outputs": [
         "direction-cards",
         "selected-direction",
         "rejected-direction-reasons",
-        "method-retrieval-before-adoption",
-        "independent-direction-blind-review-before-adoption"
+        "method-retrieval-before-adoption"
       ],
       "checks": [
         {
           "check_id": "mechanism-distinctness",
           "assessment": "human",
-          "question": "独立去重后是否至少6个真正不同方向，覆盖三类起点？",
-          "pass_condition": "每轮后台至少6个，不固定总数；起点含消费者真实时刻、产品利益/事实、反常识或视角翻转，逐条登记具体起点。方法卡可作手段，不能是唯一起点。",
+          "question": "方向差异是否来自对象关系、因果、转换或洞察，而非风格和颜色？",
+          "pass_condition": "各方向可用不同的视觉机制句描述。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "directions",
           "evidence_required": true
@@ -111,8 +108,8 @@
         {
           "check_id": "product-role",
           "assessment": "human",
-          "question": "独立检查者只看方向一句话时，如何比较产品利益、意外感和创意本身？",
-          "pass_condition": "固定print-direction-v6 rubric接收匿名方向、反馈反例库及匿名获奖机制。套路判断引用匹配反例条目；新转折可来自具体消费者/使用者时刻、产品利益或视角翻转，不要求服用、使用或产品内部原理。仅替身物件的空间/尺度/视角变化与消费者时刻及产品利益均无关，不算转折。参照强度仅供排序。 方向句必须写画面动作、产品关系及创意依据（人的时刻或洞察 / 产品真相或利益 / 视角翻转或文化意味）；依据只是作者主张，须在动作与产品关系中成立，不能写上就放行。 命中反例机制在筛判和委托自动采用中直接拦截，任何新转折不得改判合格；新转折须填写改变哪个对象关系的before/after，不得复述利益或依据。去重清单须含原句、依据、套路判断及理由、反例命中及理由、排序、可画性及理由和检查者一句评价；未委托时用户可选任何可画项，被判套路或反例命中项须保存用户原话、user_override=true及对应原始判断引用，all_weak=true仍交用户选择或要求重新发散；不可画项不能出图。委托时仅可采用合格且可画的第一名，all_weak和重新发散规则不变。",
+          "question": "产品或品类利益如何支持表达，品牌如何得到准确归属？",
+          "pass_condition": "完整图文中的产品联系有依据；包装可在信息区回应，不强制物理动作，也不以摆放/接线证明意义。 普通场景加标准广告语不单独构成创意，需有与任务相关的具体观察或判断。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "directions",
           "evidence_required": true
@@ -120,8 +117,8 @@
         {
           "check_id": "selection-rationale",
           "assessment": "human",
-          "question": "独立排序和逐项可画性是否决定采用，且保留用户选择权？",
-          "pass_condition": "仅第一名为无新转折的套路触发all_weak；低于非空获奖参照不触发拦截。最多重新发散1次，与改声明共用额度；第二轮仍弱停在方向阶段，交排序理由给用户/总控。委托采用的第一名仍须合格且单幅可画；未委托时all_weak=true仍交清单，由用户选择可画项（override）或要求重新发散，遵守同一额度。",
+          "question": "采用与拒绝是否分别判断产品联系、具体创意贡献与可制作性？",
+          "pass_condition": "实际操作产生可制作的具体观察、图形关系、观看瞬间或字图安排；用途正确、关系清楚和媒介可辨不单独证明创意。保留采用/拒绝依据，不强制包装机关或奇观。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "directions",
           "evidence_required": true
@@ -134,15 +131,6 @@
           "failure_severity": "hard-stop",
           "return_to_stage": "direction",
           "evidence_required": true
-        },
-        {
-          "check_id": "independent-direction-evidence",
-          "assessment": "machine",
-          "question": "方向采用是否绑定隔离检查、纯一句话输入/hash、原始返回、排序、可画性及先后顺序？",
-          "pass_condition": "print-direction-v6绑定真实记录；每轮新独立调用，后台至少6个去重后方向及三类起点；三个输入原字节/hash、反例条目匹配及理由、转折和twist_basis、合格案例机制或空结果、原始返回、排序和可画性均保存。仅第一名套路无转折触发all_weak，参照不拦截；全部偏弱与改声明共享最多重新发散1次，第二轮仍弱停止自动出图。风险不能用于预防拒绝方法卡，拒绝仍须官方硬约束或已观察失败。 每条清单含合法basis_type及非空basis，statement内逐字写出同一依据和类型；只写画面结构或字段缺失/类型非法即失败，不能交盲评。 命中反例机制在筛判和委托自动采用中直接拦截，任何新转折不得改判合格；新转折须填写改变哪个对象关系的before/after，不得复述利益或依据。去重清单须含原句、依据、套路判断及理由、反例命中及理由、排序、可画性及理由和检查者一句评价；未委托时用户可选任何可画项，被判套路或反例命中项须保存用户原话、user_override=true及对应原始判断引用，all_weak=true仍交用户选择或要求重新发散；不可画项不能出图。委托时仅可采用合格且可画的第一名，all_weak和重新发散规则不变。",
-          "failure_severity": "hard-stop",
-          "return_to_stage": "directions",
-          "evidence_required": true
         }
       ],
       "hard_stops": [
@@ -151,18 +139,14 @@
           "condition": "所有方向只更换风格、背景、配色或标题。",
           "return_to_stage": "directions",
           "required_resolution": "重做视觉因果和对象关系。"
-        },
-        {
-          "stop_id": "missing-blind-review-or-undrawable-winner",
-          "condition": "缺独立记录、少于6个去重方向或不足三类起点、遗漏套路/参照记录、第一名无转折套路却否认all_weak、委托采用非第一或被拦项、不可画采用、用户选择套路/反例项未标override或引用不符、超额发散或未委托自选。",
-          "return_to_stage": "directions",
-          "required_resolution": "完成同阶段独立盲评及真实选择；不能用作者自判或质量门豁免绕过。"
         }
       ],
       "waiver_policy": {
-        "allowed": false,
+        "allowed": true,
         "reason_required": true,
-        "allowed_when": []
+        "allowed_when": [
+          "命题极窄且继续增加方向只会产生可证明的同义变化。"
+        ]
       },
       "on_pass": "print-ad.visual-relation-prototype"
     },
@@ -264,7 +248,7 @@
           "check_id": "source-traceability",
           "assessment": "machine",
           "question": "最终产品、Logo和包装资产是否可追溯到登记来源？",
-          "pass_condition": "来源路径和用途字段存在。 主画面来源必须为generated/edited/user-asset并绑定素材与来源证据；native-drawn完整稿不得作代表稿或通过稿。主画面失败且生图额度用尽时停止并交回失败稿和原因，待用户决定追加额度或换方向。",
+          "pass_condition": "来源路径和用途字段存在。",
           "failure_severity": "hard-stop",
           "return_to_stage": "production",
           "evidence_required": true
@@ -379,17 +363,14 @@
       "gate_id": "print-ad.human-visual-quality",
       "order": 60,
       "stage": "content-review",
-      "gate_type": "hybrid",
+      "gate_type": "human",
       "purpose": "用三秒、品牌替换、缩略图和全尺寸检查判断作品是否真正成立。 执行final-pixel-review.md，复核目标原生渲染、三种尺度及逐单元观察，技术或联系表通过不能替代。",
       "applicability": {
         "mode": "always"
       },
       "required_inputs": [
         "final-visual-candidates",
-        "review-board",
-        "saved-blind-read-and-comparison",
-        "adoption-claim-lock",
-        "explanatory-device-removal-observation"
+        "review-board"
       ],
       "required_outputs": [
         "communication-clarity-review",
@@ -439,28 +420,10 @@
         {
           "check_id": "core-creative-pixel-review",
           "assessment": "human",
-          "question": "每个完整稿是否先只看成图完成保存盲读，再给声明和官方产品图对照并完成原五问？",
-          "pass_condition": "独立五问均通过；作者自答无效。像素关系兑现且创意非普通场景；允许有意夸张与超现实。检查输入/返回/hash/身份与时间绑定当前成图，交付前完成；任一失败完整返工并用新图独立复查，局部修改不能冲销。 先盲读后对照；未知产品作用、三轴不一致、主关系歧义分别强制第1/3/5问为否；次要歧义只记录。 主画面来源必须为generated/edited/user-asset并绑定素材与来源证据；native-drawn完整稿不得作代表稿或通过稿。主画面失败且生图额度用尽时停止并交回失败稿和原因，待用户决定追加额度或换方向。",
+          "question": "官方产品参与核心关系、动作无需读文案可见、三秒可理解产品与动作关系，是否逐项检查？",
+          "pass_condition": "实际成图三项分别回答；任一为否保留核心失败，回到方向或主画面生成完整返工，绑定新输入、新主图与三项复核；局部修改不能冲销。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "direction",
-          "evidence_required": true
-        },
-        {
-          "check_id": "blind-read-before-claim",
-          "assessment": "machine",
-          "question": "盲读是否在声明输入前完成保存，且对照和五问忠实引用盲读？",
-          "pass_condition": "print-core-v3：成图唯一输入清单hash、原始返回、保存时间严格早于对照；对照引用盲读hash；未知产品作用/三轴不一致/主关系歧义不得五问通过。",
-          "failure_severity": "return-on-observed-failure",
-          "return_to_stage": "main-visual-generation",
-          "evidence_required": true
-        },
-        {
-          "check_id": "locked-claim-and-device-removal",
-          "assessment": "machine",
-          "question": "每稿是否使用采用时锁定声明，去掉说明手段后产品关系是否仍成立？",
-          "pass_condition": "print-core-v4：锁定声明绑定方向盲评一句话，逐稿对照声明hash一致；改声明须回方向重新发散盲评且累计最多一次。只靠箭头、指向线、标注、透明重影等读出关系时，第1/3/4问为否并完整返工；造型语言去掉后关系仍成立可通过。",
-          "failure_severity": "return-on-observed-failure",
-          "return_to_stage": "main-visual-generation",
           "evidence_required": true
         }
       ],
@@ -520,7 +483,7 @@
           "check_id": "manifest-and-aigc",
           "assessment": "machine",
           "question": "最终作品、清单、哈希和运行路径是否一致？",
-          "pass_condition": "当前作品路径受控、哈希与审核范围一致；AIGC记录和平台申报仅作交付后提醒。 主画面来源必须为generated/edited/user-asset并绑定素材与来源证据；native-drawn完整稿不得作代表稿或通过稿。主画面失败且生图额度用尽时停止并交回失败稿和原因，待用户决定追加额度或换方向。",
+          "pass_condition": "当前作品路径受控、哈希与审核范围一致；AIGC记录和平台申报仅作交付后提醒。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "technical-review",
           "evidence_required": true

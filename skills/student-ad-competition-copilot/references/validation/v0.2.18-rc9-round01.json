@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.18-rc.9",
+  "status": "implemented-and-deterministically-verified-candidate",
+  "baseline": "0.2.18-rc.8",
+  "stable_release": "0.2.17",
+  "creative_contract": "print-core-v4",
+  "direction_contract": "print-direction-v4",
+  "quality_gate_definition": "print-ad.0.12.0",
+  "changes": [
+    "Retained rc.8 human-feedback counterexample library exact bytes and untouched corpus-derived knowledge pack.",
+    "New print-direction-v4 retains exact bundled counterexample input bytes/hash and per-direction matching entry IDs with reasons.",
+    "New twist can arise from a specific consumer/user moment, product benefit or perspective reversal; no ingestion, usage or internal mechanism required. Unrelated space/scale/viewpoint transforms are not turns.",
+    "Reference mechanisms remain attached for ranking; only an unturned trope in first place triggers all_weak.",
+    "Six directions/three starting points, independent adoption/core-v4 lock, two-round limit and all historical definitions retained."
+  ],
+  "passing_test_executions": 1825,
+  "test_groups": {
+    "rc9_complete": 355,
+    "rc2_complete": 48,
+    "rc3_complete": 59,
+    "rc4_complete": 69,
+    "rc5_complete": 142,
+    "rc6_complete": 184,
+    "rc7_complete": 259,
+    "rc8_complete": 310,
+    "inherited_required": 202,
+    "extended_passed": 197
+  },
+  "rc9_behavior_tests": 243,
+  "rc9_schema_tests": 112,
+  "rc9_added_test_definitions": 45,
+  "entrypoints": {
+    "rc9-targeted-initial": {
+      "receipt": "rc9-targeted-initial-check.json",
+      "log": "rc9-targeted-initial-check.log",
+      "tests": 243,
+      "passed": true,
+      "sha256": "b736a55a2c48639fb929cdbc08a26c6ad5589a37809e538dede2ae873471746f"
+    },
+    "rc9-unittest-complete": {
+      "receipt": "rc9-unittest-complete-check.json",
+      "log": "rc9-unittest-complete-check.log",
+      "tests": 243,
+      "passed": true,
+      "sha256": "d7d69d05e30989f53d0ab78ac1ad9d8c54e24ddac0fa618885364bc764b49b7a"
+    }
+  },
+  "known_baseline_failure_suites": 4,
+  "known_failed_assertions": 19,
+  "all_executed_checks_passed": false,
+  "no_new_rc8_regression": true,
+  "history": "print-ad.0.1.0--0.11.0 exact bytes; all original schema defs and print-direction-v1/v2/v3/core-v1--v4 rules retained",
+  "real_image_generation_calls": 0,
+  "new_real_v4_full_reviews": 0,
+  "installed": false,
+  "published": false,
+  "P0": "open",
+  "VSC-001": "open",
+  "limits": [
+    "Behavior tests use synthetic pixels, reviewer records, identities and scenario timestamps; actual bundled method queries are preserved separately.",
+    "No rc.9 generated artwork, real six-direction divergence/adoption/production chain, real full five-question acceptance or Edward artwork acceptance.",
+    "Machine enforces recorded bytes/coverage/time order and explicit classifications; cannot authenticate semantic judgment, real timestamps, hidden inputs/drafts or aesthetic quality."
+  ]
+}

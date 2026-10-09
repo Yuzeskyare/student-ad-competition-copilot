@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.18-rc.6",
+  "status": "implemented-and-deterministically-verified-candidate",
+  "baseline": "0.2.18-rc.5",
+  "stable_release": "0.2.17",
+  "creative_contract": "print-core-v4",
+  "direction_contract": "print-direction-v1",
+  "quality_gate_definition": "print-ad.0.9.0",
+  "changes": [
+    "Original adopted blind direction sentence and its UTF-8 SHA256 locked at adoption; every draft and comparison cite it.",
+    "Declaration changes return to direction divergence/independent blind review; immutable prior adoption and first round preserved, shared one re-divergence limit.",
+    "Blind explanatory device list and removal observation; relation dependent only on explanatory devices forces questions 1/3/4 false and full rebuild.",
+    "Removable style/speed lines and surreal contact remain eligible. Historical v1/v2/v3 schema definitions and gate bytes preserved."
+  ],
+  "passing_test_executions": 901,
+  "test_groups": {
+    "rc6_complete": 184,
+    "rc5_complete": 142,
+    "rc4_targeted": 69,
+    "rc3_targeted": 59,
+    "rc2_targeted": 48,
+    "inherited_required": 202,
+    "extended_passed": 197
+  },
+  "rc6_behavior_tests": 146,
+  "rc6_schema_tests": 38,
+  "rc6_added_test_definitions": 42,
+  "entrypoints": {
+    "rc6-targeted-final": {
+      "receipt": "rc6-targeted-final-check.json",
+      "log": "rc6-targeted-final-check.log",
+      "tests": 146,
+      "passed": true,
+      "sha256": "a410ba445396a3841d16631ba83783da839ff21b8e5f002ec0f8999a03695eb8"
+    },
+    "rc6-unittest-final": {
+      "receipt": "rc6-unittest-final-check.json",
+      "log": "rc6-unittest-final-check.log",
+      "tests": 146,
+      "passed": true,
+      "sha256": "44e1412fae28b1ac229900f281ea62da2a6a52d59fdebb727bfa1b7b7760e3b4"
+    }
+  },
+  "known_baseline_failure_suites": 4,
+  "known_failed_assertions": 19,
+  "all_executed_checks_passed": false,
+  "no_new_rc5_regression": true,
+  "history": "print-ad.0.1.0--0.8.0 exact bytes; original print-core-v1/v2/v3 schema definitions and rules retained",
+  "real_image_generation_calls": 0,
+  "new_real_v4_full_reviews": 0,
+  "installed": false,
+  "published": false,
+  "P0": "open",
+  "VSC-001": "open",
+  "limits": [
+    "Behavior tests use synthetic pixels, reviewer records, identities and scenario timestamps; actual bundled method queries are preserved separately.",
+    "No rc.6 generated artwork, real adopted-lock-to-every-draft/full-rebuild/review production chain, real full five-question acceptance or Edward acceptance.",
+    "Machine enforces recorded bytes/coverage/time order and explicit classifications; cannot authenticate semantic judgment, real timestamps, hidden inputs/drafts or aesthetic quality."
+  ]
+}

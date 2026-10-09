@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.18",
+  "status": "release-qualified",
+  "change_id": "direction-blind-review-user-choice-and-artwork-blind-read",
+  "promoted_candidate": "0.2.18-rc.11",
+  "candidate_manifest_sha256": "c85aecbc82708f1e1e07a1a61670fc68ef746a3b4440aa21b6f1ccd0979fdc92",
+  "regression_tests_reused": 523,
+  "runtime_scripts_changed_since_candidate": false,
+  "real_trial": "rc.11 round-01: three user-selected directions completed; user verdicts D1 and D2 passed, D8 acceptable (creative-runs/skill-validation-v0218rc11-round-01/control/user-feedback.json)",
+  "P0": "open",
+  "historical_58_47_26": "unchanged; no blanket closure",
+  "project_submission_ready": false,
+  "limits": [
+    "Historical failures and evidence gaps remain unchanged",
+    "P0 remains open; first drafts are not guaranteed to pass",
+    "Automatic checks are model judgments, not human approval",
+    "No universal first-draft, independent audience, cross-device or print validation"
+  ],
+  "promotion_basis": "Verified candidate bytes and explicit user authorization to publish the update; local installation synchronized with the established release workflow."
+}

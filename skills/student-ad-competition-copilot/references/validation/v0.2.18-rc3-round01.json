@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.18-rc.3",
+  "status": "implemented-and-deterministically-verified-candidate",
+  "baseline": "0.2.18-rc.2",
+  "stable_release": "0.2.17",
+  "quality_gate_definition": "print-ad.0.6.0",
+  "creative_contract": "print-core-v2",
+  "changes": [
+    "Independent five-question review for every complete draft; author-inspection cannot pass new gates",
+    "Isolated checker inputs, fixed rubric, actual image/product/claim hashes, original answers and time binding",
+    "Intentional surrealism allowed; ordinary scene rejected; full rebuild needs a new image and independent invocation"
+  ],
+  "test_executions": {
+    "rc3_new": 59,
+    "rc2_targeted": 48,
+    "rc2_inherited_required": 202,
+    "rc2_extended_passed": 197
+  },
+  "passing_test_executions": 506,
+  "all_executed_checks_passed": false,
+  "known_baseline_failure_suites": 4,
+  "no_new_rc2_regression": true,
+  "legacy_definitions": "print-ad.0.1.0--0.5.0 preserved byte-for-byte; print-core-v1 historical branch retained",
+  "real_image_generation_calls": 0,
+  "real_existing_artwork_independent_reviews": 1,
+  "real_artwork_result": "R3 rejected on 4 of 5 normalized questions",
+  "native_independent_checker_feasible": true,
+  "nested_cli_tested": false,
+  "audit_experiment_sha256": "2c53d99546e7d67da8ebedb5eb56e04b472e99c071fe166d53dac30e5087e6f7",
+  "P0": "open",
+  "VSC-001": "open",
+  "installed": false,
+  "published": false,
+  "limits": [
+    "No newly generated rc.3 artwork, no complete real creative rework chain, no human creative acceptance.",
+    "Surreal-positive and ordinary-scene/rebuild rules verified structurally and with synthetic fixtures; one real R3 review is a minimum feasibility experiment.",
+    "Recorded evidence does not authenticate checker identity, timestamps, input honesty or official asset authority.",
+    "Nested read-only ephemeral CLI and unavailable-checker handoff remain untested live paths."
+  ]
+}

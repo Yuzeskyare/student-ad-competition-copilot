@@ -12,11 +12,38 @@
 
 ### 判断方法与证据边界
 
-平面新记录以 communication-clarity 代替 three-second-recall。通过时写 assessment_method：author-inspection 表示作者观察；user-acceptance 表示当前作品得到用户定性认可，另以 human_decision 引用同版本、同范围真实决定。作者观察不产生 content_pass，用户认可不表示做过计时、盲测或复述实验。其余适用检查仍需记录，不能用同一句“通过”代替产品、字形、残留等独立观察。
+平面新记录以 communication-clarity 代替 three-second-recall。通过时写 assessment_method：author-inspection 表示作者观察；user-acceptance 表示当前作品得到用户定性认可，另以 human_decision 引用同版本、同范围真实决定。作者观察不产生 content_pass，用户认可不表示做过计时、盲测或复述实验。该一般观察不能作为下方 print-core-v4 独立核心检查的通过依据。其余适用检查仍需记录，不能用同一句“通过”代替产品、字形、残留等独立观察。
 
 可选 audience_tests 是文件引用数组（path、sha256）。每份实测记录含 artifact、method（timed-recall / untimed-comprehension）、prompt、blinded、responses（participant_id、response）和 source 原始记录引用；计时测试另有真实 exposure_seconds。没有进行就不建实测记录，不用“通过”补造受众回答。旧 three-second 字段的通过只按原始证据解释，不自动认证实验。
 
 验收同时对照已选[视觉风格](visual-style-direction.md)：检查线条、造型、色彩、纹理、空间或密度等实际适用特征是否落在最终图像中，不能只凭提示词含风格名称判定成功。平面化、夸张、无摄影阴影或密集细节不自动失败；信息遮蔽、无意结构缺陷与品牌错误仍须修正。修复后复看关键风格特征，避免修得更像照片却偏离已选方向。
+
+## 平面核心创意逐项检查
+
+print-core-v4 在采用方向时保存 direction_adoption.claim_lock（$defs.core_claim_lock），statement 原样等于已采用方向的盲评一句话，statement_sha256=claim_digest(statement)。锁绑定 direction_id、adopted_at、blind_review。改声明必须回方向重新发散和盲评，previous_adoptions 最多1项；新bundle保存原首轮引用再追加新轮，与全部偏弱共用最多1次重新发散额度。旧失败稿引用旧锁，当前稿引用新采用锁，不能事后修改旧声明。方向锁须在渲染前形成。
+
+每稿新增 direction_id、core_claim_sha256。对照记录 independent_core_check_v4 和原始返回 core_comparison_return_v4 都含 core_claim_sha256，必须等于该稿采用时锁定的 statement_sha256。盲读 blind_core_read_v2 的原始返回 blind_core_return_v2 新增 explanatory_devices 数组和 relation_without_devices；对照 comparison 新增逐字清单及 device_removal={blind_observation,relation_still_holds,observation}。去掉说明手段后产品关系不成立，第1/3/4问必须false，三项答案必须引用 explanatory_devices 与 device_removal。具体判据及超现实/速度线正反例见Playbook。
+
+
+新平面运行使用 print-core-v4 / print-direction-v6 / print-ad.0.14.0；历史 print-core-v1/v2/v3/v4、print-direction-v1/v2/v3/v4 和 print-ad.0.1.0—0.12.0 按原定义解析。每个完整稿（包括首稿、失败稿及每次返工/修订）由独立检查者查看实际图。五问及宿主优先路径见[平面 Playbook](../tracks/print-ad/playbook.md#独立核心检查与宿主路径)，作者自答不能作为新合同通过依据。
+
+沿用 `core_creative_review.assessments`：每幅保存 id、artifact（path/hash/version/单个 unit）、render_record、observed_image（该渲染 native 视图）、official_product_asset、core_action（一句）、checked_at、assessment_method=independent-review、independent_check（独立记录 path/hash）与 answers。五项为 product_in_core_relation、action_depicted_without_copy、claimed_relation_depicted、creative_scene_not_generic、product_action_understood_in_three_seconds，分别给 boolean answer 和像素 observation；所有字段以 true 表示通过，第4原问“是否普通场景”答是时 creative_scene_not_generic=false。模板 null 是待查，不是通过。
+
+同一 review 的 `completed_draft_render_records` 是完整稿渲染引用清单；稿完成即登记，必须与 assessments 的渲染一一对应，不另建审核台账。current_assessment_ids 覆盖 visual_review 的当前图与全部范围。已有完整稿即使 run_scope=concept-only 也检查；尚无成图的概念可省略。交付时现有 delivery_manifest 记录真实 `delivered_at`，所有独立检查及 checked_at 不得晚于它；未真正交付不提前虚填时间，缺时间不能验证为交付通过。
+
+先盲读、后对照，沿用同一 assessment 和五问，不能另建一套通过结论。盲读只给成图；官方图也留到第二步。第一步在接收作者声明之前完成并保存：按像素写动作/变化（包括方向）、产品作用（看不出就写“看不出”）、所有可能两种读法的地方。图内标题文案不能代替像素动作。
+
+independent_check 仍引用独立记录，现在是对照记录 `$defs.independent_core_check_v4`：沿用原字段，rubric_version=print-core-v4、checker_context=fresh-isolated，新增 blind_read（盲读记录path/sha256）。盲读 `$defs.blind_core_read_v2` 沿用相同身份、时间、inputs/request/raw_return字段，rubric_version=print-core-blind-v2，增加 input_prepared_at、saved_at、input_manifest_sha256。真实会话/调用标识不能与作者相同；宿主不提供则null且在unavailable_metadata逐项说明，不能伪造。第一步须全新隔离；第二步允许同一检查者继续或另一独立调用，每个新完整稿须新盲读调用。
+
+盲读 inputs 精确一项 {role:artwork,file:{path,sha256}}，同 observed_image；input_manifest_sha256 为 inputs 数组按 UTF-8、ensure_ascii=False、sort_keys=True、separators=(',',':') 序列化的SHA256（脚本 blind_input_digest）。任何作者声明/说明或额外输入均无效。request绑定实际发送文本，严格等于 INDEPENDENT_BLIND_RUBRIC_V2；raw_return为原始JSON {action,product_role,ambiguities,explanatory_devices,relation_without_devices}，不能存作者摘要。时间为 render.created_at ≤ input_prepared_at ≤ started_at ≤ completed_at ≤ saved_at < 对照.started_at ≤ 对照.completed_at ≤ assessment.checked_at。saved_at必须是实际保存边界，不倒填时间。
+
+对照 inputs 精确三项：artwork（同成图）、official-product-asset（同官方可读产品图）、core-action（UTF-8一句原文，同core_action），另以 blind_read 引用已冻结的第一步记录。实际request严格为 INDEPENDENT_COMPARE_RUBRIC_V4 + "\n核心动作/关系：" + core_action + "\n盲读记录SHA256：" + blind_read.sha256 + "\n锁定声明SHA256：" + core_claim_sha256。保存真实原始返回及hash：{blind_read_sha256,core_claim_sha256,comparison,answers}，结构见 `$defs.core_comparison_return_v4`。comparison逐一对照action、change_direction、product_role，各含matches布尔、blind_observation（逐字引用盲读action或product_role）、claim_observation；ambiguities与盲读原列表顺序/数量一致，逐项保存blind_ambiguity、affects_main_relation布尔、aspect、observation。产品角色/动作方向/接触/其他主关系用product-role/action-direction/contact/other-main，只有次要歧义用secondary。
+
+动作、变化/因果方向、产品角色任一不一致，第3问必须false；盲读看不出产品作用，第1问必须false；主关系歧义使第5问必须false。次要歧义仅记录、不判失败。每个答案保留answer/像素observation，新增blind_read_sha256和非空comparison_evidence键清单（action/change_direction/product_role/ambiguities/explanatory_devices/device_removal），引用盲读和原始对照记录；主清单answers须与对照raw_return逐字一致。原五问及有意超现实允许、常规创意拒绝、三秒项未实测仅预测的边界保持。CLI事件可另保存，但原始返回是实际final message。不能用声明重写盲读，不能让作者替检查者补写判断。
+
+任一归一 answer=false 即核心失败。保留原记录和原始返回，回到 direction 或 main-visual-generation 完整返工；排字、蒙版、裁切、页脚、字号、产品挪位等局部修整不能冲销。失败行 rework 沿用 kind=full-rebuild、return_to_stage、started_at/completed_at、relation_before/after、production_input、新 rebuilt_main_visual（path/hash）及 rechecked_assessment_id。新版本、新主图、新独立调用均必需；失败的新图继续完整返工链，末稿五项全 true 才解决。
+
+校验核对结构、声明输入、原始返回一致性、顺序、字节与覆盖，不能认证宿主记录/时间真实性、官方资产权威或自动判断审美；无法发现作者完全未登记的未知稿件，也不能排除输入文件内部/图内夹带的恶意说明。因此运行时必须保持实际隔离并保留真实宿主证据，不能仅填字段冒充独立。历史认可不转移到新图。
 
 ## 当前渲染与视图
 
@@ -30,7 +57,7 @@
 
 ## 先看当前合成，再记录观察
 
-先依据实际画面描述最自然的理解，再核对预期表达；作者意图不是图中证据。包装保真、线端接触、风格落图或自绘笔画只证明各自制作事实，不能覆盖关系失败。暂遮字只作诊断，完整图文可以共同成立；静态表达不强制检查谁对谁的动作。
+先依据实际图文描述最自然的理解，再核对预期表达；作者意图不是图中证据。明确核心误读或承诺的主关系/字图职责缺失时记fail并回到责任阶段实改，不能只修局部后带着已知缺陷推荐。关系清楚、艺术语言可辨与具体创意贡献分别判断；尚不确定的审美沿用既有代表稿判断。包装保真、线端接触、风格落图或自绘笔画只证明各自制作事实，不能覆盖关系失败。暂遮字只作诊断，完整图文可以共同成立；静态表达按实际核心关系检查；平面 print-core-v1 仍须逐项确认产品参与和承诺动作/关系在像素中可见，不能以静态为由豁免。
 
 先取得当前版本目标渲染，从同一渲染派生视图；独立字稿只证明构形，不能代替背景上的阅读效果。按阅读路径扫读本稿实际存在的标题、支持句、场景词、产品信息、限定/提示及出处，包含位图字和路径字。按[文字用途](typography-direction.md)对应的阅读条件检查真实字面、细笔画/内白、间距、背景纹理/亮线、旋转透视、边缘距离与归属；疑点放大定位后回相应尺度确认。整幅缩略与原生细读互不替代，必要时约420px宽只作诊断，不是通用合规尺寸；系列还需并排比较。
 

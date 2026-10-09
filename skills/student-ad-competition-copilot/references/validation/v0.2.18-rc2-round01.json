@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.18-rc.2",
+  "status": "implemented-and-deterministically-verified-candidate",
+  "baseline": "0.2.18-rc.1",
+  "stable_release": "0.2.17",
+  "quality_gate_definition": "print-ad.0.5.0",
+  "creative_contract": "print-core-v1",
+  "changes": [
+    "Observable existing method query and retrieval record before direction adoption",
+    "Three actual-pixel core answers; any false requires a full relation rebuild and new recheck"
+  ],
+  "test_executions": {
+    "new": 48,
+    "rc1_all_regressions": 202,
+    "extended_passed": 197
+  },
+  "passing_test_executions": 447,
+  "known_baseline_failure_suites": 4,
+  "all_executed_checks_passed": false,
+  "no_new_regression_in_rc1_required_suites": true,
+  "legacy_definitions": "print-ad.0.1.0/0.2.0/0.3.0/0.4.0 preserved byte-for-byte",
+  "real_image_calls": 0,
+  "real_method_queries_in_final_targeted_run": 3,
+  "method_validated_on_artwork": false,
+  "P0": "open",
+  "VSC-001": "open",
+  "installed": false,
+  "published": false,
+  "limits": [
+    "Contract tests do not certify visual taste, pixel observation honesty, official source authority or a human identity.",
+    "Author three-second inspection is a prediction, not a fabricated timed audience experiment.",
+    "No new rc.2 artwork or human creative acceptance; historical approvals remain version-bound.",
+    "Four older repository scripts retain equivalent rc.1 failures; no validator rule or test assertion relaxed."
+  ]
+}

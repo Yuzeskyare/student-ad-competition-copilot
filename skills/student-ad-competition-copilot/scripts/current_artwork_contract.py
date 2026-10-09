@@ -1,8 +1,39 @@
 """Current artifact source checks shared by delivery and selection helpers."""
 import xml.etree.ElementTree as ET
 from execution_contract import PROFILE, require
-from review_contract import bound_file, inside, load, artifact
+from review_contract import bound_file, inside, load, artifact, timestamp
 from inspect_svg_source import inspect
+
+
+def scene_provenance(root, scene):
+    provenance = load(bound_file(root, scene.get('provenance')))
+    require(provenance.get('output') == scene['file'], 'Main scene differs from its returned output binding')
+    profile = provenance.get('profile', 'host-call-v1')
+    if profile == 'host-call-v1':
+        require(provenance.get('call_id') == scene.get('call_id') and bool(scene.get('call_id')),
+                'Main scene must match actual call output evidence')
+    elif profile == 'tool-output-observation-v1':
+        from datetime import datetime, timezone
+        require(isinstance(provenance.get('tool_name'), str) and provenance['tool_name'].strip(),
+                'Tool output observation needs the actual tool name')
+        load(bound_file(root, provenance.get('parameters')))
+        raw_return = bound_file(root, provenance.get('raw_return')).read_text(encoding='utf-8-sig')
+        require(raw_return.strip(), 'Tool output observation needs its nonempty raw return')
+        require(timestamp(provenance.get('observed_at')) <= datetime.now(timezone.utc),
+                'Output observation must use its actual local observation time')
+        require(provenance.get('call_id') is None and scene.get('call_id') is None,
+                'Use host-call-v1 for exposed call IDs; never substitute a file ID')
+        limits = provenance.get('unavailable_metadata', {})
+        require(isinstance(limits, dict) and all(isinstance(limits.get(k), str) and limits[k].strip()
+                for k in ('call_id', 'host_event_time')), 'Explain unavailable host ID and event time')
+        file_id = provenance.get('output_file_id')
+        reason = provenance.get('output_file_id_unavailable_reason')
+        require((isinstance(file_id, str) and file_id.strip() and file_id in raw_return)
+                or (file_id is None and isinstance(reason, str) and reason.strip()),
+                'Bind the exposed output file ID or explain why it is unavailable')
+    else:
+        raise ValueError('Unknown scene provenance profile')
+    return profile
 
 
 def required(manifest, contract, root):
@@ -46,11 +77,10 @@ def validate_current(root, manifest, contract):
         require(review.get('render') == render['render'] and review.get('status') == 'clear' and review.get('observation'),
                 'Inspect process labels on the actual current source render')
         scene = bundle.get('scene')
+        provenance_profile = None
         if scene:
             bound_file(root, scene.get('file'))
-            provenance = load(bound_file(root, scene.get('provenance')))
-            require(provenance.get('output') == scene['file'] and provenance.get('call_id') == scene.get('call_id')
-                    and bool(scene.get('call_id')), 'Main scene must match actual call output evidence')
+            provenance_profile = scene_provenance(root, scene)
         else:
             require(bundle.get('no_scene_reason'), 'Identify main scene or explain why no raster scene applies')
         scan = None
@@ -77,6 +107,8 @@ def validate_current(root, manifest, contract):
                     'Non-SVG native sources require an applicable inspection record')
             bound_file(root, bundle['native_inspection'].get('evidence'))
         results.append(dict(unit=ref['units'][0], native=str(native), render=str(view), svg_scan=scan,
+                            scene_provenance_profile=provenance_profile,
+                            host_lifecycle_certified=False,
                             scope='structural-and-source-binding', visual_quality_certified=False))
     require(len(set(members)) == len(members), 'Duplicate current member; format copies are not new members')
     plan = manifest.get('series_plan', {})

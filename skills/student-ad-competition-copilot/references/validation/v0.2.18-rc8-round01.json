@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.18-rc.8",
+  "status": "implemented-and-deterministically-verified-candidate",
+  "baseline": "0.2.18-rc.7",
+  "stable_release": "0.2.17",
+  "creative_contract": "print-core-v4",
+  "direction_contract": "print-direction-v3",
+  "quality_gate_definition": "print-ad.0.11.0",
+  "changes": [
+    "Added source-bound human-feedback mechanism counterexamples outside the untouched corpus-derived knowledge pack.",
+    "New print-direction-v3 requires exact bundled counterexample input bytes/hash and per-direction matching entry IDs with reasons.",
+    "New twist must name the product benefit made visible; mechanical space/scale/viewpoint effects are not benefit twists.",
+    "Reference mechanisms remain attached for ranking; only an unturned trope in first place triggers all_weak.",
+    "Six directions/three starting points, independent adoption/core-v4 lock, two-round limit and all historical definitions retained."
+  ],
+  "passing_test_executions": 1470,
+  "test_groups": {
+    "rc8_complete": 310,
+    "rc2_complete": 48,
+    "rc3_complete": 59,
+    "rc4_complete": 69,
+    "rc5_complete": 142,
+    "rc6_complete": 184,
+    "rc7_complete": 259,
+    "inherited_required": 202,
+    "extended_passed": 197
+  },
+  "rc8_behavior_tests": 218,
+  "rc8_schema_tests": 92,
+  "rc8_added_test_definitions": 51,
+  "entrypoints": {
+    "rc8-targeted-clean": {
+      "receipt": "rc8-targeted-clean-check.json",
+      "log": "rc8-targeted-clean-check.log",
+      "tests": 218,
+      "passed": true,
+      "sha256": "f56aae7a4169bb2d2eae65559e502bc0d58fa41960f12bb0eb616cbbec0a91e9"
+    },
+    "rc8-unittest-clean": {
+      "receipt": "rc8-unittest-clean-check.json",
+      "log": "rc8-unittest-clean-check.log",
+      "tests": 218,
+      "passed": true,
+      "sha256": "3e37c1aecdacd6da2a49678548f7eb605081247cf93f468203b5201dee9cb401"
+    }
+  },
+  "known_baseline_failure_suites": 4,
+  "known_failed_assertions": 19,
+  "all_executed_checks_passed": false,
+  "no_new_rc7_regression": true,
+  "history": "print-ad.0.1.0--0.10.0 exact bytes; all original schema defs and print-direction-v1/v2/core-v1--v4 rules retained",
+  "real_image_generation_calls": 0,
+  "new_real_v4_full_reviews": 0,
+  "installed": false,
+  "published": false,
+  "P0": "open",
+  "VSC-001": "open",
+  "limits": [
+    "Behavior tests use synthetic pixels, reviewer records, identities and scenario timestamps; actual bundled method queries are preserved separately.",
+    "No rc.8 generated artwork, real six-direction divergence/adoption/production chain, real full five-question acceptance or Edward artwork acceptance.",
+    "Machine enforces recorded bytes/coverage/time order and explicit classifications; cannot authenticate semantic judgment, real timestamps, hidden inputs/drafts or aesthetic quality."
+  ]
+}

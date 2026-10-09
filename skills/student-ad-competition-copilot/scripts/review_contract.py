@@ -55,7 +55,18 @@ def timestamp(value, location="timestamp"):
 def bound_file(root, ref):
     if not isinstance(ref, dict):
         raise ValueError("Expected path and SHA-256 reference")
-    path = inside(root, ref.get("path"))
+    relative = ref.get('relative_path')
+    if relative is None:
+        path = inside(root, ref.get("path"))
+    else:
+        path = inside(root, relative)
+        declared = ref.get('path')
+        if not isinstance(declared, str) or not declared.strip():
+            raise ValueError('A relative-path reference still needs its declared path')
+        original = Path(declared)
+        original = original.resolve() if original.is_absolute() else inside(root, declared)
+        if original != path:
+            raise ValueError('Declared and relative evidence paths disagree')
     if not path.is_file() or digest(path) != ref.get("sha256"):
         raise ValueError(f"Missing or changed evidence: {ref.get('path')}")
     return path

@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.dont_write_bytecode = True
@@ -134,6 +136,7 @@ def risk_level(kind: str) -> str:
 
 
 def main() -> int:
+    started_at = datetime.now(timezone.utc).isoformat()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pack", type=Path, help="Explicit candidate pack; omission resolves version.json")
     parser.add_argument("--kind", choices=["all", *KINDS], default="all")
@@ -190,6 +193,12 @@ def main() -> int:
             candidates.append({"kind": kind, "score": item_score, "record": row})
     candidates.sort(key=lambda item: (-item["score"], item["kind"], searchable_text(item["record"])))
     payload = {
+        "execution": {
+            "command": [sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]],
+            "cwd": str(Path.cwd()), "pack": str(pack.resolve()),
+            "pack_manifest_sha256": hashlib.sha256((pack / 'manifest.json').read_bytes()).hexdigest(),
+            "started_at": started_at, "completed_at": datetime.now(timezone.utc).isoformat(),
+        },
         "schema_version": "0.2.0",
         "knowledge_pack_version": integrity["knowledge_pack_version"],
         "eligibility": {

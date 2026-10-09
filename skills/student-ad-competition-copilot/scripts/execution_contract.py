@@ -15,6 +15,11 @@ def require(value, message):
 
 def dispatch_inputs(root, manifest, contract, request):
     from review_contract import bound_file, inside, load, digest
+    if manifest.get('direction_contract') == 'print-direction-v6':
+        from validate_print_ad_run import validate_direction_blind_review, validate_main_visual_dispatch_v6
+        direction = validate_direction_blind_review(root, manifest)
+        require(direction['passed'], 'Direction choice must be completed before production: ' + str(direction['evidence']))
+        validate_main_visual_dispatch_v6(root, manifest, request)
     require(request.get('execution_profile') == PROFILE,
             'New dispatch requires bound-production-v1; preserve legacy requests and create a bound successor')
     require('input_files' in request and isinstance(request['input_files'], list), 'Declare actual input_files')
