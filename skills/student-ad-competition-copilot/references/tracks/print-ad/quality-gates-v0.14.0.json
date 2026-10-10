@@ -2,7 +2,7 @@
   "$schema": "../../schemas/track-quality-gates.schema.json",
   "document_type": "gate-definitions",
   "schema_version": "0.1.0",
-  "definition_set_id": "print-ad.0.16.0",
+  "definition_set_id": "print-ad.0.14.0",
   "track": "print-ad",
   "playbook": "playbook.md",
   "gates": [
@@ -140,24 +140,6 @@
           "assessment": "machine",
           "question": "方向采用是否绑定隔离检查、纯一句话输入/hash、原始返回、排序、可画性及先后顺序？",
           "pass_condition": "print-direction-v6绑定真实记录；每轮新独立调用，后台至少6个去重后方向及三类起点；三个输入原字节/hash、反例条目匹配及理由、转折和twist_basis、合格案例机制或空结果、原始返回、排序和可画性均保存。仅第一名套路无转折触发all_weak，参照不拦截；全部偏弱与改声明共享最多重新发散1次，第二轮仍弱停止自动出图。风险不能用于预防拒绝方法卡，拒绝仍须官方硬约束或已观察失败。 每条清单含合法basis_type及非空basis，statement内逐字写出同一依据和类型；只写画面结构或字段缺失/类型非法即失败，不能交盲评。 命中反例机制在筛判和委托自动采用中直接拦截，任何新转折不得改判合格；新转折须填写改变哪个对象关系的before/after，不得复述利益或依据。去重清单须含原句、依据、套路判断及理由、反例命中及理由、排序、可画性及理由和检查者一句评价；未委托时用户可选任何可画项，被判套路或反例命中项须保存用户原话、user_override=true及对应原始判断引用，all_weak=true仍交用户选择或要求重新发散；不可画项不能出图。委托时仅可采用合格且可画的第一名，all_weak和重新发散规则不变。",
-          "failure_severity": "hard-stop",
-          "return_to_stage": "directions",
-          "evidence_required": true
-        },
-        {
-          "check_id": "independent-direction-causal-check",
-          "assessment": "human",
-          "question": "提示项：核心创意关系直接由什么产生？它是否建立在产品自己做的事、本职正常直接结果或赋能对象因此产生的结果上？",
-          "pass_condition": "独立v7返回覆盖每个输入，直接来源、布尔结论和理由必填；选择清单在用户选择前逐项原样展示。本提示用于提醒创意是否借用了产品没参与的效果，不作为门槛；因果不合格不影响排序/可画前列/all_weak/自动或委托采用/user_override/承接/生产守卫，也不要求用户覆盖。缺返回字段或清单缺提示仍由确定性校验拒绝。保留通用本职/赋能判法，不虚构产品能力。",
-          "failure_severity": "consider",
-          "return_to_stage": "directions",
-          "evidence_required": true
-        },
-        {
-          "check_id": "version-migration-choice-carryover",
-          "assessment": "machine",
-          "question": "承接既有选择是否仅因Skill版本迁移且原句逐字不变？",
-          "pass_condition": "原选择原话、实际时间、来源哈希、旧句与新句、旧新版本及新盲评均绑定；新失败须已被旧用户覆盖，否则重新确认。",
           "failure_severity": "hard-stop",
           "return_to_stage": "directions",
           "evidence_required": true
@@ -310,51 +292,6 @@
           "assessment": "human",
           "question": "是否存在假字、假Logo、伪包装、伪透明或无意结构缺陷；有意夸张和非现实空间是否符合已选风格且不违背明确命题要求？",
           "pass_condition": "最终候选没有将生成错误作为真实品牌或产品元素。",
-          "failure_severity": "hard-stop",
-          "return_to_stage": "production",
-          "evidence_required": true
-        },
-        {
-          "check_id": "scene-product-production",
-          "assessment": "human",
-          "question": "场景物体优先官方参考编辑，蒙版覆盖容器/接触结构；独立展示可贴原图并记录理由，不得以贴图冒充场景物体。",
-          "pass_condition": "场景物体优先官方参考编辑，蒙版覆盖容器/接触结构；独立展示可贴原图并记录理由，不得以贴图冒充场景物体。",
-          "failure_severity": "hard-stop",
-          "return_to_stage": "production",
-          "evidence_required": true
-        },
-        {
-          "check_id": "official-label-direction",
-          "assessment": "machine",
-          "question": "登记官方图层净旋转、翻转、透视和曲面映射；倒置/镜像失败，除非有当前修正放大与独立正向确认。",
-          "pass_condition": "登记官方图层净旋转、翻转、透视和曲面映射；倒置/镜像失败，除非有当前修正放大与独立正向确认。",
-          "failure_severity": "hard-stop",
-          "return_to_stage": "production",
-          "evidence_required": true
-        },
-        {
-          "check_id": "official-label-triptych",
-          "assessment": "human",
-          "question": "回贴输出官方原图/生成结果/最终三联局部放大，逐项核对品牌、品类和标识，品牌清晰可读。",
-          "pass_condition": "回贴输出官方原图/生成结果/最终三联局部放大，逐项核对品牌、品类和标识，品牌清晰可读。",
-          "failure_severity": "hard-stop",
-          "return_to_stage": "production",
-          "evidence_required": true
-        },
-        {
-          "check_id": "opaque-opening-and-pixel-preservation",
-          "assessment": "machine",
-          "question": "开口生成层完全不透明覆盖旧图，边界在自然边缘；零容差逐像素核验，蒙版外变化必须0。",
-          "pass_condition": "开口生成层完全不透明覆盖旧图，边界在自然边缘；零容差逐像素核验，蒙版外变化必须0。",
-          "failure_severity": "hard-stop",
-          "return_to_stage": "production",
-          "evidence_required": true
-        },
-        {
-          "check_id": "preproduction-product-scene-plan",
-          "assessment": "machine",
-          "question": "每个场景产品是否在生产请求前登记官方参考、容器/接触、覆盖蒙版、生成方式与理由？",
-          "pass_condition": "print-product-v2生产记录内逐产品计划绑定派发请求；贴图必须登记独立展示物及理由。",
           "failure_severity": "hard-stop",
           "return_to_stage": "production",
           "evidence_required": true
@@ -524,78 +461,6 @@
           "pass_condition": "print-core-v4：锁定声明绑定方向盲评一句话，逐稿对照声明hash一致；改声明须回方向重新发散盲评且累计最多一次。只靠箭头、指向线、标注、透明重影等读出关系时，第1/3/4问为否并完整返工；造型语言去掉后关系仍成立可通过。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "main-visual-generation",
-          "evidence_required": true
-        },
-        {
-          "check_id": "independent-product-label-review",
-          "assessment": "human",
-          "question": "产品上的品牌/品类文字是否与官方一致、正向可读（不倒置、不镜像、无伪字）？失败即核心失败。",
-          "pass_condition": "产品上的品牌/品类文字是否与官方一致、正向可读（不倒置、不镜像、无伪字）？失败即核心失败。",
-          "failure_severity": "hard-stop",
-          "return_to_stage": "production",
-          "evidence_required": true
-        },
-        {
-          "check_id": "independent-product-scene-review",
-          "assessment": "human",
-          "question": "产品是否真正处于场景中（透视、遮挡、接触、光影一致），而非贴片？",
-          "pass_condition": "独立第七问与每个产品三联局部放大绑定；失败是核心失败，不能抵消，产品局部返工后取得新独立返回；作者自评不能替代。",
-          "failure_severity": "hard-stop",
-          "return_to_stage": "production",
-          "evidence_required": true
-        },
-        {
-          "check_id": "secondary-copy-usage-reason",
-          "assessment": "machine",
-          "question": "每稿是否登记次级文案使用与否及一句理由？",
-          "pass_condition": "无论使用与否均登记；不写不是缺项，未使用时2–6项标记不适用。",
-          "failure_severity": "return-on-observed-failure",
-          "return_to_stage": "production",
-          "evidence_required": true
-        },
-        {
-          "check_id": "secondary-copy-official-source",
-          "assessment": "machine",
-          "question": "使用的次级文案是否有当前文案和可追溯官方来源？",
-          "pass_condition": "仅使用官方事实或命题要求信息；使用时登记文字、官方来源文件hash与定位。",
-          "failure_severity": "return-on-observed-failure",
-          "return_to_stage": "production",
-          "evidence_required": true
-        },
-        {
-          "check_id": "secondary-copy-subordinate-hierarchy",
-          "assessment": "machine",
-          "question": "次级文案是否在字号与字重层级上从属于标题，并在420px实际预览可读？",
-          "pass_condition": "从现有文字对象记录计算字号与整体字重层级，绑定当前420px缩略图及独立识读；整体不等于或高于标题。",
-          "failure_severity": "return-on-observed-failure",
-          "return_to_stage": "production",
-          "evidence_required": true
-        },
-        {
-          "check_id": "secondary-copy-series-consistency",
-          "assessment": "machine",
-          "question": "同系列次级文案结构、位置逻辑、字体处理是否统一？",
-          "pass_condition": "比较每稿声明的相对结构/位置/字体处理及实际字体参数；不强制固定产品名｜卖点或坐标。",
-          "failure_severity": "return-on-observed-failure",
-          "return_to_stage": "production",
-          "evidence_required": true
-        },
-        {
-          "check_id": "secondary-copy-independent-semantics",
-          "assessment": "human",
-          "question": "次级文案是否仅补充信息，没有解释画面、复述标题或广告腔，且与标题合成一个从属阅读区？",
-          "pass_condition": "使用时保存空上下文独立成图检查原始返回；失败为文字层返工，不是核心创意失败，可局部修文字后用新图重新独立检查。",
-          "failure_severity": "return-on-observed-failure",
-          "return_to_stage": "production",
-          "evidence_required": true
-        },
-        {
-          "check_id": "secondary-copy-role-scope",
-          "assessment": "machine",
-          "question": "文字元素是否明确登记角色，次级文案脚本与独立检查是否只判secondary-copy元素？",
-          "pass_condition": "使用v2及visual-review2.5.0，绑定当前图、次级文案实际文字/位置及scope hash；页脚限定/必需小字和品牌标识不参与本原则的不解释画面/420px检查，其他文字意见仅作信息；既有页脚检查原样执行。",
-          "failure_severity": "return-on-observed-failure",
-          "return_to_stage": "production",
           "evidence_required": true
         }
       ],

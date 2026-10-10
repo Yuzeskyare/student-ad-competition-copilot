@@ -15,11 +15,17 @@ def require(value, message):
 
 def dispatch_inputs(root, manifest, contract, request):
     from review_contract import bound_file, inside, load, digest
-    if manifest.get('direction_contract') == 'print-direction-v6':
+    if manifest.get('direction_contract') in {'print-direction-v6','print-direction-v7'}:
         from validate_print_ad_run import validate_direction_blind_review, validate_main_visual_dispatch_v6
         direction = validate_direction_blind_review(root, manifest)
         require(direction['passed'], 'Direction choice must be completed before production: ' + str(direction['evidence']))
         validate_main_visual_dispatch_v6(root, manifest, request)
+    if manifest.get('direction_contract')=='print-direction-v7' or manifest.get('product_contract')=='print-product-v2':
+        require(manifest.get('direction_contract')=='print-direction-v7' and manifest.get('product_contract')=='print-product-v2','New dispatch cannot downgrade causal/product contracts')
+        gate=load(inside(root,manifest['artifacts']['quality_gate_results']))
+        require(gate.get('definition_set_id')=='print-ad.0.16.0','New dispatch requires print-ad.0.16.0')
+        from visual_review_contract import validate_product_dispatch_v2
+        validate_product_dispatch_v2(root,manifest,request)
     require(request.get('execution_profile') == PROFILE,
             'New dispatch requires bound-production-v1; preserve legacy requests and create a bound successor')
     require('input_files' in request and isinstance(request['input_files'], list), 'Declare actual input_files')

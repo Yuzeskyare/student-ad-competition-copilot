@@ -121,6 +121,22 @@
             "observation": "待独立查看：去掉创意仍是普通场景吗？原问答是则本正向字段为false。",
             "blind_read_sha256": "replace-saved-blind-record-sha256",
             "comparison_evidence": []
+          },
+          "product_label_consistent_readable": {
+            "answer": null,
+            "observation": "待独立对照官方图与当前成图：品牌/品类一致、正向可读，无倒置、镜像、伪字。",
+            "blind_read_sha256": "replace-saved-blind-record-sha256",
+            "comparison_evidence": [
+              "product_label"
+            ]
+          },
+          "product_in_scene": {
+            "answer": null,
+            "observation": "待独立查看产品三联局部：产品是否真正处于场景中（透视、遮挡、接触、光影一致），而非贴片？",
+            "blind_read_sha256": "replace-saved-blind-record-sha256",
+            "comparison_evidence": [
+              "product_scene"
+            ]
           }
         },
         "independent_check": {
@@ -128,7 +144,9 @@
           "sha256": "replace-actual-sha256"
         },
         "direction_id": "PA-01",
-        "core_claim_sha256": "replace-adoption-statement-utf8-sha256"
+        "core_claim_sha256": "replace-adoption-statement-utf8-sha256",
+        "product_contract": "print-product-v2",
+        "product_triptychs": []
       }
     ],
     "current_assessment_ids": [
@@ -141,5 +159,7 @@
       }
     ]
   },
-  "direction_contract": "print-direction-v6"
+  "direction_contract": "print-direction-v7",
+  "product_contract": "print-product-v2",
+  "secondary_copy_contract": "print-secondary-copy-v2"
 }

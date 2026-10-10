@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.19",
+  "status": "release-qualified",
+  "change_id": "causal-advisory-choice-carryover-product-in-scene-secondary-copy",
+  "promoted_candidate": "0.2.19-rc.2",
+  "candidate_manifest_sha256": "bf5f8fd4a77c9a581b76589ab073dd2c65de61419ef473a3fc846c7c7baceb14",
+  "runtime_scripts_changed_since_candidate": false,
+  "changes": [
+    "Direction blind review adds an advisory causal check that never gates ranking, adoption or production",
+    "A user direction choice carries across version migration only for a byte-identical, traceable original sentence",
+    "Print production registers a product-in-scene plan and answers an independent seventh check bound to the artwork",
+    "Secondary copy is an optional principle: subordinate to the headline, readable at thumbnail size, with a recorded reason"
+  ],
+  "candidate_tests": {
+    "new_contract": 268,
+    "rc1_contract": 84,
+    "inherited_unittest": 353,
+    "schema": 170
+  },
+  "legacy_regressions": "19 stale assertions in four historical suites updated to the 0.2.6/0.2.12 contracts; no skill rule changed",
+  "distribution_cleanup": {
+    "removed_process_records": [
+      "references/validation/v0.2.18-rc1-round01.json",
+      "references/validation/v0.2.18-rc2-round01.json",
+      "references/validation/v0.2.18-rc3-round01.json",
+      "references/validation/v0.2.18-rc4-round01.json",
+      "references/validation/v0.2.18-rc5-round01.json",
+      "references/validation/v0.2.18-rc6-round01.json",
+      "references/validation/v0.2.18-rc7-round01.json",
+      "references/validation/v0.2.18-rc8-round01.json",
+      "references/validation/v0.2.18-rc9-round01.json",
+      "references/validation/v0.2.18-rc10-round01.json",
+      "references/validation/v0.2.18-rc11-round01.json",
+      "references/validation/v0.2.19-rc1-candidate.json",
+      "references/validation/v0.2.19-rc2-candidate.json"
+    ],
+    "edited_documents": [
+      "SKILL.md",
+      "THIRD_PARTY_NOTICES.md",
+      "references/tracks/print-ad/playbook.md",
+      "references/workflow/final-pixel-review.md",
+      "references/workflow/image-tool-adaptation.md"
+    ],
+    "rule_content_changed": false
+  },
+  "image_generation_calls": 0,
+  "project_submission_ready": false,
+  "limits": [
+    "No newly produced artwork or full real production sequence under the new print contract",
+    "The causal check is advisory only; it never blocks or reorders directions",
+    "Automatic checks are model judgments, not human approval",
+    "No universal first-draft, independent audience, cross-device or print validation"
+  ],
+  "promotion_basis": "Verified candidate runtime with documented distribution cleanup; publication only after explicit user authorization."
+}

@@ -10,8 +10,8 @@ Third-party titles, brands and expressions discussed in commentary are not relic
 
 方法验证保留历史判断、观察文字与其中的引述。计数、fit 和 human_reviewed 沿用原记录，不表示本轮人工审核或独立复验。
 Method validation preserves historical judgments, observations and quotations. Counts, fit and human_reviewed describe inherited records, not new independent verification.
-8 张隔离方法卡仍不参与常规查询；来源摘要尚未逐项与当前在线原文重新对照，本候选不表示法律审查已完成。
-Eight quarantined methods remain excluded. Source summaries have not all been compared against current online originals; this candidate is not legal clearance.
+8 张隔离方法卡仍不参与常规查询；来源摘要尚未逐项与当前在线原文重新对照，本版本不表示法律审查已完成。
+Eight quarantined methods remain excluded. Source summaries have not all been compared against current online originals; this release is not legal clearance.
 
 ## 来源目录 / Source index
 

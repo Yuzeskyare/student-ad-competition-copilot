@@ -9,10 +9,37 @@ sys.dont_write_bytecode = True
 from review_contract import digest, inside
 
 
+def product_tools(argv):
+    """Prepare product triptychs/pixel proofs without generating or editing images."""
+    from PIL import Image
+    from visual_review_contract import product_triptych, exact_pixel_diff
+    parser=argparse.ArgumentParser(description='product-triptych: --input panel JSON; pixel-proof: --before/--after/--mask. All paths relative to --run-dir.')
+    parser.add_argument('operation',choices=['product-triptych','pixel-proof'])
+    parser.add_argument('--run-dir',required=True); parser.add_argument('--output-dir',required=True)
+    parser.add_argument('--input'); parser.add_argument('--before'); parser.add_argument('--after'); parser.add_argument('--mask')
+    args=parser.parse_args(argv); root=Path(args.run_dir).resolve(); dest=inside(root,args.output_dir)
+    if dest.exists(): parser.error('Use a new output directory')
+    def ref(path): return {'path':path.relative_to(root).as_posix(),'sha256':digest(path)}
+    if args.operation=='product-triptych':
+        if not args.input: parser.error('--input is required')
+        record=json.loads(inside(root,args.input).read_text(encoding='utf-8'))
+        sheet=product_triptych(root,record); dest.mkdir(parents=True)
+        sheet.save(dest/'triptych.png'); record['image']=ref(dest/'triptych.png'); name='triptych.json'
+    else:
+        if not all([args.before,args.after,args.mask]): parser.error('--before/--after/--mask are required')
+        before,after,mask=[inside(root,p) for p in [args.before,args.after,args.mask]]
+        with Image.open(before) as b,Image.open(after) as a,Image.open(mask) as m: record=exact_pixel_diff(b,a,m)
+        record.update(before=ref(before),after=ref(after),allowed_mask=ref(mask)); name='pixel-proof.json'; dest.mkdir(parents=True)
+    path=dest/name; path.write_text(json.dumps(record,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    print(json.dumps({'record':ref(path),'visual_quality_assessed':False},ensure_ascii=False))
+    return 1 if record.get('outside_changed_pixels',0) else 0
+
+
 def main():
     for stream in (sys.stdout,sys.stderr):
         if hasattr(stream,'reconfigure'):stream.reconfigure(encoding='utf-8')
-    parser=argparse.ArgumentParser(description=__doc__)
+    if len(sys.argv)>1 and sys.argv[1] in {'product-triptych','pixel-proof'}: return product_tools(sys.argv[1:])
+    parser=argparse.ArgumentParser(description=__doc__,epilog='Additional operations: product-triptych --help; pixel-proof --help')
     for name in ('run-dir','source','version','unit','renderer','execution-evidence','output-dir'):
         parser.add_argument('--'+name,required=True)
     parser.add_argument('--native',required=True,help='Existing raster render (PNG/JPEG), not SVG; --source identifies the editable source')
@@ -63,4 +90,4 @@ def main():
 
 
 if __name__=='__main__':
-    main()
+    raise SystemExit(main())

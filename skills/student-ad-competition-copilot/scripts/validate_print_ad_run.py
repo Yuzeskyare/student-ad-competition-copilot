@@ -198,6 +198,160 @@ def validate_direction_turn_v6(screen):
                 'New twist must change a named object relation; benefit restatement is not a change')
 
 
+
+INDEPENDENT_DIRECTION_RUBRIC_V7 = INDEPENDENT_DIRECTION_RUBRIC_V6 + '''
+新增独立因果提示检查，对所有输入方向（包括去重项）依次回答两步：① 画面的核心创意关系（观众记住的那个转折/画面效果）直接由什么产生？② 这一核心关系是否建立在产品自己做的事上？是，则因果合格；否，则因果不合格。
+本职是用户买它要它做的事，以及这件事的正常直接结果。赋能型产品是给别的东西提供能量、原料或功能的产品；被它赋能的对象因此做到的事也算本职结果。不要求效果脱离设备、载体或使用者产生，不要求被赋能对象只做一件事。依据原句、产品说明和实际作用链，区分产品本身/被它赋能的对象产生的效果，与未参与的独立系统或环境产生的效果，不能仅因出现产品名就放行，不从句外补造能力或动作。
+合格：创意效果由产品本职或本职结果产生，或由被产品赋能的对象因此产生。不合格：创意效果来自产品没有参与的另一个系统或环境条件，产品只是场景里的前提或触发者。真实上游触发链不能使设备附带效果或无关环境条件合格；须追踪核心效果所用能量/原料/功能及预期作用关系，而非把任何被触发的别处效果都算产品提供。不以换同类产品、换电源、用火柴/钥匙等别的手段也能完成本职判不合格；本职可被其他方式替代不是这项检查。不得再用“不用产品、以无关方式满足同一前提后是否仍成立”的替代测试作为拒绝理由。同品类竞品替换仍不作为品牌独占考试。
+理由须写明产品本职是什么、赋能对象及产品给它提供了什么（无赋能对象则写明）、核心效果直接来源和第②步的是/否，说明归于本职/正常直接结果/赋能结果，还是另一系统或环境的效果。官方资料缺失或作用链不清时如实说明，不伪造说明或改写原句。不得虚构产品不具备的能力，必须如实区分产品的作用与设备、环境、使用者的过程。
+示例（仅用于说明，覆盖多个品类，不构成按品类的规则分支）：
+- 赋能型可包括电池、燃料、调料、网络服务、配件。电池为手电/桌灯/发光玩具供电，该设备靠这份电发光，光投出影子→合格；电池为玩具车供电，车行驶进入手绘地图→合格。不能因照明不是玩具的唯一或主要工作而将这份光拒为无关效果。电池负责供电、发光设备将电转成光，不将电池写成直接发光。
+- 遥控器电池只发指令，却借车辆自身供电的车灯投手影→不合格；智能锁电池只负责开门，却借独立走廊灯投影子→不合格；点火电池→煮汤蒸汽→合格，点火后的烹饪是该用途的正常结果，燃气负责加热，不能写成电池在加热汤。点火却借独立台灯投锅盖影→不合格。纽扣电池供遥控器在远处开车门、智能锁电池低电报警后仍开门→合格。
+- 药品/健康品缓解症状后，人恢复的状态或行为→合格；产品只出现在场景里，创意效果来自别的事物→不合格。须依据产品说明与原句，不把示例当作疗效事实。
+- 饮料/食品通过补水、口感或成分带来的身体或情绪变化→合格；瓶子只作道具，效果与饮用无关→不合格。具体效果仍须有产品依据，不能虚构功效。
+记录要求：causal_check每条含direction_id、core_creative_relation_direct_source非空文字（回答第①步）、core_relation_still_holds_without_product布尔和reason。为兼容现有记录/守卫，保留旧布尔字段名作第②步负向提示标记：第②步是（本职/正常直接结果/赋能结果）则false=因果合格；第②步否则true=因果不合格，不表示物理上不能替换产品。reason按上述通用口径说明本职、赋能对象和核心效果归属，不添加品类分类字段，不改写旧历史记录。
+因果一问是提示项，用于提醒“创意是否借用了产品没参与的效果”，不作为门槛。逐条保留直接来源、结论与理由，方向选择清单原样展示且在用户选择前可见；缺字段、覆盖不全或清单遗漏提示仍须拒绝。因果结论不参与合格排序、可画前列、all_weak、自动采用（含委托）、user_override需求、版本迁移承接或生产守卫决策；因果不合格无需用户覆盖。排序与all_weak只按既有套路/可画性规则判断，不能按因果结论压排序或变更采用。新增causal_check覆盖全部输入，包括去重项；检查者不代替用户选择，其余v6返回字段保持。
+'''
+
+def direction_request_v7(sentences_content, references_content, counterexamples_content):
+    # The inherited sentence contract and all historical rubric constants remain intact.
+    direction_request_v6(sentences_content, references_content, counterexamples_content)
+    return (INDEPENDENT_DIRECTION_RUBRIC_V7 + '\n反馈机制反例库：\n' + counterexamples_content
+            + '\n案例机制参照：\n' + references_content + '\n方向一句话清单：\n' + sentences_content)
+
+def validate_direction_causal_v7(result, ids):
+    rows=result.get('causal_check')
+    if (not isinstance(rows,list) or len(rows)!=len(ids)
+            or {x.get('direction_id') for x in rows if isinstance(x,dict)}!=set(ids)
+            or any(set(x)!={'direction_id','core_creative_relation_direct_source','core_relation_still_holds_without_product','reason'}
+                   or type(x['core_relation_still_holds_without_product']) is not bool
+                   or not isinstance(x['core_creative_relation_direct_source'],str) or not x['core_creative_relation_direct_source'].strip()
+                   or not isinstance(x['reason'],str) or not x['reason'].strip() for x in rows)):
+        raise ValueError('Every direction must answer the two-step independent causal question with direct source, boolean and reason')
+    screens={x['direction_id']:x for x in result['trope_screen']}
+    draw={x['direction_id']:x for x in result['drawability']}
+    causal={x['direction_id']:x for x in rows}
+    flags=[direction_eligible_v6(screens[x['direction_id']]) and draw[x['direction_id']]['drawable']
+           for x in result['ranking']]
+    if flags!=sorted(flags,reverse=True):
+        raise ValueError('Trope-ineligible/non-drawable directions cannot precede qualified drawable choices')
+    if result['all_weak'] is not (not flags[0]):
+        raise ValueError('all_weak must preserve the first direction trope/drawability eligibility; causal answers are advisory')
+    return causal
+
+def direction_choice_rows_v7(candidates,result):
+    rows=direction_choice_rows_v6(candidates,result)
+    causal={x['direction_id']:x for x in result['causal_check']}
+    for row in rows:
+        row['causal_check']=causal[row['direction_id']]
+        row['eligible']=row['eligible'] and row['drawable']
+    return rows
+
+def direction_choice_causal_text_v7(causal):
+    return ('因果提示（不作为门槛）：核心创意关系直接来源：'+causal['core_creative_relation_direct_source']+'；核心关系属于产品本职或正常直接结果：'
+            +('否' if causal['core_relation_still_holds_without_product'] else '是')
+            +'；因果理由：'+causal['reason'])
+
+def direction_choice_judgment_text_v7(row):
+    return direction_choice_judgment_text_v6(row)+'；'+direction_choice_causal_text_v7(row['causal_check'])
+
+def direction_choice_advisory_rows_v7(candidates,result):
+    # All submitted directions retain advice, even those removed as duplicates.
+    by_id={x['direction_id']:x for x in candidates}
+    return [dict(direction_id=x['direction_id'],statement=by_id[x['direction_id']]['statement'],causal_check=x)
+            for x in result['causal_check']]
+
+def validate_direction_choice_list_v7(root,adoption,by_id,result,completed,decided):
+    choice=load_json(bound_file(root,adoption['choice_list']))
+    if (set(choice)!={'presented_at','rows','causal_advisories','user_facing_copy'}
+            or choice['rows']!=direction_choice_rows_v7(list(by_id.values()),result)
+            or choice['causal_advisories']!=direction_choice_advisory_rows_v7(list(by_id.values()),result)):
+        raise ValueError('Direction choice list must preserve original causal judgments and eligibility')
+    shown=timestamp(choice['presented_at'])
+    if shown<completed or shown>=timestamp(adoption['adopted_at']) or (adoption['selection_mode']=='user' and shown>decided):
+        raise ValueError('Present causal choices after blind return and before selection/carryover')
+    text=bound_file(root,choice['user_facing_copy']).read_text(encoding='utf-8')
+    for row in choice['rows']:
+        if not any(row['direction_id'] in line and row['statement'] in line and row['basis'] in line
+                   and row['checker_comment'] in line and direction_choice_judgment_text_v7(row) in line for line in text.splitlines()):
+            raise ValueError('User-facing choices must include original causal question verdict and reason')
+    for advice in choice['causal_advisories']:
+        if not any(advice['direction_id'] in line and advice['statement'] in line
+                   and direction_choice_causal_text_v7(advice['causal_check']) in line for line in text.splitlines()):
+            raise ValueError('User-facing choices must include original causal advice for every submitted direction')
+
+def direction_judgment_v7(result,ident,raw_ref):
+    return dict(raw_return=raw_ref,
+                trope_screen=next(x for x in result['trope_screen'] if x['direction_id']==ident),
+                causal_check=next(x for x in result['causal_check'] if x['direction_id']==ident),
+                drawability=next(x for x in result['drawability'] if x['direction_id']==ident))
+
+def validate_direction_carryover_v7(root,selection,adoption,candidate,result,raw_ref,completed):
+    """Revalidate immutable old choice/source, exact sentence and version-only migration."""
+    from review_contract import human_source, load
+    def require(v,msg):
+        if not v: raise ValueError(msg)
+    c=selection.get('carryover')
+    keys={'reason','re_review_reason','original_selection','original_source_event','original_sentences',
+          'old_version','new_version','old_version_manifest','new_version_manifest','new_blind_review',
+          'new_judgment','carried_at'}
+    require(isinstance(c,dict) and set(c)==keys,'Carryover needs complete provenance and migration reason')
+    require(c['re_review_reason']=='skill-version-migration' and isinstance(c['reason'],str) and c['reason'].strip(),
+            'Only Skill version migration permits choice carryover')
+    old=load(bound_file(root,c['original_selection']))
+    require(old.get('kind')=='user-choice' and old.get('actor')=='user' and old.get('direction_id')==candidate['direction_id'],
+            'Carryover must reference an original actual user choice')
+    require(all(selection.get(k)==old.get(k) for k in ['actor','direction_id','statement','source','decided_at']),
+            'Carryover must retain original quotation, source and actual decision time')
+    bound_file(root,old['source'])
+    require(old['statement'] in bound_file(root,old['source']).read_text(encoding='utf-8'),'Original user quotation is missing from source')
+    event=load(bound_file(root,c['original_source_event']))
+    require(human_source(root,c['original_source_event'],old['statement'])==timestamp(old['decided_at']),
+            'Original choice time must match the traceable human event')
+    require(c['original_source_event']==old['source'] or event.get('source_authorization')==old['source'],
+            'Human source event must bind the original source hash')
+    originals=json.loads(bound_file(root,c['original_sentences']).read_text(encoding='utf-8'))
+    matches=[x for x in originals if x['direction_id']==candidate['direction_id']]
+    require(len(matches)==1 and matches[0]['statement']==candidate['statement']
+            and claim_digest(matches[0]['statement'])==claim_digest(candidate['statement']),
+            'Carryover requires byte-identical original direction sentence')
+    for label in ['old','new']:
+        version=load(bound_file(root,c[label+'_version_manifest']))
+        require(version.get('skill_version')==c[label+'_version'],'Carryover version must bind actual version manifest')
+    require(c['old_version']!=c['new_version'],'Carryover requires different Skill versions')
+    current=load_json(Path(__file__).resolve().parents[1]/'version.json')
+    require(c['new_version']==current['skill_version'],'Carryover successor is not the current Skill version')
+    require(c['new_blind_review']==adoption['blind_review'] and c['new_judgment']==direction_judgment_v7(result,candidate['direction_id'],raw_ref),
+            'Carryover must cite exact new blind review and all new judgments')
+    at=timestamp(c['carried_at'])
+    require(timestamp(old['decided_at'])<completed<=at<timestamp(adoption['adopted_at'])
+            and at<=datetime.now(timezone.utc),'Carryover is a later record, not a rewritten user decision')
+    new=c['new_judgment']
+    failures=[]
+    if new['trope_screen']['is_trope'] or new['trope_screen']['counterexample_matches']: failures.append('trope_screen')
+    if not new['drawability']['drawable']: failures.append('drawability')
+    if failures:
+        ov=old.get('override_judgment',{})
+        require(old.get('user_override') is True and isinstance(ov,dict) and 'raw_return' in ov,
+                'New failed judgment was not covered by the original user override; reconfirm')
+        raw=load(bound_file(root,ov['raw_return']))
+        for field in failures:
+            prior=ov.get(field)
+            require(isinstance(prior,dict) and prior.get('direction_id')==candidate['direction_id']
+                    and prior in raw.get(field,[]),'New '+field+' failed judgment was not covered by the original user override; reconfirm')
+            if field=='trope_screen':
+                require(prior.get('is_trope') is True and
+                        {x['entry_id'] for x in new[field]['counterexample_matches']} <= {x['entry_id'] for x in prior.get('counterexample_matches',[])},
+                        'New trope/counterexample judgment is not covered by original override')
+            else: require(prior.get('drawable') is False,'New non-drawability was not previously overridden')
+        require(selection.get('user_override') is True and selection.get('override_judgment')==new,
+                'Carryover must preserve the covered failure as user_override with new raw judgment')
+    else:
+        require(selection.get('user_override',False) is False and 'override_judgment' not in selection,
+                'Do not invent override when no failed judgment exists')
+    return at
+
+
 def direction_eligible_v6(screen):
     return not screen['counterexample_matches'] and (not screen['is_trope'] or screen['new_twist'] is not None)
 
@@ -383,6 +537,14 @@ def claim_digest(statement):
     return hashlib.sha256(statement.encode('utf-8')).hexdigest()
 
 
+INDEPENDENT_COMPARE_RUBRIC_PRODUCT_V1 = INDEPENDENT_COMPARE_RUBRIC_V4 + '''
+增加第6问 product_label_consistent_readable：产品上的品牌/品类文字是否与官方一致、正向可读（不倒置、不镜像、无伪字）？失败即核心失败。comparison 增加 product_label（含像素 observation）；第6问沿用answer、observation、blind_read_sha256、comparison_evidence，证据引用product_label。允许倾斜与透视，不要求包装细字缩略可读。'''
+
+
+INDEPENDENT_COMPARE_RUBRIC_PRODUCT_V2 = INDEPENDENT_COMPARE_RUBRIC_PRODUCT_V1 + '''
+增加第7问 product_in_scene：产品是否真正处于场景中（透视、遮挡、接触、光影一致），而非贴片？逐个场景产品看官方/生成/最终三联局部放大，comparison增加product_scene数组，每项含element_id、role、triptych路径哈希、answer、像素observation。任一场景产品false，第7问false即核心失败，不能用文字正确、其它检查或作者自评冲销。独立展示物如实注明此场景问题不适用；第7问仅无场景物体时可以true并说明。第7问证据引用product_scene。允许产品局部返工，但必须保留失败、区外零变化证明并取得新独立检查；原五问失败仍须完整返工。
+'''
+
 def load_claim_lock(root, adoption):
     lock = load_json(bound_file(root, adoption['claim_lock']))
     if (set(lock) != {'direction_id', 'statement', 'statement_sha256', 'adopted_at', 'blind_review'}
@@ -394,7 +556,7 @@ def load_claim_lock(root, adoption):
     bundle = load_json(bound_file(root, lock['blind_review']))
     last = load_json(bound_file(root, bundle['rounds'][-1]))
     sentences = json.loads(bound_file(root, last['inputs'][0]['file']).read_text(encoding='utf-8'))
-    winner = (adoption['direction_id'] if last.get('rubric_version') == 'print-direction-v6'
+    winner = (adoption['direction_id'] if last.get('rubric_version') in {'print-direction-v6','print-direction-v7'}
               else last['result']['ranking'][0]['direction_id'])
     original = next(v['statement'] for v in sentences if v['direction_id'] == winner)
     if winner != lock['direction_id'] or original != lock['statement']:
@@ -455,7 +617,10 @@ def validate_blind_core(root, row, render, record, invocation_keys, locked_claim
         return refs
 
     locked = locked_claim is not None
-    metadata(record, 'print-core-v4' if locked else 'print-core-v3',
+    product_scene = row.get('product_contract') == 'print-product-v2'
+    product_check = row.get('product_contract') in {'print-product-v1','print-product-v2'}
+    require(not product_check or locked, 'Product check requires locked independent core review')
+    metadata(record, 'print-core-product-v2' if product_scene else 'print-core-v4' if locked else 'print-core-v3',
              {'blind_read', 'core_claim_sha256'} if locked else {'blind_read'})
     if locked:
         require(row.get('core_claim_sha256') == record['core_claim_sha256'] == locked_claim['statement_sha256'],
@@ -486,12 +651,17 @@ def validate_blind_core(root, row, render, record, invocation_keys, locked_claim
             and nonempty(raw_blind['action']) and nonempty(raw_blind['product_role'])
             and isinstance(raw_blind['ambiguities'], list)
             and all(nonempty(v) for v in raw_blind['ambiguities']), 'Preserve original blind action, product role and ambiguities')
-    refs = inputs(record['inputs'], {'artwork', 'official-product-asset', 'core-action'})
+    trip_roles={'product-triptych:'+p['element_id'] for p in row.get('product_triptychs',[])} if product_scene else set()
+    refs = inputs(record['inputs'], {'artwork', 'official-product-asset', 'core-action'} | trip_roles)
+    if product_scene:
+        for p in row['product_triptychs']:
+            trip=load_json(bound_file(root,p['triptych']))
+            require(refs['product-triptych:'+p['element_id']]==trip['image'],'Independent comparison must receive actual product triptych pixels')
     require(refs['official-product-asset'] == row['official_product_asset'], 'Compare official product asset differs')
     image_file(root, refs['official-product-asset'])
     require(bound_file(root, refs['core-action']).read_text(encoding='utf-8') == row['core_action'], 'Compare core-action differs')
     require(bound_file(root, record['request']).read_text(encoding='utf-8') ==
-            (INDEPENDENT_COMPARE_RUBRIC_V4 if locked else INDEPENDENT_COMPARE_RUBRIC) + '\n核心动作/关系：' + row['core_action'] + '\n盲读记录SHA256：' + blind_ref['sha256']
+            (INDEPENDENT_COMPARE_RUBRIC_PRODUCT_V2 if product_scene else INDEPENDENT_COMPARE_RUBRIC_PRODUCT_V1 if product_check else INDEPENDENT_COMPARE_RUBRIC_V4 if locked else INDEPENDENT_COMPARE_RUBRIC) + '\n核心动作/关系：' + row['core_action'] + '\n盲读记录SHA256：' + blind_ref['sha256']
             + ('\n锁定声明SHA256：' + locked_claim['statement_sha256'] if locked else ''),
             'Comparison request contains author explanation or lacks blind hash')
     raw = load_json(bound_file(root, record['raw_return']))
@@ -502,6 +672,14 @@ def validate_blind_core(root, row, render, record, invocation_keys, locked_claim
     comparison = raw['comparison']
     axes = {'action', 'change_direction', 'product_role'}
     extra = {'ambiguities', 'explanatory_devices', 'device_removal'} if locked else {'ambiguities'}
+    if product_check:
+        extra.add('product_label')
+        if product_scene:
+            extra.add('product_scene')
+            from visual_review_contract import validate_product_scene_comparison_v2
+            validate_product_scene_comparison_v2(root,row,raw)
+        require(isinstance(raw['comparison'].get('product_label'), dict) and nonempty(raw['comparison']['product_label'].get('observation')), 'Product label needs a pixel observation')
+        require('product_label' in row['answers']['product_label_consistent_readable']['comparison_evidence'], 'Sixth core answer must cite product label')
     require(isinstance(comparison, dict) and set(comparison) == axes | extra, 'Compare all three relation axes')
     for axis in axes:
         value = comparison[axis]
@@ -636,12 +814,13 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
 
     try:
         import re
-        v6 = manifest.get('direction_contract') == 'print-direction-v6'
-        v5 = manifest.get('direction_contract') in {'print-direction-v5', 'print-direction-v6'}
-        v4 = manifest.get('direction_contract') in {'print-direction-v4', 'print-direction-v5', 'print-direction-v6'}
-        v3 = manifest.get('direction_contract') in {'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6'}
-        v2 = manifest.get('direction_contract') in {'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6'}
-        rubric_version = 'print-direction-v6' if v6 else ('print-direction-v5' if v5 else ('print-direction-v4' if v4 else ('print-direction-v3' if v3 else ('print-direction-v2' if v2 else 'print-direction-v1'))))
+        v7 = manifest.get('direction_contract') == 'print-direction-v7'
+        v6 = manifest.get('direction_contract') in {'print-direction-v6','print-direction-v7'}
+        v5 = manifest.get('direction_contract') in {'print-direction-v5', 'print-direction-v6', 'print-direction-v7'}
+        v4 = manifest.get('direction_contract') in {'print-direction-v4', 'print-direction-v5', 'print-direction-v6', 'print-direction-v7'}
+        v3 = manifest.get('direction_contract') in {'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6', 'print-direction-v7'}
+        v2 = manifest.get('direction_contract') in {'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6', 'print-direction-v7'}
+        rubric_version = 'print-direction-v7' if v7 else 'print-direction-v6' if v6 else ('print-direction-v5' if v5 else ('print-direction-v4' if v4 else ('print-direction-v3' if v3 else ('print-direction-v2' if v2 else 'print-direction-v1'))))
         minimum = 6 if v2 else 3
         adoption = manifest['direction_adoption']
         adopted = time(adoption['adopted_at'])
@@ -738,7 +917,7 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
                     entry_ids = {x['entry_id'] for x in library['entries']}
                     require(len(entry_ids) == len(library['entries']) and bool(entry_ids),
                             'Feedback counterexample entry identities must be unique and nonempty')
-                    expected_request = (direction_request_v6 if v6 else (direction_request_v5 if v5 else (direction_request_v4 if v4 else direction_request_v3)))(content, references_content, counterexamples_content)
+                    expected_request = (direction_request_v7 if v7 else direction_request_v6 if v6 else (direction_request_v5 if v5 else (direction_request_v4 if v4 else direction_request_v3)))(content, references_content, counterexamples_content)
                 else:
                     expected_request = direction_request_v2(content, references_content)
             else:
@@ -751,6 +930,7 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
             return_fields = {'near_duplicates', 'ranking', 'drawability', 'all_weak'}
             if v2:
                 return_fields |= {'trope_screen', 'reference_assessment'}
+            if v7: return_fields.add('causal_check')
             require(raw == r['result'] and set(raw) == return_fields,
                     'Preserve original blind return, ranking and drawability exactly')
             require(type(raw['all_weak']) is bool, 'all_weak must be a checker boolean')
@@ -824,12 +1004,13 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
                 require(raw['all_weak'] or not (screen['is_trope'] and screen['new_twist'] is None),
                         'Ranked-first trope without new twist must trigger all_weak')
                 if v3:
-                    require(raw['all_weak'] == (screen['is_trope'] and screen['new_twist'] is None),
+                    require(v7 or raw['all_weak'] == (screen['is_trope'] and screen['new_twist'] is None),
                             ('Only ranked-first trope without new twist triggers all_weak; references do not block' if v4 else
                              'Only ranked-first trope without visible-benefit twist triggers all_weak; references do not block'))
                 else:
                     require(raw['all_weak'] or strength['reaches_reference'] is not False,
                             'Ranked-first below reference strength must trigger all_weak')
+            if v7: causal=validate_direction_causal_v7(raw,ids)
             all_reviewed.update(ids)
             previous_weak = raw['all_weak']
         origins = bundle['origins']
@@ -859,13 +1040,13 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
         if v6:
             require(winner in retained, 'Selected direction must be retained in the presented list')
             selected_screen = next(x for x in screens if x['direction_id'] == winner)
-            require(user_choice_v6 or direction_eligible_v6(selected_screen),
+            require(user_choice_v6 or (direction_eligible_v6(selected_screen)),
                     'Delegated selected direction must be eligible; feedback mechanisms cannot be adopted automatically')
             require(adoption['selection_mode'] != 'delegated' or winner == raw['ranking'][0]['direction_id'],
                     'Delegated model choice must adopt ranked first')
         else:
             require(adoption['direction_id'] == winner, 'Adopted direction must be ranked first')
-        require(next(x for x in raw['drawability'] if x['direction_id'] == winner)['drawable'], 'Ranked-first direction must be drawable in one image')
+        require((v7 and user_choice_v6) or next(x for x in raw['drawability'] if x['direction_id'] == winner)['drawable'], 'Ranked-first direction must be drawable in one image')
         retrieval = load_json(ref(adoption['method_retrieval']))
         require(time(retrieval['recorded_at']) <= recorded, 'Method decisions must be saved before blind bundle record')
         for decision in retrieval['decisions']:
@@ -889,36 +1070,44 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
         selection = load_json(ref(adoption['selection_record']))
         selection_fields = {'kind', 'actor', 'direction_id', 'decided_at', 'statement', 'source'}
         require(selection_fields <= set(selection)
-                and set(selection) <= selection_fields | ({'user_override', 'override_judgment'} if v6 else set())
+                and set(selection) <= selection_fields | ({'user_override', 'override_judgment'} if v6 else set()) | ({'carryover'} if v7 else set())
                 and selection['actor'] == 'user' and nonempty(selection['statement']), 'Real user delegation/choice record is required')
         require(selection['statement'] in ref(selection['source']).read_text(encoding='utf-8'), 'User statement must bind actual source bytes')
         decided = time(selection['decided_at'])
+        carry = v7 and selection.get('kind') == 'user-choice-carryover'
+        if carry:
+            require(adoption['selection_mode']=='user','Delegation cannot carry over a user choice')
+            decided=validate_direction_carryover_v7(root,selection,adoption,input_by_id[winner],raw,r['raw_return'],previous_end)
+        else:
+            require('carryover' not in selection,'Carryover fields require user-choice-carryover kind')
         require(decided < adopted, 'User selection/delegation must precede adoption')
         if adoption['selection_mode'] == 'delegated':
             require(selection['kind'] == 'delegation', 'Model choice needs explicit user delegation')
         else:
-            require(adoption['selection_mode'] == 'user' and selection['kind'] == 'user-choice'
+            require(adoption['selection_mode'] == 'user' and (selection['kind'] == 'user-choice' or carry)
                     and selection['direction_id'] == winner and previous_end <= decided,
                     'Without delegation user must select the drawable first direction after blind return')
         if v6:
             override = selection.get('user_override', False)
             require(type(override) is bool, 'user_override must be a boolean')
             needs_override = selected_screen['is_trope'] or bool(selected_screen['counterexample_matches'])
+            if v7: needs_override = needs_override or not next(x for x in raw['drawability'] if x['direction_id']==winner)['drawable']
             require(not user_choice_v6 or not needs_override or override is True,
                     'User choice of a trope/counterexample direction requires user_override=true')
             require(not override or (user_choice_v6 and needs_override),
                     'user_override=true is only for actual user choice of a trope/counterexample direction')
             if override:
                 judgment = selection.get('override_judgment')
-                require(isinstance(judgment, dict) and set(judgment) == {'raw_return', 'trope_screen'}
+                require(isinstance(judgment, dict) and set(judgment) == ({'raw_return','trope_screen','causal_check','drawability'} if v7 else {'raw_return','trope_screen'})
                         and judgment['raw_return'] == r['raw_return']
-                        and judgment['trope_screen'] == selected_screen,
+                        and judgment['trope_screen'] == selected_screen
+                        and (not v7 or judgment==direction_judgment_v7(raw,winner,r['raw_return'])),
                         'user_override must cite the corresponding original blind judgment')
                 require(load_json(ref(judgment['raw_return'])) == raw,
                         'Override judgment must bind original raw return bytes')
             else:
                 require('override_judgment' not in selection, 'Override judgment requires user_override=true')
-            validate_direction_choice_list_v6(root, adoption, input_by_id, raw, previous_end, decided)
+            (validate_direction_choice_list_v7 if v7 else validate_direction_choice_list_v6)(root, adoption, input_by_id, raw, previous_end, decided)
         if manifest.get('creative_contract') == 'print-core-v4':
             lock = load_claim_lock(root, adoption)
             previous = adoption.get('previous_adoptions', [])
@@ -990,6 +1179,11 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
         gate_id = document(manifest.get('artifacts', {}).get('quality_gate_results')).get('definition_set_id')
         if gate_id in {'print-ad.0.1.0', 'print-ad.0.2.0', 'print-ad.0.3.0', 'print-ad.0.4.0'} and 'creative_contract' not in manifest and 'direction_contract' not in manifest:
             return []
+        require(gate_id != 'print-ad.0.15.0' or (manifest.get('product_contract') == 'print-product-v1' and manifest.get('direction_contract') == 'print-direction-v6'), 'print-ad.0.15.0 requires print-product-v1 and print-direction-v6')
+        require(gate_id!='print-ad.0.16.0' or (manifest.get('product_contract')=='print-product-v2' and manifest.get('direction_contract')=='print-direction-v7'),'print-ad.0.16.0 requires print-product-v2 and print-direction-v7')
+        require('product_contract' not in manifest or ((manifest['product_contract'] == 'print-product-v1' and gate_id == 'print-ad.0.15.0') or (manifest['product_contract']=='print-product-v2' and gate_id=='print-ad.0.16.0')), 'print-product-v1 requires print-ad.0.15.0; no downgrade')
+        product_scene = manifest.get('product_contract')=='print-product-v2'
+        product_check = manifest.get('product_contract') in {'print-product-v1','print-product-v2'}
         locked_claims = manifest.get('creative_contract') == 'print-core-v4'
         blind_first = manifest.get('creative_contract') in {'print-core-v3', 'print-core-v4'}
         independent = manifest.get('creative_contract') in {'print-core-v2', 'print-core-v3', 'print-core-v4'}
@@ -1001,7 +1195,7 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
                 'print-ad.0.7.0 requires independent direction_contract=print-direction-v1')
         require(gate_id != 'print-ad.0.8.0' or blind_first,
                 'print-ad.0.8.0 requires creative_contract=print-core-v3 blind-then-compare')
-        require(gate_id not in {'print-ad.0.9.0', 'print-ad.0.10.0', 'print-ad.0.11.0', 'print-ad.0.12.0', 'print-ad.0.13.0', 'print-ad.0.14.0'} or locked_claims,
+        require(gate_id not in {'print-ad.0.9.0', 'print-ad.0.10.0', 'print-ad.0.11.0', 'print-ad.0.12.0', 'print-ad.0.13.0', 'print-ad.0.14.0', 'print-ad.0.15.0','print-ad.0.16.0'} or locked_claims,
                 'print-ad.0.9.0 requires creative_contract=print-core-v4 locked claim and device removal')
         require(gate_id != 'print-ad.0.10.0' or manifest.get('direction_contract') == 'print-direction-v2',
                 'print-ad.0.10.0 requires direction_contract=print-direction-v2 absolute direction bar')
@@ -1013,11 +1207,13 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
                 'print-ad.0.13.0 requires direction_contract=print-direction-v5 with explicit creative basis')
         require(gate_id != 'print-ad.0.14.0' or manifest.get('direction_contract') == 'print-direction-v6',
                 'print-ad.0.14.0 requires direction_contract=print-direction-v6')
-        require(manifest.get('direction_contract') != 'print-direction-v6' or gate_id == 'print-ad.0.14.0',
+        require(manifest.get('direction_contract') != 'print-direction-v6' or gate_id in {'print-ad.0.14.0', 'print-ad.0.15.0'},
                 'print-direction-v6 requires the new quality gate; no downgrade')
-        require(not locked_claims or manifest.get('direction_contract') in {'print-direction-v1', 'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6'},
+        require(manifest.get('direction_contract') != 'print-direction-v7' or (gate_id == 'print-ad.0.16.0' and manifest.get('product_contract') == 'print-product-v2'),
+                'print-direction-v7 requires print-ad.0.16.0 and print-product-v2; no downgrade')
+        require(not locked_claims or manifest.get('direction_contract') in {'print-direction-v1', 'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6','print-direction-v7'},
                 'Locked core declaration requires independent direction adoption')
-        require('direction_contract' not in manifest or (manifest['direction_contract'] in {'print-direction-v1', 'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6'} and independent),
+        require('direction_contract' not in manifest or (manifest['direction_contract'] in {'print-direction-v1', 'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6','print-direction-v7'} and independent),
                 'Independent direction contract requires print-core-v2 even with historical gates')
         require(manifest.get('direction_contract') != 'print-direction-v2' or locked_claims,
                 'print-direction-v2 retains print-core-v4 adoption claim lock')
@@ -1091,7 +1287,7 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
     except (OSError, ValueError, KeyError, TypeError, AttributeError, IndexError) as exc:
         checks.append(check('method-retrieval-before-adoption', False, str(exc)))
 
-    if manifest.get('direction_contract') in {'print-direction-v1', 'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6'}:
+    if manifest.get('direction_contract') in {'print-direction-v1', 'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6','print-direction-v7'}:
         checks.append(validate_direction_blind_review(root, manifest))
 
     if manifest.get('run_scope') == 'concept-only' and (not independent or 'core_creative_review' not in manifest):
@@ -1113,9 +1309,13 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
         questions = {'product_in_core_relation', 'action_depicted_without_copy', 'product_action_understood_in_three_seconds'}
         if independent:
             questions |= {'claimed_relation_depicted', 'creative_scene_not_generic'}
+        if product_check:
+            questions.add('product_label_consistent_readable')
+        if product_scene: questions.add('product_in_scene')
         independent_records = set()
         invocation_keys = set()
         for row in assessments:
+            require(not product_check or row.get('product_contract') == manifest.get('product_contract'), 'Every complete draft needs the sixth independent product-label check')
             require(text(row.get('id')) and row['id'] not in by_id, 'Core assessment IDs must be unique')
             keys = artifact(root, row['artifact'])
             require(len(keys) == 1, 'One core assessment must cover one actual artwork unit')
@@ -1230,6 +1430,13 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
             require(not locked_claims or row['direction_id'] == adoption['direction_id'], 'Current draft must use current adopted direction lock')
             require(not actual & keys, 'Duplicate current core scope')
             actual |= keys
+            if product_scene:
+                unit=next(u for u in pixels['units'] if artifact(root,u['artifact'])==keys)
+                expected_trip=[dict(element_id=p['element_id'],role=p['role'],triptych=p['triptych']) for p in unit['product_integration']]
+                require(row.get('product_triptychs')==expected_trip,'Seventh question must cover every current scene/display product')
+                require(row['answers']['product_in_scene']['answer'],'Current core failure: product is not in scene; local product repair and new independent check required')
+            if product_check and not row['answers']['product_label_consistent_readable']['answer']:
+                require(False, 'Current core failure: product label inconsistent, inverted, mirrored or pseudo-text; repair production and recheck independently')
             require(all(a['answer'] for a in row['answers'].values()), 'Current core failure: rebuild the main relation, not local edits')
             require(not any(keys == other_keys and time(other['checked_at']) > time(row['checked_at']) for other, other_keys in by_id.values()),
                     'A later core assessment cannot be hidden by selecting an older pass')
@@ -1238,6 +1445,34 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
             if all(a['answer'] for a in row['answers'].values()):
                 continue
             rework = row.get('rework', {})
+            label_only = product_check and all(a['answer'] for q,a in row['answers'].items() if q != 'product_label_consistent_readable')
+            product_only = product_scene and all(a['answer'] for q,a in row['answers'].items() if q not in {'product_label_consistent_readable','product_in_scene'})
+            if (label_only and rework.get('kind') == 'label-repair') or (product_only and rework.get('kind')=='product-local-repair'):
+                from visual_review_contract import exact_pixel_diff
+                from PIL import Image
+                require(rework.get('return_to_stage') == 'production', 'Label repair must return to production')
+                require(time(row['checked_at']) < time(rework['started_at']) <= time(rework['completed_at']), 'Label repair must follow failed check')
+                successor = by_id.get(rework.get('rechecked_assessment_id'))
+                require(successor is not None, 'Label repair needs a new independent assessment')
+                new,new_keys = successor
+                require(keys != new_keys and {k[-1] for k in keys} == {k[-1] for k in new_keys}
+                        and time(rework['completed_at']) < time(new['checked_at']), 'Label recheck must bind a later new version')
+                require(row['core_action'] == new['core_action'], 'Label repair cannot change the locked relation')
+                bound_file(root,rework['production_input'])
+                if rework.get('kind')=='product-local-repair':
+                    from visual_review_contract import validate_scene_product_plan
+                    repair_plan=load_json(bound_file(root,rework['product_plan']))
+                    validate_scene_product_plan(root,repair_plan)
+                    require(time(repair_plan['registered_at']) <= time(rework['started_at']), 'Product repair plan must precede repair')
+                proof=load_json(bound_file(root,rework['pixel_proof']))
+                if rework.get('kind')=='product-local-repair':
+                    require(proof['allowed_mask']==repair_plan['edit_mask'], 'Product repair difference proof must bind planned edit mask')
+                require(proof['before']==row['observed_image'] and proof['after']==new['observed_image'], 'Label repair proof must bind failed and corrected pixels')
+                with Image.open(bound_file(root,proof['before'])) as b, Image.open(bound_file(root,proof['after'])) as a, Image.open(bound_file(root,proof['allowed_mask'])) as m:
+                    measured=exact_pixel_diff(b,a,m)
+                require(measured['changed_pixels']>0 and measured['outside_changed_pixels']==0 and all(proof.get(k)==v for k,v in measured.items()), 'Label repair changed outside pixels or forged difference proof')
+                require(all(a['answer'] for a in new['answers'].values()), 'Label repair successor still has a core failure')
+                continue
             require(rework.get('kind') == 'full-rebuild' and rework.get('return_to_stage') in {'direction', 'main-visual-generation'},
                     'Core failure requires full-rebuild; layout, masks, crop, footer and font edits cannot resolve it')
             require(time(row['checked_at']) < time(rework['started_at']) <= time(rework['completed_at']), 'Full rebuild must follow the failed observation')
@@ -1264,6 +1499,7 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
                         'Unresolved core failure in rebuild chain')
                 cursor = following[0]
         checks.append(check('core-creative-pixel-review', True,
+                            'Independent six answers and product-label repair/full rebuild history bound to current pixels; visual truth and human approval not machine authenticated' if product_check else
                             'Independent five answers, allowed inputs/raw return and full rebuild history bound to current pixels; identity and artistic judgment are not authenticated by machine'
                             if independent else 'Historical three answers and full rebuild history bound to current pixels'))
     except (OSError, ValueError, KeyError, TypeError, AttributeError, ImportError, IndexError) as exc:
@@ -1326,7 +1562,7 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
                 if present and error is None:
                     resolved["aigc_record"] = path
 
-    if manifest.get('direction_contract') == 'print-direction-v6' and run_scope in {'production-candidate', 'delivery-candidate'}:
+    if manifest.get('direction_contract') in {'print-direction-v6','print-direction-v7'} and run_scope in {'production-candidate', 'delivery-candidate'}:
         checks.append(validate_main_visual_provenance_v6(run_dir, manifest))
 
     if "quality_gate_results" in resolved:

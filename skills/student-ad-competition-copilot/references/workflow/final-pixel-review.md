@@ -25,7 +25,7 @@ print-core-v4 在采用方向时保存 direction_adoption.claim_lock（$defs.cor
 每稿新增 direction_id、core_claim_sha256。对照记录 independent_core_check_v4 和原始返回 core_comparison_return_v4 都含 core_claim_sha256，必须等于该稿采用时锁定的 statement_sha256。盲读 blind_core_read_v2 的原始返回 blind_core_return_v2 新增 explanatory_devices 数组和 relation_without_devices；对照 comparison 新增逐字清单及 device_removal={blind_observation,relation_still_holds,observation}。去掉说明手段后产品关系不成立，第1/3/4问必须false，三项答案必须引用 explanatory_devices 与 device_removal。具体判据及超现实/速度线正反例见Playbook。
 
 
-新平面运行使用 print-core-v4 / print-direction-v6 / print-ad.0.14.0；历史 print-core-v1/v2/v3/v4、print-direction-v1/v2/v3/v4 和 print-ad.0.1.0—0.12.0 按原定义解析。每个完整稿（包括首稿、失败稿及每次返工/修订）由独立检查者查看实际图。五问及宿主优先路径见[平面 Playbook](../tracks/print-ad/playbook.md#独立核心检查与宿主路径)，作者自答不能作为新合同通过依据。
+新平面运行使用 print-core-v4 / print-direction-v7 / print-product-v2 / print-ad.0.16.0；历史核心、方向及 print-ad.0.1.0—0.14.0 按原定义解析。每个完整稿（包括首稿、失败稿及每次返工/修订）由独立检查者查看实际图。五问及宿主优先路径见[平面 Playbook](../tracks/print-ad/playbook.md#独立核心检查与宿主路径)，作者自答不能作为新合同通过依据。
 
 沿用 `core_creative_review.assessments`：每幅保存 id、artifact（path/hash/version/单个 unit）、render_record、observed_image（该渲染 native 视图）、official_product_asset、core_action（一句）、checked_at、assessment_method=independent-review、independent_check（独立记录 path/hash）与 answers。五项为 product_in_core_relation、action_depicted_without_copy、claimed_relation_depicted、creative_scene_not_generic、product_action_understood_in_three_seconds，分别给 boolean answer 和像素 observation；所有字段以 true 表示通过，第4原问“是否普通场景”答是时 creative_scene_not_generic=false。模板 null 是待查，不是通过。
 
@@ -126,3 +126,35 @@ critical_review 每页有三项：
 保留真实失败及临时方案被后续反馈推翻的历史；可读性修复按上方成因和观看顺序复核，不以新说明覆盖旧失败。
 
 原生源、主场景位图、生成调用与当前预览核验见[当前作品集合](current-artwork-set.md)。源文字扫描仅提供候选，不识别路径字/位图中文字，也不证明可见性或排版质量；始终看实际渲染。
+
+## 产品合成与局部像素合同
+
+新运行使用 print-ad.0.16.0、product_contract=print-product-v2；保留 print-core-v4 的锁定声明与原盲读，第二步对照改用模块常量 INDEPENDENT_COMPARE_RUBRIC_PRODUCT_V2，增加第6问：“产品上的品牌/品类文字是否与官方一致、正向可读（不倒置、不镜像、无伪字）？”answers.product_label_consistent_readable 引用 comparison.product_label，逐稿保留原始返回；为否则核心失败，当前稿不得交付，回生产修正文字/合成并重新独立检查。原动作/因果问题仍执行完整返工合同。不得把作者检查填成独立确认。
+
+visual-review 使用2.3.0，沿用2.1.0单位字段，增加 product_present、product_presence_observation 和 product_integration（所有可见产品逐一登记；无产品时明确观察并给空数组）。记录结构由 visual-review.schema.json 的 $defs.product_integration_v2 定义，运行时由 visual_review_contract.inspect_product_record 核验：
+
+- contract、element_id、role（scene-object/display-object）、method（reference-edit-label-remap/official-asset-composite）、choice_reason；official、before、final均为实际path/sha256引用。scene-object必须走参考编辑与标签回贴，独立展示可用官方原图。
+- geometry登记rotation_degrees（官方图层全部旋转的累计净角度）、flip_horizontal、flip_vertical、perspective_matrix（额外透视3×3按行展开，含全部透视步骤）、official_reading_vector、label_sample_points（覆盖文字区域的实际采样点）和mapping_record。曲面逆映射参数留在mapping_record，矩阵与采样检验不能代替曲面文字的像素检查。glyphs_changed、colors_changed必须false；occlusion_observation记录实际可见字与遮挡。
+- triptych引用JSON：panels按official/generated/final各登记source、bounds、zoom（1.5—4），image是按此顺序横排的原样放大图；text_checks逐项记录kind=brand/category/mark、official_text、final_text、status、generated_observation与observation。品牌必须pass且文字一致；其他项允许如实absent-on-official或occluded，不能补造官方没有的字。生成与最终两个阶段都核对，不能只证明来源正确。
+- independent_confirmation引用真实独立记录：fresh-isolated、author_session_id、checker_session_id、invocation_id、started_at、completed_at、official、final、triptych、raw_return与result。result原样等于raw_return，含label_consistent_readable及label_observation；场景编辑另含residue_absent/residue_observation、scene_integration/scene_observation。透视、遮挡、接触、光影和旧图残留仍由独立像素检查判断。
+- 几何风险为倒置/镜像时，orientation_correction必须有reason与detail（source=当前final、image、bounds、zoom），独立记录引用corrected_detail且原始result.corrected_orientation_readable=true。此例外必须针对修正后的可见文字；旧旋转或镜像失败记录不得删除。
+- pixel_proof含before、after、allowed_mask及changed_pixels、outside_changed_pixels、difference_bounds。必须重算，outside_changed_pixels=0；允许蒙版为二值、同尺寸，比较全部原生通道，不把小变化、alpha变化或色彩容差忽略。
+- 参考编辑另登记generated、generation_reference=official、edit_execution、edit_mask、container_contact_mask、opening_mask、replacement_layer和boundary_on_natural_edge=true。edit_mask完整覆盖container_contact_mask；opening_mask在容器内；replacement_layer为同尺寸RGBA最终合成层，开口alpha全255且开口RGB与final一致。透明度证明与独立残留观察都通过，防止不透明层本身仍有旧图。
+
+已有 prepare_visual_views.py 提供可复用 product-triptych 与 pixel-proof 操作（见脚本 --help）；输出均写当前run内新目录。不运行生图。机器验证真实字节、几何风险与记录关系，不以结构通过认证品牌字、透视或艺术质量。独立第6问与局部确认均不替代最终人工认可。
+
+阅读向量必须对应官方位图内实际字序，不能把电池长轴当字序、也不能默认所有文字沿x轴。脚本把官方阅读向量经过累计旋转/翻转及透视映射后，相对正常左到右阅读轴判定净偏转；例如官方图内文字朝下[0,1]，图层旋转57°得到147°倒置，不能因图层旋转小于90°放行。270°与-90°按同一可见朝向处理，不按累计转圈数判错。曲面映射留下真实参数，仍需独立成图核读。
+
+### 产品在场景中的独立第七问
+
+新print-product-v2与visual-review 2.3.0沿用既有三联像素合同，独立对照额外回答：“产品是否真正处于场景中（透视、遮挡、接触、光影一致），而非贴片？”对每个场景内产品绑定官方/生成/最终三联局部，记录comparison.product_scene，汇总为product_in_scene。失败为核心失败，不可被作者自评或其它检查冲销。仅产品问题可局部返工，保留失败与新生产计划、区外零变化证明，再取得新独立检查；缺返回校验失败。
+
+方向因果提示使用print-direction-v7。独立因果提示检查分两步：① 核心创意关系直接由什么产生？② 是否建立在产品自己做的事上？本职是用户买它要它做的事及正常直接结果。给其他对象提供能量、原料或功能的赋能型产品，其赋能对象因此做到的事也算本职结果。由本职/正常结果/赋能结果产生的核心效果合格；来自产品未参与的另一系统或环境、产品只是前提或触发者的效果不合格。不以同类或其它手段也能完成本职拒绝，不虚构产品能力。理由写明本职、赋能对象及提供的东西、核心直接来源与结果归属。多品类示例仅用于说明：设备靠电池供电发光投影、玩具车行驶、点火后的烹饪蒸汽合格（电池不加热汤）；遥控借车辆自身车灯、开门借独立走廊灯投影不合格；药品/健康品缓解症状后的恢复状态、饮料/食品补水或口感/成分带来的变化合格，只作场景道具且效果来自别处不合格，均须产品说明支持。逐条填写core_creative_relation_direct_source、core_relation_still_holds_without_product布尔、reason；旧布尔字段名为负向提示标记，第②步是→false合格，否→true不合格。不设按品类的规则分支。 因果一问是提示项，用于提醒“创意是否借用了产品没参与的效果”，不作为门槛。逐条保留直接来源、结论与理由，方向选择清单原样展示且在用户选择前可见；rows保留去重后可选排名，causal_advisories覆盖本轮全部输入（含去重项），不改变可选排名；缺字段、覆盖不全或清单遗漏提示仍须拒绝。因果结论不参与合格排序、可画前列、all_weak、自动采用（含委托）、user_override需求、版本迁移承接或生产守卫决策；因果不合格无需用户覆盖。排序与all_weak只按既有套路/可画性规则判断，不能按因果结论压排序或变更采用。新增causal_check覆盖全部输入，包括去重项；检查者不代替用户选择，其余v6返回字段保持。 既有成图核心检查与产品进场景要求继续执行，不能将方向因果提示当作成图失败。
+
+## 次级文案：可用，也可不用（print-ad.0.16.0）
+
+按[次级文案原则与文字角色范围](typography-direction.md#次级文案可用也可不用print-ad0160)决定是否使用，并在现有作品记录中登记一句理由；未使用不算缺项。新成图使用 `print-secondary-copy-v2` 与visual-review `2.5.0`；全部旧合同与文案/排版检查保留。
+
+每稿用 `text_elements` 登记标题、次级文案、页脚事实限定或必需信息、品牌/产品标识、场景文字。只有角色为 `secondary-copy` 的元素进入本原则的内容、字号/字重、420px可读、系列及独立语义检查。独立输入用实际文字/位置及scope hash明确范围；其他文字区的意见只留作信息，不触发次级文案返工。页脚限定是否解释画面不由本原则判断，页脚小字不套420px下限，既有页脚检查原样执行。
+
+使用时只补画面与标题未给出的官方事实或命题信息，语气克制、不复述或解释画面，层级低于标题并合成一个阅读区。脚本和独立检查失败只返工文字层，保留旧返回，局部修改后绑定新图及文字蒙版、区外零变化并取得新独立检查；核心/产品失败继续独立处理。“产品名｜卖点”只是一种例子，不是默认或必需格式。

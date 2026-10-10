@@ -95,7 +95,9 @@ def validate_quality_gate_results(
                       'print-ad.0.10.0': 'quality-gates-v0.10.0.json',
                       'print-ad.0.11.0': 'quality-gates-v0.11.0.json',
                       'print-ad.0.12.0': 'quality-gates-v0.12.0.json',
-                      'print-ad.0.13.0': 'quality-gates-v0.13.0.json'}
+                      'print-ad.0.13.0': 'quality-gates-v0.13.0.json',
+                      'print-ad.0.14.0': 'quality-gates-v0.14.0.json',
+                      'print-ad.0.15.0': 'quality-gates-v0.15.0.json'}
             if results.get('definition_set_id') in legacy:
                 definitions_path = definitions_path.with_name(legacy[results['definition_set_id']])
         definitions = _load(definitions_path)

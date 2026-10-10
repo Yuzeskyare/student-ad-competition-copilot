@@ -140,6 +140,62 @@
         "edited",
         "user-asset"
       ]
+    },
+    "product_contract": {
+      "const": "print-product-v2"
+    },
+    "product_operation": {
+      "enum": [
+        "generate",
+        "edit",
+        "not-related"
+      ]
+    },
+    "product_targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "element_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "enum": [
+              "scene-object",
+              "display-object"
+            ]
+          }
+        },
+        "required": [
+          "element_id",
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "product_plan_record": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "prepared_at": {
+      "type": "string",
+      "minLength": 1
     }
   },
   "allOf": [
@@ -154,6 +210,56 @@
       "then": {
         "required": [
           "asset_scope"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "product_contract"
+        ]
+      },
+      "then": {
+        "required": [
+          "product_operation",
+          "product_targets"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "product_operation": {
+                  "enum": [
+                    "generate",
+                    "edit"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "product_plan_record",
+                "prepared_at"
+              ],
+              "properties": {
+                "product_targets": {
+                  "minItems": 1
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "product_targets": {
+                  "maxItems": 0
+                }
+              },
+              "not": {
+                "required": [
+                  "product_plan_record"
+                ]
+              }
+            }
+          }
         ]
       }
     }

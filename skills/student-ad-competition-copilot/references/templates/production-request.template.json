@@ -15,5 +15,13 @@
     "allowed_assets": [],
     "used_origins": []
   },
-  "output_files": []
+  "output_files": [],
+  "product_contract": "print-product-v2",
+  "product_operation": "replace-with-generate-edit-or-not-related",
+  "product_targets": [],
+  "prepared_at": "replace-actual-request-prepared-time",
+  "product_plan_record": {
+    "path": "replace-production-record-path",
+    "sha256": "replace-actual-production-record-sha256"
+  }
 }

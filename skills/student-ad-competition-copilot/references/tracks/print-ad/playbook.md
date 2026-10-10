@@ -107,7 +107,7 @@
 
 在已有 `02-direction/method-retrieval.json` 写 run_id、recorded_at、original_problem、attempts 和 decisions。每次 attempt 为 output（路径/sha256）、fallback_terms（首次 []）、returned_method_ids（空结果 []）；每个返回方法只写一次 method_id、decision（adopted/rejected）、reason、relation_or_input_change，明确改变了哪个关系或制作输入，拒绝时说明为何排除；全空时 decisions=[] 并写 empty_result_action。字段定义在[现有平面 schema](../../schemas/print-ad-run-manifest.schema.json)的 $defs.method_retrieval。
 
-记录文件真实保存后才采用方向，在运行清单 direction_adoption 写 direction_id、adopted_at 和 method_retrieval 的路径/sha256。所有查询执行完成时间不得晚于 recorded_at，recorded_at 必须严格早于 adopted_at。校验不把事后检索、卡名或自行推导当成检索已发生。新运行沿用清单 0.4.0、使用 creative_contract=print-core-v4、direction_contract=print-direction-v6 与质量门 print-ad.0.14.0；旧 0.1.0—0.13.0 定义和旧认可仍按原合同解释，不能用旧定义登记新合同通过。
+记录文件真实保存后才采用方向，在运行清单 direction_adoption 写 direction_id、adopted_at 和 method_retrieval 的路径/sha256。所有查询执行完成时间不得晚于 recorded_at，recorded_at 必须严格早于 adopted_at。校验不把事后检索、卡名或自行推导当成检索已发生。新运行沿用清单 0.4.0、使用 creative_contract=print-core-v4、direction_contract=print-direction-v7 与质量门 print-ad.0.16.0；旧 0.1.0—0.13.0 定义和旧认可仍按原合同解释，不能用旧定义登记新合同通过。
 
 
 按命题和当前不确定性探索有实质差别的机制方向并保留取舍。后台每轮至少写出6个经独立去重后仍真正不同的方向，覆盖至少3类起点：消费者/使用者在命题人群语境里的真实时刻（具体场景或心理）、产品利益/事实、反常识或视角翻转；逐条登记起点类别与具体内容。方法卡可作为任一起点的手段，不能是唯一来源。6是比较下限，不固定总数，也不要求生成6张图。可以多写，不用换背景、标题或补造弱方向凑数；不足时留在本阶段继续推导，不能豁免成单方向自选。前台仍只展示值得判断的少量入围方向，数量服从用户要求和探索需要，不以固定四个方向或多生成几张补足质量。
@@ -134,7 +134,7 @@
 
 ### 方向门
 
-独立盲评并入本阶段，先去重再排序、判可画，不能由作者自判替代。宿主路径沿用 rc.3：实际暴露的原生空上下文子代理（如 `fork_turns=none`）→ 新只读 `codex exec -s read-only --ephemeral` → 两者不可用就停止方向采用/出图并将同一检查包交用户/总控，不由作者代答。只发送固定 rubric、匿名编号的一句话清单、[真人反馈反例库](../../feedback/direction-counterexamples.json)和匿名案例机制参照；方法名、来源、作者理由、标题、方向卡、推荐、反例库以外的旧反馈和其他文件不进入检查者上下文。固定原文为 `scripts/validate_print_ad_run.py` 的 `INDEPENDENT_DIRECTION_RUBRIC_V6`；请求用既有校验器的 direction_request_v6，严格为原文 + `\n反馈机制反例库：\n` + 反例库UTF-8原文 + `\n案例机制参照：\n` + 参照UTF-8原文 + `\n方向一句话清单：\n` + 清单UTF-8原文（JSON数组，每项只有 direction_id、statement、basis_type、basis；后两项逐字对应句中依据）；三个输入都保存路径/hash；feedback-counterexamples必须与Skill随包反例库字节相同，不能漏条或偷偷改写。句中创意依据允许说明时刻、洞察、产品事实、利益或文化意味；不接收句子以外的作者理由、推荐或方法标签。
+独立盲评并入本阶段，先去重再排序、判可画，不能由作者自判替代。宿主路径：实际暴露的原生空上下文子代理（如 `fork_turns=none`）→ 新只读 `codex exec -s read-only --ephemeral` → 两者不可用就停止方向采用/出图并将同一检查包交用户/总控，不由作者代答。只发送固定 rubric、匿名编号的一句话清单、[真人反馈反例库](../../feedback/direction-counterexamples.json)和匿名案例机制参照；方法名、来源、作者理由、标题、方向卡、推荐、反例库以外的旧反馈和其他文件不进入检查者上下文。固定原文为 `scripts/validate_print_ad_run.py` 的 `INDEPENDENT_DIRECTION_RUBRIC_V6`；请求用既有校验器的 direction_request_v6，严格为原文 + `\n反馈机制反例库：\n` + 反例库UTF-8原文 + `\n案例机制参照：\n` + 参照UTF-8原文 + `\n方向一句话清单：\n` + 清单UTF-8原文（JSON数组，每项只有 direction_id、statement、basis_type、basis；后两项逐字对应句中依据）；三个输入都保存路径/hash；feedback-counterexamples必须与Skill随包反例库字节相同，不能漏条或偷偷改写。句中创意依据允许说明时刻、洞察、产品事实、利益或文化意味；不接收句子以外的作者理由、推荐或方法标签。
 
 在盲评前沿用 query_case_library.py 检索活动包的资格合格学院奖平面案例（不扩库、不新建检索器）：
 
@@ -161,7 +161,7 @@ direction_adoption.blind_review绑定本运行的方向记录（$defs.direction_
 - 风险和误读有可执行测试；
 - 保留被剔除、未采用或失败的方向及独立理由；风险预测不得冒充方法卡拒绝证据。
 
-### 方向清单交人选择与主画面来源（rc.11）
+### 方向清单交人选择与主画面来源
 
 反例库对筛判和委托自动采用是硬拦截：同机制方向不得凭新转折、利益相关或重新解释判为合格；未委托时用户可在知悉原始判断后选择可画项，保留override。未命中库的新转折必须改变画面中的对象关系；检查者逐条写object_relation_change的objects、before、after和kind=object-relation。仅复述利益或依据，或加警告/暖光而对象关系未变，写null。
 
@@ -206,7 +206,20 @@ direction_adoption.blind_review绑定本运行的方向记录（$defs.direction_
 
 ## 7. 阶段4：分层生产
 
-制作输入应保留已选表达的核心对象、位置与关系，不只写材质、字样和职业道具。官方包装采用原件分层制作，但在完整原型中已有足够的产品与文字布局判断。产品利益可以决定构思，品牌在信息区完成归属；包装不必物理参与机关，接线/放大/挂物也不证明创意。独占主张仅在有实际依据时使用。
+### 产品进入场景：官方参考编辑与标签回贴
+
+产品作为场景内物体时，优先以官方产品图为参考，用图像编辑在足够大的局部蒙版内生成。蒙版包含产品所在的容器与接触结构（电池仓、握持手、桌面等），让透视、遮挡、接触、光影一起成立；不能只在原贴图位置的小蒙版内重画。生成参考、实际调用、蒙版和选择理由保存在已有生产/合成记录。
+
+把官方资产的品牌/品类文字及标识区域按生成产品实际曲面与透视几何映射回贴，保留生成明暗。官方图层仅做几何变形和中性明暗融合，不改字形或颜色；被遮挡部分按真实遮挡裁切，底线是品牌字清晰可读。生成层在容器开口内完全覆盖旧图，核心不羽化带出旧像素，合成边界落在自然边缘；同时看完整轮廓与放大图，防止旧端帽、旧字或旧产品重影残留。
+
+最终稿仅取允许蒙版内新像素。保留编辑前版本、二值允许蒙版和最终稿，以相同尺寸/模式逐像素零容差比对，登记差异范围与像素数，蒙版外必须为0；不能只对几个保留矩形抽查。产品独立展示时仍可贴官方原图，由作者按场景选择并记录理由；不得用贴图冒充场景内物体。
+
+合成/回贴必须登记官方图层累计净旋转角及官方图内文字的实际阅读向量、水平/垂直翻转、透视矩阵，以及实际曲面映射参数文件。校验判定超过90°倒置或镜像即失败；例外只接受修正后当前局部放大与真实独立正向可读确认。倾斜/透视允许，不要求横平竖直，也不要求所有包装细字缩略可读。回贴后输出“官方原图 / 生成结果 / 最终”三联局部放大，逐项核对品牌、可见品类文字和标识，官方面没有的字不得补造。
+
+具体记录字段、像素工具及独立第6问见[最终画面验收](../../workflow/final-pixel-review.md#产品合成与局部像素合同)。
+
+
+制作输入应保留已选表达的核心对象、位置与关系，不只写材质、字样和职业道具。官方包装按场景采用官方参考编辑与标签回贴，或官方原件分层制作，但在完整原型中已有足够的产品与文字布局判断。产品利益可以决定构思，品牌在信息区完成归属；包装不必物理参与机关，接线/放大/挂物也不证明创意。独占主张仅在有实际依据时使用。
 
 
 原型判断复用以下失败对照，不新增逐项人审：
@@ -435,7 +448,7 @@ direction_adoption.blind_review绑定本运行的方向记录（$defs.direction_
 
 不是禁止一切线条、速度线或透明形态。速度线强化已经可见的移动，去掉后手仍握住产品、脚仍踩在瓶桥上，可以通过这项；仅用指向线说明产品补给人物、仅用透明残影讲前后位置，去掉后没有产品参与动作的接触/造型/空间证据，失败。需评估整个主关系，不能以局部“电池装在仓内”“道路像折纸”替代“产品驱动道路收拢/汽车回应”的创意联系。
 
-与rc.3“不惩罚超现实与夸张”并存：巨瓶作桥、药盒作座位、道路折叠均可成为有意造型机制；不要求现实世界能发生。但超现实的产品关系要由画面演出，说明符号解释“它发生了”不能替代演出。装饰性重影去掉后主关系仍成立，不因出现重影自动失败。
+与“不惩罚超现实与夸张”原则并存：巨瓶作桥、药盒作座位、道路折叠均可成为有意造型机制；不要求现实世界能发生。但超现实的产品关系要由画面演出，说明符号解释“它发生了”不能替代演出。装饰性重影去掉后主关系仍成立，不因出现重影自动失败。
 
 
 每个完整稿一完成即在现有 `core_creative_review.completed_draft_render_records` 登记目标 render_record，包括首稿、失败稿、完整返工及局部修订后的新完整稿。逐稿保留独立 assessment，交付前 current_assessment_ids 必须绑定当前成图；不得只留下末稿或用作者自答通过。概念阶段没有成图可省略；已有完整稿仍须检查。
@@ -450,12 +463,32 @@ direction_adoption.blind_review绑定本运行的方向记录（$defs.direction_
 4. 去掉这个创意，是否仍是任何人都会画的普通场景（普通递水、拿产品微笑等）？**是则核心失败**；写实、精细或接触正确不能消除常规创意。记录时反向归一到 `creative_scene_not_generic`：普通场景为 false，具体创意成立为 true。
 5. 陌生人三秒内能否说出产品与动作的关系？未做真实计时观众实验时，写独立检查者对快速理解的判断，不能虚构受众回答。
 
-各项给基于像素的 observation，归一后任一 false 即回方向或主画面完整返工，沿用 rc.2 的 full-rebuild 合同，失败不可删除、局部修改不可冲销；新图须新独立调用。检查者不替代原有最终人工内容认可。
+各项给基于像素的 observation，归一后任一 false 即回方向或主画面完整返工，沿用 full-rebuild 合同，失败不可删除、局部修改不可冲销；新图须新独立调用。检查者不替代原有最终人工内容认可。
 
 按实际可行性优先：
 
-- 宿主原生子代理/多代理。核对当前实际暴露的新独立会话能力，开启 multi_agent 不自动证明可调用。先以全新上下文（如 fork_turns=none）仅给成图和盲读固定规则，保存真实返回；保存后才给声明、官方图、盲读及对照规则。禁止全历史 fork 和额外文件读取，保存实际工具名、会话/调用标识或不可得原因。历史 rc.3 原生实验仅证明当时的单步路径可用，未证明本版两步实跑。
+- 宿主原生子代理/多代理。核对当前实际暴露的新独立会话能力，开启 multi_agent 不自动证明可调用。先以全新上下文（如 fork_turns=none）仅给成图和盲读固定规则，保存真实返回；保存后才给声明、官方图、盲读及对照规则。禁止全历史 fork 和额外文件读取，保存实际工具名、会话/调用标识或不可得原因。历史原生实验仅证明过单步路径可用，两步实跑须在当前环境核实。
 - 无原生路径时尝试新只读临时 CLI：第一步 `codex exec --ignore-user-config --ignore-rules --skip-git-repo-check -s read-only --ephemeral -C <空检查工作目录> -i <artwork.png> --json -o <盲读原始返回.json> -`，stdin 仅盲读固定规则。完成并保存盲读后，第二次调用附同一成图和官方产品图，并只提交盲读记录与对照请求。请求严格按常量组装，见最终画面验收。仅使用当前宿主允许的选项、沙箱与审批设置；不继承作者会话、不生图。TMP/TEMP/TMPDIR、日志及必要运行时文件放许可区，禁止修改全局配置、绕沙箱或安装能力。CLI选项和真实登录/网络可用性须在当前环境核实，历史实验不构成永久承诺。
-- 两条路径不可用或返回不完整：保持未通过，停止受影响稿件交付，给用户/总控同一最小检查包，附无法运行的具体证据；收到真实独立五问后再继续，作者不得自己代答。
+- 两条路径不可用或返回不完整：保持未通过，停止受影响稿件交付，给用户/总控同一最小检查包，附无法运行的具体证据；收到真实独立七问后再继续，作者不得自己代答。
 
-固定规则用模块常量原样组装，不加本稿说明。沿用 independent_check 引用对照记录，其 schema 为 `$defs.independent_core_check_v4`，blind_read 引用 `$defs.blind_core_read_v2`；字段与时间/hash规则见[最终画面验收](../../workflow/final-pixel-review.md#平面核心创意逐项检查)。新运行 print-core-v4 / print-direction-v6 / print-ad.0.14.0；历史 print-core-v1/v2/v3/v4、print-direction-v1—v5 和 0.1.0—0.13.0 保留原定义，不把旧认可转给新稿。
+固定规则用模块常量原样组装，不加本稿说明。沿用 independent_check 引用对照记录，其 schema 为 `$defs.independent_core_check_product_v2`，blind_read 引用 `$defs.blind_core_read_v2`；字段与时间/hash规则见[最终画面验收](../../workflow/final-pixel-review.md#平面核心创意逐项检查)。新运行 print-core-v4 / print-direction-v7 / print-product-v2 / print-ad.0.16.0；历史 print-core-v1/v2/v3/v4、print-direction-v1—v6、print-product-v1 和 0.1.0—0.15.0 保留原定义，不把旧认可转给新稿。
+
+### 0.2.19 场景与迁移补充（print-ad.0.16.0）
+
+新运行采用 `print-direction-v7`、`print-product-v2`、visual-review `2.3.0`。历史质量门、rubric 和 schema 定义保留用于只读复现。
+
+出图前独立方向盲评按 `validate_print_ad_run.py` 的 `INDEPENDENT_DIRECTION_RUBRIC_V7` 与 `direction_request_v7` 构建固定请求。独立因果提示检查分两步：① 核心创意关系直接由什么产生？② 是否建立在产品自己做的事上？本职是用户买它要它做的事及正常直接结果。给其他对象提供能量、原料或功能的赋能型产品，其赋能对象因此做到的事也算本职结果。由本职/正常结果/赋能结果产生的核心效果合格；来自产品未参与的另一系统或环境、产品只是前提或触发者的效果不合格。不以同类或其它手段也能完成本职拒绝，不虚构产品能力。理由写明本职、赋能对象及提供的东西、核心直接来源与结果归属。多品类示例仅用于说明：设备靠电池供电发光投影、玩具车行驶、点火后的烹饪蒸汽合格（电池不加热汤）；遥控借车辆自身车灯、开门借独立走廊灯投影不合格；药品/健康品缓解症状后的恢复状态、饮料/食品补水或口感/成分带来的变化合格，只作场景道具且效果来自别处不合格，均须产品说明支持。逐条填写core_creative_relation_direct_source、core_relation_still_holds_without_product布尔、reason；旧布尔字段名为负向提示标记，第②步是→false合格，否→true不合格。不设按品类的规则分支。因果一问是提示项，用于提醒“创意是否借用了产品没参与的效果”，不作为门槛。逐条保留直接来源、结论与理由，方向选择清单原样展示且在用户选择前可见；rows保留去重后可选排名，causal_advisories覆盖本轮全部输入（含去重项），不改变可选排名；缺字段、覆盖不全或清单遗漏提示仍须拒绝。因果结论不参与合格排序、可画前列、all_weak、自动采用（含委托）、user_override需求、版本迁移承接或生产守卫决策；因果不合格无需用户覆盖。排序与all_weak只按既有套路/可画性规则判断，不能按因果结论压排序或变更采用。新增causal_check覆盖全部输入，包括去重项；检查者不代替用户选择，其余v6返回字段保持。 套路/不可画仍按现有user_override记录；其引用的causal_check仅绑定原返回，不是覆盖要求。
+
+仅Skill版本迁移重评可新增 kind=user-choice-carryover 的选择记录。decided_at保留原实际用户时间，carryover.carried_at为新记录时间；绑定原选择路径与哈希、原句文件、真人来源事件及来源哈希、新旧version.json、新盲评与三种新判断，说明reason及re_review_reason=skill-version-migration。原句以UTF-8字节逐字比对，不修剪、改字或补依据。原话与时间须可追溯；新套路或不可画判断只有原用户已有覆盖且绑定对应旧原始判断时可承接，否则回用户确认；因果判断只承接原提示，不影响是否可承接，也不要求覆盖。旧授权、旧守卫拒绝、旧返回一律不改。承接不等于新增用户认可，也不覆盖其它生产门。
+
+生产记录逐产品登记product_scene_plans（schema见visual-review的product_scene_plan_v2）：official参考图、registered_at、role、container_contact_structure、覆盖容器/接触的edit_mask和container_contact_mask、canvas_size、generation_method及choice_reason。派发请求声明product_contract=print-product-v2、product_operation、product_targets、prepared_at及product_plan_record路径哈希，并将官方图和蒙版列为input_files。缺计划拒绝生成/编辑及本地合成；官方贴图只能role=display-object并写display_reason。产品局部返工也先登记新计划。
+
+每个完整稿的独立对照采用print-core-product-v2，增加第7问product_in_scene，并逐产品绑定product_triptychs；独立检查输入含实际三联图，原始comparison.product_scene逐产品回答透视、遮挡、接触与光影是否统一而非贴片。任一失败是核心失败；作者自评、标签检查或其它通过不得抵消。产品问题可走product-local-repair回production，保留计划、失败、区外零变化证据，取得新版本新独立七问；原五问失败仍完整返工。缺独立原始返回不能交付。
+
+## 次级文案：可用，也可不用（print-ad.0.16.0）
+
+按[次级文案原则与文字角色范围](../../workflow/typography-direction.md#次级文案可用也可不用print-ad0160)决定是否使用，并在现有作品记录中登记一句理由；未使用不算缺项。新成图使用 `print-secondary-copy-v2` 与visual-review `2.5.0`；全部旧合同与文案/排版检查保留。
+
+每稿用 `text_elements` 登记标题、次级文案、页脚事实限定或必需信息、品牌/产品标识、场景文字。只有角色为 `secondary-copy` 的元素进入本原则的内容、字号/字重、420px可读、系列及独立语义检查。独立输入用实际文字/位置及scope hash明确范围；其他文字区的意见只留作信息，不触发次级文案返工。页脚限定是否解释画面不由本原则判断，页脚小字不套420px下限，既有页脚检查原样执行。
+
+使用时只补画面与标题未给出的官方事实或命题信息，语气克制、不复述或解释画面，层级低于标题并合成一个阅读区。脚本和独立检查失败只返工文字层，保留旧返回，局部修改后绑定新图及文字蒙版、区外零变化并取得新独立检查；核心/产品失败继续独立处理。“产品名｜卖点”只是一种例子，不是默认或必需格式。
