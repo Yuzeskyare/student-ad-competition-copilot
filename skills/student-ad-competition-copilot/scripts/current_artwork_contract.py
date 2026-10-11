@@ -43,6 +43,8 @@ def required(manifest, contract, root):
 
 
 def validate_current(root, manifest, contract):
+    from execution_contract import verify_complete_artworks
+    verify_complete_artworks(root, manifest, contract)
     if manifest.get('category') != 'print-ad' or not required(manifest, contract, root):
         return []
     require(bool(contract['final_artifacts']), 'Current artwork set is empty')

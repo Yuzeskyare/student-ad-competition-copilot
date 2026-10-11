@@ -10,6 +10,10 @@ from current_artwork_contract import validate_current, required
 def export(root, manifest, destination, package_kind='evidence', seal=False):
     root = root.resolve()
     contract, rows = read_contract(root, manifest)
+    from execution_contract import verify_artwork_release, release_required
+    if release_required(root,manifest):
+        for ref in contract['final_artifacts']:
+            verify_artwork_release(root, manifest, ref)
     if not required(manifest, contract, root) or not contract['final_artifacts']:
         raise ValueError('Explicit bound current set is required; never infer selection from directory names')
     if package_kind not in {'evidence','current-files'}:
@@ -92,10 +96,16 @@ def export(root, manifest, destination, package_kind='evidence', seal=False):
         for relative, (path, expected) in files.items():
             if digest(path) != expected:
                 raise ValueError('Evidence changed before seal completion: '+relative)
+    from visual_review_contract import image_budget_message
+    message=image_budget_message(root,manifest)
     index = dict(run_id=manifest['run_id'], members=members, files=copied,package_kind=package_kind,
                  audit_evidence_included=package_kind=='evidence',
                  content_status=contract['content_status'], source_binding_checked=True,
                  approval_granted_by_export=False, visual_quality_certified=False)
+    if message:index['direction_generation_summary']=message
+    from visual_review_contract import delivery_advisories
+    notices=delivery_advisories(root,manifest)
+    if notices:index['visual_advisories']=notices
     if closure:
         index['seal'] = dict(status='closed-linked-evidence', closure=closure,
                              scope='Collected linked files only; not a lock or an inventory of unlinked late files')
@@ -114,8 +124,10 @@ def main():
     args = parser.parse_args()
     try:
         result = export(args.run_dir, load(inside(args.run_dir, args.manifest)), args.destination,args.package_kind,args.seal)
-        print(json.dumps(dict(status='copied', members=len(result['members']), files=len(result['files']),
-                              approval_granted=False)))
+        response=dict(status='copied', members=len(result['members']), files=len(result['files']),approval_granted=False)
+        for key in ['direction_generation_summary','visual_advisories']:
+            if key in result:response[key]=result[key]
+        print(json.dumps(response,ensure_ascii=False))
         return 0
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
         print(json.dumps(dict(status='failed', reason=str(exc))))

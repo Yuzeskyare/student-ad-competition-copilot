@@ -166,6 +166,9 @@ def snapshot(root, manifest, action, payload, destination):
                 raise ValueError('Project accepts final_artifacts and series_plan only; scope/verdict is not inferred')
             if 'final_artifacts' in payload:contract['final_artifacts']=payload['final_artifacts']
             if 'series_plan' in payload:result_manifest['series_plan']=payload['series_plan']
+        from execution_contract import verify_artwork_release, release_required
+        if release_required(root,result_manifest):
+            for ref in contract['final_artifacts']:verify_artwork_release(root,result_manifest,ref)
         validate_current(root,result_manifest,contract)
     else: raise ValueError('Unknown snapshot action')
     if not added:

@@ -15,6 +15,10 @@ def main():
     parser.add_argument('--readiness-input',help='Existing verified rule/citation evidence; preserve it instead of resetting completed work')
     args=parser.parse_args();root=Path(args.run_dir).resolve();manifest=load(inside(root,args.manifest))
     contract,_=read_contract(root,manifest);dest=inside(root,args.output_dir)
+    from execution_contract import release_required
+    if release_required(root,manifest):
+        from execution_contract import verify_artwork_release
+        for ref in contract['final_artifacts']:verify_artwork_release(root,manifest,ref)
     if dest.exists():parser.error('Use a new output directory; never overwrite completed evidence')
     readiness=load(Path(__file__).resolve().parents[1]/'references/templates/submission-readiness.template.json')
     readiness.update(run_id=manifest['run_id'],track=manifest['category'],competition=manifest['competition'],method_scope='artwork-delivery')
@@ -40,8 +44,17 @@ def main():
     path=dest/'submission-readiness.json';path.write_text(json.dumps(readiness,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     handoff=dict(schema_version='1.0.0',run_id=manifest['run_id'],track=manifest['category'],final_artifacts=contract['final_artifacts'],
         readiness={'path':path.relative_to(root).as_posix(),'sha256':digest(path)},platform_disclosure={'status':'pending'},evidence_slots=[],submission_receipt=None)
+    from visual_review_contract import image_budget_message
+    message=image_budget_message(root,manifest)
+    if message:handoff['direction_generation_summary']=message
+    from visual_review_contract import delivery_advisories
+    notices=delivery_advisories(root,manifest)
+    if notices:handoff['visual_advisories']=notices
     output=dest/'handoff.json';output.write_text(json.dumps(handoff,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    print(json.dumps({'handoff':output.relative_to(root).as_posix(),'submission_ready':False,'human_approval_created':False}))
+    response={'handoff':output.relative_to(root).as_posix(),'submission_ready':False,'human_approval_created':False}
+    if message:response['direction_generation_summary']=message
+    if notices:response['visual_advisories']=notices
+    print(json.dumps(response,ensure_ascii=False))
 
 
 if __name__=='__main__':main()

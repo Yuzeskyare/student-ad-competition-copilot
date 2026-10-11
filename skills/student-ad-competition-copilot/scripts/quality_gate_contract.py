@@ -97,7 +97,12 @@ def validate_quality_gate_results(
                       'print-ad.0.12.0': 'quality-gates-v0.12.0.json',
                       'print-ad.0.13.0': 'quality-gates-v0.13.0.json',
                       'print-ad.0.14.0': 'quality-gates-v0.14.0.json',
-                      'print-ad.0.15.0': 'quality-gates-v0.15.0.json'}
+                      'print-ad.0.15.0': 'quality-gates-v0.15.0.json',
+                      'print-ad.0.16.0': 'quality-gates-v0.16.0.json',
+                      'print-ad.0.17.0': 'quality-gates-v0.17.0.json',
+                      'print-ad.0.18.0': 'quality-gates-v0.18.0.json',
+                      'print-ad.0.19.0': 'quality-gates-v0.19.0.json',
+                      'print-ad.0.20.0': 'quality-gates-v0.20.0.json'}
             if results.get('definition_set_id') in legacy:
                 definitions_path = definitions_path.with_name(legacy[results['definition_set_id']])
         definitions = _load(definitions_path)
@@ -159,9 +164,12 @@ def validate_quality_gate_results(
             {"boundaries": boundaries, "waiver_reason": waiver_reason, "checked_at": checked_at},
         ))
 
+        current_meaning=definitions.get('definition_set_id') in {'print-ad.0.19.0','print-ad.0.20.0','print-ad.0.21.0'}
+        advisory_ids={c['check_id'] for c in gate['checks'] if c['failure_severity']=='consider'} if current_meaning else set()
+        blocking_failed=failed-advisory_ids
         failed_routes = []
         for check in gate.get("checks", []):
-            if check.get("check_id") not in failed:
+            if check.get("check_id") not in (blocking_failed if current_meaning else failed):
                 continue
             failed_routes.append({
                 "check_id": check.get("check_id"),
@@ -181,13 +189,15 @@ def validate_quality_gate_results(
 
         logical = not (passed & failed) and (passed | failed) <= known_checks
         if status in {"pass", "pass-with-boundaries"}:
-            logical = logical and not failed and required_checks <= passed
+            logical = logical and not blocking_failed and required_checks <= passed | (failed & advisory_ids)
+            if current_meaning and failed & advisory_ids:
+                logical = logical and status == 'pass-with-boundaries' and bool(boundaries)
         elif status == "fail":
-            logical = logical and bool(failed)
+            logical = logical and bool(blocking_failed)
         elif status == "not-run":
             logical = logical and not passed and not failed
         elif status == "in-progress":
-            logical = logical and not failed and not required_checks <= passed
+            logical = logical and not blocking_failed and not required_checks <= passed | (failed & advisory_ids)
         elif status == "waived":
             logical = logical and gate.get("waiver_policy", {}).get("allowed") is True and not passed and not failed
         else:

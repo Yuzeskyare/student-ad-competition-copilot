@@ -350,12 +350,12 @@ def validate_visual_review(root, manifest):
         scoped_secondary = secondary_marker == 'print-secondary-copy-v2'
         if manifest['category'] == 'print-ad' and manifest.get('artifacts', {}).get('quality_gate_results'):
             gates = load(inside(root, manifest['artifacts']['quality_gate_results']))
-            require(gates.get('definition_set_id') != 'print-ad.0.16.0' or scoped_secondary,
+            require(gates.get('definition_set_id') not in {'print-ad.0.16.0','print-ad.0.17.0'} or scoped_secondary,
                     'Current print-ad.0.16.0 requires scoped secondary_copy_contract print-secondary-copy-v2; no silent omission')
-        secondary_version = '2.5.0' if scoped_secondary else '2.4.0'
+        secondary_version = '2.6.0' if manifest.get('product_contract')=='print-product-v3' else '2.5.0' if scoped_secondary else '2.4.0'
         require(not secondary or pack['schema_version'] == secondary_version, 'Secondary copy requires visual evidence '+secondary_version)
-        require(pack['schema_version'] not in {'2.4.0','2.5.0'} or secondary, 'Visual evidence requires secondary_copy_contract')
-        if manifest.get('product_contract') in {'print-product-v1','print-product-v2'}:
+        require(pack['schema_version'] not in {'2.4.0','2.5.0','2.6.0'} or secondary, 'Visual evidence requires secondary_copy_contract')
+        if manifest.get('product_contract') in {'print-product-v1','print-product-v2','print-product-v3'}:
             required_version = secondary_version if secondary else ('2.3.0' if manifest['product_contract']=='print-product-v2' else '2.2.0')
             require(pack['schema_version'] == required_version, 'Product/secondary visual evidence version mismatch')
         if manifest['run_scope'] == 'delivery-candidate':
@@ -378,8 +378,8 @@ def validate_visual_review(root, manifest):
         for unit in pack['units']:
             unit_pending = []
             keys = inspect_unit(root, unit, rows, manifest['category'], pack['schema_version'] != '1.0.0', unit_pending,
-                                qualitative=pack['schema_version'] in {'2.1.0', '2.2.0','2.3.0','2.4.0','2.5.0'})
-            if manifest.get('product_contract') in {'print-product-v1','print-product-v2'}:
+                                qualitative=pack['schema_version'] in {'2.1.0', '2.2.0','2.3.0','2.4.0','2.5.0','2.6.0'})
+            if manifest.get('product_contract') in {'print-product-v1','print-product-v2','print-product-v3'}:
                 inspect_product_unit(root, unit)
                 require(all(p['contract']==manifest['product_contract'] for p in unit['product_integration']),'Product evidence cannot downgrade current contract')
             if secondary:
@@ -491,7 +491,7 @@ def product_triptych(root, record):
 
 INDEPENDENT_PRODUCT_SCENE_RUBRIC_V2 = "产品是否真正处于场景中（透视、遮挡、接触、光影一致），而非贴片？"
 
-def validate_scene_product_plan(root, plan):
+def validate_scene_product_plan_legacy(root, plan):
     from PIL import Image,ImageChops
     require(isinstance(plan,dict) and plan.get('contract')=='print-product-plan-v2','Missing preproduction product scene plan')
     require(nonempty(plan.get('element_id')) and nonempty(plan.get('choice_reason')),'Product plan needs identity and method reason')
@@ -513,6 +513,41 @@ def validate_scene_product_plan(root, plan):
                     'Product plan mask must be nonempty binary at planned canvas size')
         require(ImageChops.subtract(masks[1],masks[0]).getbbox() is None,'Preproduction mask must cover container/contact structure')
     return plan
+
+def validate_scene_product_plan_v3(root, plan):
+    from PIL import Image,ImageChops
+    require(isinstance(plan,dict) and plan.get('contract')=='print-product-plan-v3','Missing preproduction product scene plan')
+    require(nonempty(plan.get('element_id')) and nonempty(plan.get('choice_reason')),'Product plan needs identity and method reason')
+    image_file(root,plan['official'])
+    require(timestamp(plan['registered_at'])<=datetime.now(timezone.utc),'Invalid product plan registration time')
+    role,method=plan.get('role'),plan.get('generation_method')
+    require(role in {'scene-object','display-object'} and method in {'reference-generate-label','reference-edit-label-remap','official-asset-composite'},'Unknown product role/method in plan')
+    if method=='official-asset-composite':
+        require(role=='display-object' and nonempty(plan.get('display_reason')),'Paste must be registered as independent display-object with reason')
+    if role=='scene-object':
+        require(method in {'reference-generate-label','reference-edit-label-remap'} and nonempty(plan.get('container_contact_structure')),
+                'Scene product plan needs official-reference edit and container/contact structure')
+        size=plan['canvas_size']
+        require(isinstance(size,list) and len(size)==2 and all(type(v) is int and v>0 for v in size),'Product plan needs canvas dimensions')
+        masks=[]
+        for key in ['edit_mask','container_contact_mask']:
+            with Image.open(bound_file(root,plan[key])) as im: masks.append(im.convert('L'))
+            require(list(masks[-1].size)==size and set(masks[-1].getdata())<={0,255} and masks[-1].getbbox() is not None,
+                    'Product plan mask must be nonempty binary at planned canvas size')
+        require(ImageChops.subtract(masks[1],masks[0]).getbbox() is None,'Preproduction mask must cover container/contact structure')
+    require(plan.get('missing_structure_assets') == [], 'Missing necessary product structure assets: stop and request official material; never invent structure')
+    for ref in plan.get('structure_assets', []): image_file(root, ref)
+    if method=='reference-edit-label-remap':
+        require(plan.get('label_defect') in {'wrong-text','deformed','pseudo-text','inverted'}
+                and nonempty(plan.get('correction_reason')) and isinstance(plan.get('correction_bounds'),list),
+                'Official pixel correction is optional only for a recorded generated label defect and local scope')
+        box(plan['correction_bounds'])
+    return plan
+
+def validate_scene_product_plan(root, plan):
+    if plan.get('contract')=='print-product-plan-v3': return validate_scene_product_plan_v3(root,plan)
+    return validate_scene_product_plan_legacy(root,plan)
+
 
 def validate_product_dispatch_v2(root,manifest,request):
     """Require a plan before any declared product generation/edit, including local compositing."""
@@ -573,10 +608,10 @@ def validate_product_scene_comparison_v2(root,row,raw):
     return passed
 
 
-def inspect_product_record(root, product, current_ref):
+def inspect_product_record_legacy(root, product, current_ref):
     """Validate production evidence; geometric/record checks do not certify visual truth."""
     from PIL import Image, ImageChops
-    require(product.get('contract') in {'print-product-v1','print-product-v2'},'Missing current product contract')
+    require(product.get('contract') in {'print-product-v1','print-product-v2','print-product-v3'},'Missing current product contract')
     if product.get('contract')=='print-product-v2':
         plan=validate_scene_product_plan(root,load(bound_file(root,product['preproduction_plan'])))
         require(plan['element_id']==product['element_id'] and plan['official']==product['official'] and plan['role']==product['role'] and plan['generation_method']==product['method'],'Production differs from preproduction product plan')
@@ -661,6 +696,116 @@ def inspect_product_record(root, product, current_ref):
         require(raw.get('scene_integration') is True and nonempty(raw.get('scene_observation')),'Perspective/contact/light/occlusion does not fit the scene')
         require(product.get('boundary_on_natural_edge') is True,'Composite boundary must follow natural container edges')
     return {'geometry':risk,'pixel_difference':measured,'visual_judgment':'recorded independent observation; not machine certified'}
+
+
+def inspect_product_record_v3(root, product, current_ref):
+    """Validate production evidence; geometric/record checks do not certify visual truth."""
+    from PIL import Image, ImageChops
+    require(product.get('contract')=='print-product-v3','Missing current product contract')
+    if product.get('contract')=='print-product-v3':
+        plan=validate_scene_product_plan(root,load(bound_file(root,product['preproduction_plan'])))
+        require(plan['element_id']==product['element_id'] and plan['official']==product['official'] and plan['role']==product['role'] and plan['generation_method']==product['method'],'Production differs from preproduction product plan')
+        if plan['role']=='scene-object':
+            require(plan['edit_mask']==product['edit_mask'] and plan['container_contact_mask']==product['container_contact_mask'],
+                    'Scene production masks differ from the registered preproduction plan')
+    require(product['final']==current_ref,'Product review must bind current native pixels')
+    official=image_file(root,product['official']); final=image_file(root,product['final'])
+    require(nonempty(product.get('choice_reason')),'Record scene-specific production choice')
+    role,method=product['role'],product['method']
+    require(role in {'scene-object','display-object'},'Declare product scene role')
+    require(method in {'reference-generate-label','reference-edit-label-remap','official-asset-composite'},'Unknown product production method')
+    require(role!='scene-object' or method in {'reference-generate-label','reference-edit-label-remap'}, 'Official paste cannot masquerade as a scene object')
+    risk={'mirrored':False,'inverted':False}
+    if method!='reference-generate-label':
+        geometry=product['geometry']; risk=product_geometry_risk(geometry)
+        bound_file(root,geometry['mapping_record'])
+        require(product.get('glyphs_changed') is False and product.get('colors_changed') is False,
+                'Official correction/display pixels must preserve glyphs and colors')
+    if method=='reference-edit-label-remap':
+        require(product.get('label_defect')==plan['label_defect'] and product.get('correction_reason')==plan['correction_reason']
+                and product.get('correction_bounds')==plan['correction_bounds'], 'Record the planned correction scope and defect reason')
+        generated_before=image_file(root,product['generated'])
+        require(generated_before.size==final.size and generated_before.mode==final.mode,
+                'Local label correction needs the same canvas and mode before/after')
+        left,top,right,bottom=box(product['correction_bounds'])
+        require(all(type(n) is int for n in (left,top,right,bottom)),'Label correction bounds must use integer pixel coordinates')
+        require(0<=left<right<=final.width and 0<=top<bottom<=final.height,'Label correction scope escapes canvas')
+        local=Image.new('L',final.size,0)
+        local.paste(255,(left,top,right,bottom))
+        require(exact_pixel_diff(generated_before,final,local)['outside_changed_pixels']==0,
+                'Label correction changed pixels outside its recorded local scope')
+    require(nonempty(product.get('occlusion_observation')),'Record actual occlusion and brand readability')
+    trip=load(bound_file(root,product['triptych']))
+    require(trip['panels']['official']['source']==product['official'] and trip['panels']['final']['source']==product['final'],
+            'Triptych official/final sources differ')
+    generated=product['generated'] if role=='scene-object' else product['before']
+    require(trip['panels']['generated']['source']==generated,'Triptych generated/intermediate source differs')
+    expected=product_triptych(root,trip); actual=image_file(root,trip['image'])
+    require(expected.size==actual.size and ImageChops.difference(expected,actual).getbbox() is None,'Triptych pixels differ from bound sources')
+    items=trip['text_checks']
+    require(isinstance(items,list) and items and any(r.get('kind')=='brand' for r in items),'Triptych needs item-by-item brand/category/mark checks')
+    require(any(r.get('kind')=='category' for r in items) and any(r.get('kind')=='mark' for r in items),'Register category and mark, including genuine absence/occlusion')
+    for item in items:
+        require(nonempty(item.get('observation')) and nonempty(item.get('generated_observation')) and item.get('status') in {'pass','absent-on-official','occluded'},'Triptych label check failed or missing')
+        if item['status']=='pass':
+            require(nonempty(item.get('official_text')) and item['official_text']==item.get('final_text'),'Final label differs from official text/mark')
+        if item.get('kind')=='brand': require(item['status']=='pass','Brand must remain clearly readable')
+    independent=load(bound_file(root,product['independent_confirmation']))
+    require(independent.get('checker_context')=='fresh-isolated' and nonempty(independent.get('checker_session_id'))
+            and nonempty(independent.get('author_session_id')) and independent['checker_session_id']!=independent['author_session_id']
+            and nonempty(independent.get('invocation_id')), 'Independent product confirmation cannot be an author self-check')
+    require(independent['official']==product['official'] and independent['final']==product['final']
+            and independent['triptych']==product['triptych'],'Independent confirmation uses stale product pixels')
+    raw=load(bound_file(root,independent['raw_return']))
+    require(raw==independent['result'] and raw['label_consistent_readable'] is True and nonempty(raw.get('label_observation')),
+            'Independent product label check failed')
+    require(timestamp(independent['started_at'])<=timestamp(independent['completed_at'])<=datetime.now(timezone.utc), 'Invalid independent product check time')
+    if risk['mirrored'] or risk['inverted']:
+        correction=product.get('orientation_correction')
+        require(isinstance(correction,dict),'Inverted or mirrored official label requires corrected detail and independent confirmation')
+        view=correction['detail']; crop=image_file(root,view['image']); bounds=box(view['bounds']); zoom=view['zoom']
+        require(all(type(v) is int for v in bounds) and contains([0,0,*final.size],bounds) and 1.5<=zoom<=4,'Invalid corrected local enlargement')
+        expected=final.crop(bounds).resize((round((bounds[2]-bounds[0])*zoom),round((bounds[3]-bounds[1])*zoom)),Image.Resampling.LANCZOS)
+        require(view['source']==product['final'] and expected.size==crop.size and ImageChops.difference(expected,crop).getbbox() is None,
+                'Orientation correction is not a current final detail')
+        require(independent.get('corrected_detail')==view['image'] and raw.get('corrected_orientation_readable') is True
+                and nonempty(correction.get('reason')), 'Orientation correction needs independent positive reading confirmation')
+    proof=product['pixel_proof']
+    require(proof['before']==product['before'] and proof['after']==product['final'],'Pixel proof baseline/final differs')
+    before_path=bound_file(root,proof['before']); after_path=bound_file(root,proof['after'])
+    with Image.open(before_path) as b,Image.open(after_path) as a,Image.open(bound_file(root,proof['allowed_mask'])) as m:
+        measured=exact_pixel_diff(b,a,m)
+    require(all(proof.get(k)==v for k,v in measured.items()),'Recorded pixel difference does not match actual pixels')
+    require(measured['outside_changed_pixels']==0,'Pixels outside the edit mask changed')
+    if role=='scene-object':
+        image_file(root,product['generated'])
+        require(product['generation_reference']==product['official'],'Scene edit must reference the official product asset')
+        bound_file(root,product['edit_execution'])
+        def mask(ref):
+            with Image.open(bound_file(root,ref)) as im: result=im.convert('L')
+            require(result.size==final.size and set(result.getdata())<={0,255},'Scene masks must be binary at final size')
+            return result
+        edit=mask(product['edit_mask']); contact=mask(product['container_contact_mask']); opening=mask(product['opening_mask']); allowed=mask(proof['allowed_mask'])
+        require(contact.getbbox() is not None and opening.getbbox() is not None,'Container/contact and opening masks cannot be empty')
+        require(ImageChops.subtract(contact,edit).getbbox() is None and ImageChops.subtract(opening,contact).getbbox() is None,
+                'Small-mask redraw does not cover the container/contact structure')
+        require(ImageChops.subtract(edit,allowed).getbbox() is None,'Editing mask escapes allowed region')
+        with Image.open(bound_file(root,product['replacement_layer'])) as im:
+            require(im.mode=='RGBA' and im.size==final.size,'Replacement layer must be RGBA at final dimensions')
+            layer=im.copy()
+        require(ImageChops.multiply(ImageChops.invert(layer.getchannel('A')),opening).getbbox() is None,
+                'Old product pixels leak through opening; core must be fully opaque')
+        require(ImageChops.multiply(ImageChops.difference(layer.convert('RGB'),final),Image.merge('RGB',(opening,opening,opening))).getbbox() is None,
+                'Final opening differs from the replacement layer')
+        require(raw.get('residue_absent') is True and nonempty(raw.get('residue_observation')),'Old product residue remains')
+        require(raw.get('scene_integration') is True and nonempty(raw.get('scene_observation')),'Perspective/contact/light/occlusion does not fit the scene')
+        require(product.get('boundary_on_natural_edge') is True,'Composite boundary must follow natural container edges')
+    return {'geometry':risk,'pixel_difference':measured,'visual_judgment':'recorded independent observation; not machine certified'}
+
+
+def inspect_product_record(root, product, current_ref):
+    if product.get('contract')=='print-product-v3': return inspect_product_record_v3(root,product,current_ref)
+    return inspect_product_record_legacy(root,product,current_ref)
 
 
 def inspect_product_unit(root, unit):
@@ -863,3 +1008,121 @@ def secondary_element_scope(root,unit):
     return dict(contract='print-secondary-copy-scope-v2',native=native['file'],
                 element_ids=record['element_ids'],title_element_ids=titles,
                 text_elements=[{k:e[k] for k in ['element_id','role','text','bounds']} for e in elements])
+
+
+def direction_image_total(root, record, direction_id):
+    """Sum immutable image_budget revision snapshots; never accept a supplied total."""
+    budget=record.get('image_budget',{})
+    require(budget.get('direction_id')==direction_id and nonempty(budget.get('revision_id')),
+            'image_budget needs this direction_id and revision_id')
+    refs=budget.get('prior_revisions',[])
+    index=budget.get('revision_index')
+    require(type(index) is int and index>=1 and isinstance(refs,list) and len(refs)==index-1,
+            'Retain every earlier image_budget revision; revisions reset the eight-call allowance, not cumulative history')
+    budgets=[load(bound_file(root,r)).get('image_budget',{}) for r in refs]+[budget]
+    ids=[b.get('revision_id') for b in budgets]
+    require(all(nonempty(i) for i in ids) and len(set(ids))==len(ids),'Duplicate/missing budget revision')
+    require(all(b.get('direction_id')==direction_id and type(b.get('used')) is int and type(b.get('limit')) is int
+                and 0<=b['used']<=b['limit'] for b in budgets),'Invalid bound image_budget counters')
+    return sum(b['used'] for b in budgets)
+
+
+def image_budget_message(root, manifest):
+    if manifest.get('core_review_contract') not in {'print-core-product-v4','print-core-product-v5','print-core-product-v6','print-core-product-v7'}:return None
+    record=load(inside(root,manifest['artifacts']['production_manifest']))
+    total=direction_image_total(root,record,manifest['selected_direction'])
+    return '本方向累计已生成 '+str(total)+' 次'
+
+
+def validate_brand_placement_plan(root, manifest, request=None):
+    required=manifest.get('required_brand_assets')
+    require(isinstance(required,list),'Declare required_brand_assets from the brief, including an honest empty list')
+    bound_file(root,manifest.get('brand_asset_requirements_source'))
+    record=load(inside(root,manifest['artifacts']['production_manifest']))
+    plans=record.get('mandatory_brand_asset_placements')
+    require(isinstance(plans,list) and len(plans)==len(required),'Plan every mandatory brand asset before production')
+    ids=[r.get('element_id') for r in required]
+    require(all(nonempty(x) for x in ids) and len(set(ids))==len(ids) and {p.get('element_id') for p in plans}==set(ids),'Required asset/placement coverage differs')
+    for p in plans:
+        r=next(x for x in required if x['element_id']==p['element_id'])
+        require(p.get('mode') in {'scene-interaction','information-signoff','other'} and nonempty(p.get('reason')),'Mandatory asset needs an entry mode and reason; no fixed position template')
+        require(p.get('official')==r.get('official') and p.get('requirement_source')==r.get('requirement_source'),'Bind official asset and actual brief requirement')
+        bound_file(root,p['official']);bound_file(root,p['requirement_source'])
+        if request:
+            require(timestamp(p.get('registered_at'))<=timestamp(request.get('prepared_at')),'Mandatory placement plan must precede production request')
+            require(bound_file(root,p['official']) in {bound_file(root,x) for x in request['input_files']},'Bind mandatory official asset in production inputs')
+    return plans
+
+
+def validate_participation_and_layout(raw, answers, required_assets=None):
+    participation=raw.get('product_participation')
+    require(isinstance(participation,dict) and set(participation)=={'mode','duty_source','visible_attribution','observation'}
+            and participation['mode'] in {'action-contact','duty-result','none'}
+            and participation.get('duty_source') in {'产品本职（含正常结果、赋能结果）','人的动作','场景设定','产品未参与的其他东西'}
+            and type(participation['visible_attribution']) is bool and nonempty(participation['observation']),
+            'Independent answer must name action-contact, duty-result or none and actual pixel evidence')
+    if answers['product_in_core_relation']['answer']:
+        require(participation['mode']!='none' and participation['visible_attribution'], 'Product relation needs visible attribution; a prop or ordinary smile is insufficient')
+        if participation['mode']=='duty-result':
+            require(participation['duty_source']=='产品本职（含正常结果、赋能结果）','Duty result uses the causal rubric definition; independent systems are not product results')
+    return validate_layout_and_brands(raw,answers,required_assets)
+
+
+def validate_layout_and_brands(raw,answers,required_assets=None):
+    layout=raw.get('layout_review')
+    require(isinstance(layout,dict) and set(layout)=={'text_readable','reading_order','empty_space','support_devices','observation'}
+            and type(layout['text_readable']) is bool and all(nonempty(layout[k]) for k in ['reading_order','empty_space','observation'])
+            and isinstance(layout['support_devices'],list) and all(nonempty(x) for x in layout['support_devices']), 'Independent layout review must inspect local readability, order, empty space and support devices')
+    require(answers['layout_readable']['answer']==layout['text_readable'],'Unreadable text is a production failure; cannot be offset by other answers')
+    brand=raw.get('brand_asset_review')
+    require(isinstance(brand,list) and all(isinstance(r,dict) and set(r)=={'element_id','looks_pasted','observation'}
+            and nonempty(r['element_id']) and type(r['looks_pasted']) is bool and nonempty(r['observation']) for r in brand),'Brand placement review is advisory, with concrete pixel observations')
+    if required_assets is not None:
+        ids=[r['element_id'] for r in brand]
+        require(len(ids)==len(set(ids)) and set(ids)=={r['element_id'] for r in required_assets},
+                'Independent brand observations must cover every mandatory asset, including explicit absence; do not hide an advisory by omitting its element')
+    notices=['优先用构图或明暗过渡解决托字问题：'+s for s in layout['support_devices']]
+    notices += ['强制品牌资产像贴上去的：'+r['observation'] for r in brand if r['looks_pasted']]
+    return notices
+
+
+def measure_local_text_contrast(root, image_ref, text_mask_ref, background_mask_ref, *, large_text=False):
+    """Measure actual rendered pixels with explicit binary masks, never declared colors."""
+    from PIL import Image
+    from statistics import median
+    image=image_file(root,image_ref).convert('RGB')
+    masks=[]
+    for ref in [text_mask_ref,background_mask_ref]:
+        with Image.open(bound_file(root,ref)) as im:m=im.convert('L')
+        require(m.size==image.size and set(m.getdata())<={0,255} and m.getbbox() is not None,'Contrast masks must be nonempty binary masks at native dimensions')
+        masks.append(m)
+    require(not any(a and b for a,b in zip(masks[0].getdata(),masks[1].getdata())),'Text and local background masks must not overlap')
+    def luminance(rgb):
+        c=[v/255 for v in rgb];c=[v/12.92 if v<=0.04045 else ((v+0.055)/1.055)**2.4 for v in c]
+        return .2126*c[0]+.7152*c[1]+.0722*c[2]
+    values=[[luminance(rgb) for rgb,m in zip(image.getdata(),mask.getdata()) if m] for mask in masks]
+    foreground,background=map(median,values)
+    ratio=(max(foreground,background)+.05)/(min(foreground,background)+.05)
+    threshold=3.0 if large_text else 4.5
+    return dict(image=image_ref,text_mask=text_mask_ref,background_mask=background_mask_ref,contrast_ratio=ratio,
+                screening_threshold=threshold,below_screening_threshold=ratio<threshold,
+                basis='WCAG 2.2 SC 1.4.3 ratio used as a diagnostic reference for normal/large text, not automatic advertising acceptance; local glyph/background masks and independent readability decide.',
+                measurement_only=True)
+
+
+def delivery_advisories(root, manifest):
+    if manifest.get('core_review_contract') not in {'print-core-product-v4','print-core-product-v5','print-core-product-v6','print-core-product-v7'}:return []
+    review=manifest.get('core_creative_review',{})
+    notices=[]
+    for row in review.get('assessments',[]):
+        if row['id'] not in review.get('current_assessment_ids',[]):continue
+        record=load(bound_file(root,row['independent_check']))
+        raw=load(bound_file(root,record['raw_return']))
+        if manifest.get('core_review_contract') in {'print-core-product-v5','print-core-product-v6','print-core-product-v7'}:
+            from product_relationship_contract import validate_issues
+            notices.extend(i for i in validate_issues(raw,row['answers']) if i['severity']=='hint')
+            continue
+        notices.extend(validate_participation_and_layout(raw,row['answers']))
+        notices.extend(['阅读顺序观察：'+raw['layout_review']['reading_order'],
+                        '空白观察：'+raw['layout_review']['empty_space']])
+    return [i['observation'] for i in sorted(notices,key=lambda i:i['priority'])[:2]] if manifest.get('core_review_contract') in {'print-core-product-v5','print-core-product-v6','print-core-product-v7'} else notices

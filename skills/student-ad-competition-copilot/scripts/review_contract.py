@@ -263,6 +263,9 @@ def preflight(root, manifest, request_id, *, for_dispatch=False):
             existing = load(bound_file(root, receipt_ref))
             if existing.get('request_sha256') == matches[0]['sha256'] and existing.get('action_started_at'):
                 raise ValueError('Production already started; use a new request for an authorized retry')
+        if manifest.get('category') == 'print-ad':
+            from execution_contract import validate_new_run_gate
+            validate_new_run_gate(root,manifest,contract,rows)
         control = dispatch_inputs(root, manifest, contract, request)
     return {"schema_version": "1.0.0", "run_id": manifest["run_id"], "status": "authorized",
             "request_id": request_id, "request_sha256": matches[0]["sha256"],
@@ -455,6 +458,8 @@ def validate_review_contract(root, manifest):
                  "evidence": "Legacy record remains readable but does not satisfy the v0.2.5 review contract; never backfill approval."}]
     try:
         contract, rows = read_contract(root, manifest)
+        from execution_contract import verify_complete_artworks
+        verify_complete_artworks(root, manifest, contract)
         if manifest.get("run_scope") in {"production-candidate", "delivery-candidate"}:
             validate_receipts(root, contract, rows)
         if manifest.get("run_scope") == "delivery-candidate":

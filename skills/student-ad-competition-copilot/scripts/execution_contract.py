@@ -8,6 +8,103 @@ import tokenize
 PROFILE = 'bound-production-v1'
 
 
+def package_checker_hashes():
+    """Bind the distributed scripts, not author-supplied paths or hashes."""
+    from review_contract import digest, load
+    base = Path(__file__).resolve().parent
+    files = {r['path']: r['sha256'] for r in load(base.parent/'version.json')['files']}
+    result = {}
+    for path in sorted(base.glob('*.py')):
+        key = 'scripts/'+path.name
+        value = digest(path)
+        require(files.get(key) == value, 'Checker differs from this Skill package manifest: '+key)
+        result[key] = value
+    return result
+
+
+def guard_runtime_identity():
+    """Reject imported guard wrappers and changed in-memory checker functions."""
+    import sys, types
+    base = Path(__file__).resolve().parent
+    entry = Path(getattr(sys.modules.get('__main__'), '__file__', '')).resolve()
+    require(entry == base/'guard_production.py', 'Run package guard_production.py directly; wrappers/monkeypatches are forbidden')
+    hashes = package_checker_hashes()
+    def code_value(code):
+        return (code.co_code, code.co_names, code.co_varnames, code.co_freevars, code.co_cellvars,
+                code.co_argcount, code.co_posonlyargcount, code.co_kwonlyargcount, code.co_flags,
+                tuple(code_value(v) if isinstance(v, types.CodeType) else v for v in code.co_consts))
+    for module in list(sys.modules.values()):
+        filename = getattr(module, '__file__', None)
+        if not filename or Path(filename).resolve().parent != base:
+            continue
+        path = Path(filename).resolve()
+        if path.suffix != '.py':
+            continue
+        compiled = compile(path.read_text(encoding='utf-8-sig'), str(path), 'exec')
+        codes = {c.co_name: c for c in compiled.co_consts if isinstance(c, types.CodeType)}
+        for name, expected in codes.items():
+            actual = getattr(module, name, None)
+            if isinstance(actual, types.FunctionType):
+                require(code_value(actual.__code__) == code_value(expected),
+                        'In-memory checker was replaced: '+path.name+':'+name)
+    return dict(profile='package-guard-v1', entrypoint='scripts/guard_production.py', checker_sha256=hashes)
+
+
+def verify_artwork_release(root, manifest, artifact_ref, receipt_ref=None):
+    """A preflight-only or foreign-checker receipt cannot release complete artwork."""
+    from review_contract import bound_file, read_contract, load, fingerprint
+    artifact_path = bound_file(root, artifact_ref)
+    contract, _ = read_contract(root, manifest)
+    receipts = [load(bound_file(root, receipt_ref))] if receipt_ref else [load(bound_file(root, r)) for r in contract.get('production_receipts', [])]
+    expected = package_checker_hashes()
+    requests = {r['sha256']: load(bound_file(root, r)) for r in contract['production_requests']}
+    for receipt in receipts:
+        request = requests.get(receipt.get('request_sha256'))
+        if not request or receipt.get('request_id') != request.get('id') or receipt.get('request') != request:
+            continue
+        provenance = receipt.get('guard_identity', {})
+        if (receipt.get('run_id') != manifest['run_id'] or receipt.get('status') != 'authorized'
+            or receipt.get('dispatch_checked') is not True or receipt.get('production_state') != 'completed'
+            or receipt.get('executed') is not True or receipt.get('command_returncode') != 0
+            or provenance != dict(profile='package-guard-v1',entrypoint='scripts/guard_production.py',checker_sha256=expected)):
+            continue
+        outputs=receipt.get('outputs', [])
+        if {r.get('path') for r in outputs} != set(request.get('output_files', [])):
+            continue
+        for output in outputs:
+            bound_file(root, output)
+        if any(bound_file(root, r)==artifact_path and r['sha256']==artifact_ref['sha256'] for r in outputs):
+            return dict(request_id=receipt['request_id'], request_sha256=receipt['request_sha256'],
+                        artifact_sha256=artifact_ref['sha256'], guard_identity=provenance)
+    raise ValueError('Complete artwork has no valid package guard release: missing receipt, changed output or foreign/wrapped checker. Stop and report; do not bypass or backfill history.')
+
+
+def release_required(root, manifest):
+    """Only consumption of complete artwork under print gate 0.17+ needs release."""
+    if manifest.get('category') != 'print-ad':
+        return False
+    from review_contract import inside, load
+    path = manifest.get('artifacts', {}).get('quality_gate_results')
+    if not path:
+        return manifest.get('product_contract') == 'print-product-v3'
+    gate = load(inside(root,path)).get('definition_set_id','')
+    try:
+        return gate.startswith('print-ad.') and tuple(int(x) for x in gate[9:].split('.')) >= (0,17,0)
+    except ValueError:
+        raise ValueError('Unknown print quality gate; do not infer a legacy exemption')
+
+
+def verify_complete_artworks(root, manifest, contract=None):
+    if not release_required(root,manifest):
+        return []
+    from review_contract import read_contract
+    if contract is None: contract, _ = read_contract(root, manifest)
+    refs=list(contract.get('final_artifacts', []))
+    for row in manifest.get('core_creative_review', {}).get('assessments', []):
+        refs.extend([row['artifact'], row['observed_image']])
+    return [verify_artwork_release(root,manifest,r) for r in refs]
+
+
 def require(value, message):
     if not value:
         raise ValueError(message)
@@ -15,7 +112,7 @@ def require(value, message):
 
 def dispatch_inputs(root, manifest, contract, request):
     from review_contract import bound_file, inside, load, digest
-    if manifest.get('direction_contract') in {'print-direction-v6','print-direction-v7'}:
+    if manifest.get('direction_contract') in {'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10'}:
         from validate_print_ad_run import validate_direction_blind_review, validate_main_visual_dispatch_v6
         direction = validate_direction_blind_review(root, manifest)
         require(direction['passed'], 'Direction choice must be completed before production: ' + str(direction['evidence']))
@@ -26,6 +123,16 @@ def dispatch_inputs(root, manifest, contract, request):
         require(gate.get('definition_set_id')=='print-ad.0.16.0','New dispatch requires print-ad.0.16.0')
         from visual_review_contract import validate_product_dispatch_v2
         validate_product_dispatch_v2(root,manifest,request)
+    if manifest.get('direction_contract') in {'print-direction-v8','print-direction-v9','print-direction-v10'} or manifest.get('product_contract')=='print-product-v3':
+        require(manifest.get('direction_contract') in {'print-direction-v8','print-direction-v9','print-direction-v10'} and manifest.get('product_contract')=='print-product-v3', 'Current direction/product contracts cannot be downgraded')
+        require(load(inside(root,manifest['artifacts']['quality_gate_results'])).get('definition_set_id') in {'print-ad.0.17.0','print-ad.0.18.0','print-ad.0.19.0','print-ad.0.20.0','print-ad.0.21.0'},'Current dispatch requires print-ad.0.17.0 or later current contract')
+        from visual_review_contract import validate_product_dispatch_v2
+        validate_product_dispatch_v2(root,manifest,request)
+        from validate_print_ad_run import validate_repeated_failure_handoff
+        validate_repeated_failure_handoff(root,manifest,for_dispatch=True)
+    from visual_review_contract import validate_brand_placement_plan
+    if manifest.get('core_review_contract') in {'print-core-product-v4','print-core-product-v5','print-core-product-v6','print-core-product-v7'}:
+        validate_brand_placement_plan(root,manifest,request)
     require(request.get('execution_profile') == PROFILE,
             'New dispatch requires bound-production-v1; preserve legacy requests and create a bound successor')
     require('input_files' in request and isinstance(request['input_files'], list), 'Declare actual input_files')
@@ -170,3 +277,31 @@ def normalize_event(source, *, time_value, time_unit, time_basis):
                   original_time=dict(value=time_value, unit=time_unit), original_event=dict(source))
     # human_source still checks actual IDs, text and matching turn/message basis.
     return result
+
+
+def validate_new_run_gate(root, manifest, contract, rows):
+    """Historical continuation uses bound original human evidence, not a chosen version."""
+    from review_contract import human_source, timestamp, load, inside
+    cutoff = timestamp('2026-10-11T07:00:00Z')
+    origins = [human_source(root,r['source'],r['quote']) for r in rows.values()]
+    historical = bool(origins) and min(origins) < cutoff
+    gate_path=manifest.get('artifacts',{}).get('quality_gate_results')
+    gate = load(inside(root,gate_path))['definition_set_id'] if gate_path else None
+    current_cutoff=timestamp('2026-10-11T08:57:54Z')
+    current_historical=bool(origins) and min(origins)<current_cutoff
+    latest_cutoff=timestamp('2026-10-11T10:54:26.721687+00:00')
+    latest_historical=bool(origins) and min(origins)<latest_cutoff
+    latest=(gate=='print-ad.0.20.0' and manifest.get('product_contract')=='print-product-v3' and manifest.get('direction_contract')=='print-direction-v10' and manifest.get('core_review_contract')=='print-core-product-v6')
+    previous=(gate=='print-ad.0.19.0' and manifest.get('product_contract')=='print-product-v3' and manifest.get('direction_contract')=='print-direction-v9' and manifest.get('core_review_contract')=='print-core-product-v5')
+    scene_cutoff=timestamp('2026-10-11T11:36:31.792517+00:00')
+    scene_historical=bool(origins) and min(origins)<scene_cutoff
+    scene_current=(gate=='print-ad.0.21.0' and manifest.get('product_contract')=='print-product-v3' and manifest.get('direction_contract')=='print-direction-v10' and manifest.get('core_review_contract')=='print-core-product-v7')
+    if not scene_historical:
+        require(scene_current,'New print run must use the current product meaning and visible scene evidence gate; historical continuation needs bound original human evidence before the cutover.')
+    elif not latest_historical:
+        require(scene_current or latest,'New print run must use the current product meaning gate and contracts; historical continuation needs bound original human evidence before the cutover.')
+    elif not current_historical:
+        require(scene_current or latest or previous,'New print run must use the contract active at its bound original event; no downgrade')
+    elif not historical:
+        require(scene_current or latest or previous or (gate=='print-ad.0.18.0' and manifest.get('direction_contract')=='print-direction-v8' and manifest.get('core_review_contract')=='print-core-product-v4'),'New print run must use the contract active at its bound original event; no downgrade')
+    return dict(historical_continuation=historical, gate=gate)

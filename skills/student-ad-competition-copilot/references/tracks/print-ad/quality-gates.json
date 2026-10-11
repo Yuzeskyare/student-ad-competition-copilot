@@ -2,7 +2,7 @@
   "$schema": "../../schemas/track-quality-gates.schema.json",
   "document_type": "gate-definitions",
   "schema_version": "0.1.0",
-  "definition_set_id": "print-ad.0.16.0",
+  "definition_set_id": "print-ad.0.21.0",
   "track": "print-ad",
   "playbook": "playbook.md",
   "gates": [
@@ -112,7 +112,7 @@
           "check_id": "product-role",
           "assessment": "human",
           "question": "独立检查者只看方向一句话时，如何比较产品利益、意外感和创意本身？",
-          "pass_condition": "固定print-direction-v6 rubric接收匿名方向、反馈反例库及匿名获奖机制。套路判断引用匹配反例条目；新转折可来自具体消费者/使用者时刻、产品利益或视角翻转，不要求服用、使用或产品内部原理。仅替身物件的空间/尺度/视角变化与消费者时刻及产品利益均无关，不算转折。参照强度仅供排序。 方向句必须写画面动作、产品关系及创意依据（人的时刻或洞察 / 产品真相或利益 / 视角翻转或文化意味）；依据只是作者主张，须在动作与产品关系中成立，不能写上就放行。 命中反例机制在筛判和委托自动采用中直接拦截，任何新转折不得改判合格；新转折须填写改变哪个对象关系的before/after，不得复述利益或依据。去重清单须含原句、依据、套路判断及理由、反例命中及理由、排序、可画性及理由和检查者一句评价；未委托时用户可选任何可画项，被判套路或反例命中项须保存用户原话、user_override=true及对应原始判断引用，all_weak=true仍交用户选择或要求重新发散；不可画项不能出图。委托时仅可采用合格且可画的第一名，all_weak和重新发散规则不变。",
+          "pass_condition": "固定print-direction-v6 rubric接收匿名方向、反馈反例库及匿名获奖机制。套路判断引用匹配反例条目；新转折可来自具体消费者/使用者时刻、产品利益或视角翻转，不要求服用、使用或产品内部原理。仅替身物件的空间/尺度/视角变化与消费者时刻及产品利益均无关，不算转折。参照强度仅供排序。 方向句必须写画面动作、产品关系及创意依据（人的时刻或洞察 / 产品真相或利益 / 视角翻转或文化意味）；依据只是作者主张，须在动作与产品关系中成立，不能写上就放行。 命中反例机制在筛判和委托自动采用中直接拦截，任何新转折不得改判合格；新转折须填写改变哪个对象关系的before/after，不得复述利益或依据。去重清单须含原句、依据、套路判断及理由、反例命中及理由、排序、可画性及理由和检查者一句评价；未委托时用户可选任何可画项，被判套路或反例命中项须保存用户原话、user_override=true及对应原始判断引用，all_weak=true仍交用户选择或要求重新发散；不可画项不能出图。委托时仅可采用合格且可画的第一名，all_weak和重新发散规则不变。 新print-direction-v10另增观众意义提示，使用product-relationship.md定义，提示不改变上述套路、排序、可画、采用与守卫。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "directions",
           "evidence_required": true
@@ -148,7 +148,7 @@
           "check_id": "independent-direction-causal-check",
           "assessment": "human",
           "question": "提示项：核心创意关系直接由什么产生？它是否建立在产品自己做的事、本职正常直接结果或赋能对象因此产生的结果上？",
-          "pass_condition": "独立v7返回覆盖每个输入，直接来源、布尔结论和理由必填；选择清单在用户选择前逐项原样展示。本提示用于提醒创意是否借用了产品没参与的效果，不作为门槛；因果不合格不影响排序/可画前列/all_weak/自动或委托采用/user_override/承接/生产守卫，也不要求用户覆盖。缺返回字段或清单缺提示仍由确定性校验拒绝。保留通用本职/赋能判法，不虚构产品能力。",
+          "pass_condition": "方向因果提示使用 print-direction-v10：逐条写“核心效果来自：产品本职（含正常结果、赋能结果）/ 人的动作 / 场景设定 / 产品未参与的其他东西”之一，并给一句理由。只有画面或文案把效果归给产品、而产品未参与产生该效果时，才提醒“这里借用了产品没参与的效果”；人的自主动作、场景设定、症状表现或护理选择本身不构成产品归因。不使用合格/不合格判词，不按品类或命题类型分支。causal_check 记录 direction_id、effect_source、reason、attributed_to_product、product_participates、reminder；最后一项等于归因成立且产品未参与。选择清单的 rows 和覆盖全部输入（含去重项）的 causal_advisories 原样展示。提示不影响排序、可画、all_weak、自动采用、user_override、版本迁移承接或生产许可，原五问不变。历史 v7 返回按原定义保留，不转换旧结论冒充新独立返回。 因果提示只作参考，不作为门槛。",
           "failure_severity": "consider",
           "return_to_stage": "directions",
           "evidence_required": true
@@ -207,8 +207,8 @@
           "check_id": "visual-only-meaning",
           "assessment": "human",
           "question": "图像承担的表达是否可见，完整图文是否共同成立？",
-          "pass_condition": "暂遮文字用于诊断依赖，不普遍要求去字后完整成义；静态/情绪/文字机制按实际关系判断，作者额外长说明不能救失败。 已观察到主关系误读或承诺未兑现时回责任阶段实改，不能只修信息区后维持通过。",
-          "failure_severity": "return-on-observed-failure",
+          "pass_condition": "按product-relationship.md开放盲读观众所得意义；没读出、偏弱、不完全兑现或歧义保留提示，不要求产品做动作。明确读反或合规冲突仍按独立可核实失败硬拦。",
+          "failure_severity": "consider",
           "return_to_stage": "prototype",
           "evidence_required": true
         },
@@ -216,8 +216,8 @@
           "check_id": "product-in-relation",
           "assessment": "human",
           "question": "产品特征或利益与本次判断有何联系？",
-          "pass_condition": "利益与品牌归属成立，或产品确实参与动作；不强制包装充当机关，不凭放大、位置和接触认定说服。",
-          "failure_severity": "return-on-observed-failure",
+          "pass_condition": "只用product-relationship.md同一定义：观众从像素能得到预期产品/品牌意义；不要求产品动作或本职结果，公益按信息判断。偏弱或不成立保留提示，重复两稿同因沿A4交回。",
+          "failure_severity": "consider",
           "return_to_stage": "prototype",
           "evidence_required": true
         },
@@ -300,7 +300,7 @@
           "check_id": "visual-integration",
           "assessment": "human",
           "question": "产品尺度、边缘、色彩和构图是否符合所选视觉语言；需要摄影真实感的部分，其光线、透视、阴影和景深是否成立？",
-          "pass_condition": "产品身份保真且参与构图；非摄影语言按其造型与组合规则评价，不因缺少摄影阴影或景深失败。",
+          "pass_condition": "仅场景产品的可见透视、遮挡、接触、光影穿帮，或品牌身份可核实错误才返工；非摄影表达不因缺摄影阴影失败。尺度、配色和构图的主观质量保留提示，不冒充场景穿帮。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "production",
           "evidence_required": true
@@ -354,7 +354,16 @@
           "check_id": "preproduction-product-scene-plan",
           "assessment": "machine",
           "question": "每个场景产品是否在生产请求前登记官方参考、容器/接触、覆盖蒙版、生成方式与理由？",
-          "pass_condition": "print-product-v2生产记录内逐产品计划绑定派发请求；贴图必须登记独立展示物及理由。",
+          "pass_condition": "print-product-v3生产记录内逐产品计划绑定派发请求；贴图必须登记独立展示物及理由。 当前生产计划逐项登记必需品牌资产的进入方式和理由，覆盖命题要求来源。",
+          "failure_severity": "hard-stop",
+          "return_to_stage": "production",
+          "evidence_required": true
+        },
+        {
+          "check_id": "mandatory-brand-placement-plan",
+          "assessment": "machine",
+          "question": "命题强制资产是否登记进入场景互动/信息区落款/其他及理由，绑定官方原件与要求来源？",
+          "pass_condition": "命题强制资产是否登记进入场景互动/信息区落款/其他及理由，绑定官方原件与要求来源？",
           "failure_severity": "hard-stop",
           "return_to_stage": "production",
           "evidence_required": true
@@ -443,7 +452,7 @@
       "order": 60,
       "stage": "content-review",
       "gate_type": "hybrid",
-      "purpose": "用三秒、品牌替换、缩略图和全尺寸检查判断作品是否真正成立。 执行final-pixel-review.md，复核目标原生渲染、三种尺度及逐单元观察，技术或联系表通过不能替代。",
+      "purpose": "用三秒、产品意义、缩略图和全尺寸检查判断作品是否真正成立。 执行final-pixel-review.md，复核目标原生渲染、三种尺度及逐单元观察，技术或联系表通过不能替代。",
       "applicability": {
         "mode": "always"
       },
@@ -456,7 +465,7 @@
       ],
       "required_outputs": [
         "communication-clarity-review",
-        "brand-replacement-review",
+        "product-meaning-review",
         "full-size-review",
         "human-decision",
         "version-bound-final-pixel-evidence",
@@ -467,17 +476,17 @@
           "check_id": "communication-clarity",
           "assessment": "human",
           "question": "实际观看后能否理解主要动作与传播判断，判断方法是否如实记录？",
-          "pass_condition": "画面无需作者长解释；定性认可与作者观察分别记录，不冒充计时或独立受众实测。",
-          "failure_severity": "return-on-observed-failure",
+          "pass_condition": "主要关系不清、偏弱或歧义登记提示；明确读反须给原盲读、预期及相反方向像素，由独立硬失败检查处理。",
+          "failure_severity": "consider",
           "return_to_stage": "prototype",
           "evidence_required": true
         },
         {
-          "check_id": "brand-specific-meaning",
+          "check_id": "product-meaning-consistent",
           "assessment": "human",
-          "question": "恢复品牌后是否增加专属意义，换竞品后是否出现明显损失？",
-          "pass_condition": "品牌和产品不是可替换署名。",
-          "failure_severity": "return-on-observed-failure",
+          "question": "观众不靠文案能否说出产品在这张图里是干什么的，且与预期产品意义一致？",
+          "pass_condition": "按product-relationship.md记录观众实际读到的产品意义；说不出、读反，或产品只陈列在与画面需要无关的位置、持产品微笑而无可见联系，为不成立。不成立仅提示；可核实读反另硬拦。",
+          "failure_severity": "consider",
           "return_to_stage": "directions",
           "evidence_required": true
         },
@@ -502,9 +511,9 @@
         {
           "check_id": "core-creative-pixel-review",
           "assessment": "human",
-          "question": "每个完整稿是否先只看成图完成保存盲读，再给声明和官方产品图对照并完成原五问？",
-          "pass_condition": "独立五问均通过；作者自答无效。像素关系兑现且创意非普通场景；允许有意夸张与超现实。检查输入/返回/hash/身份与时间绑定当前成图，交付前完成；任一失败完整返工并用新图独立复查，局部修改不能冲销。 先盲读后对照；未知产品作用、三轴不一致、主关系歧义分别强制第1/3/5问为否；次要歧义只记录。 主画面来源必须为generated/edited/user-asset并绑定素材与来源证据；native-drawn完整稿不得作代表稿或通过稿。主画面失败且生图额度用尽时停止并交回失败稿和原因，待用户决定追加额度或换方向。",
-          "failure_severity": "return-on-observed-failure",
+          "question": "八问的开放意义盲读、锁定句与命题对照是否完成并保留全部观察和分级？",
+          "pass_condition": "print-core-product-v7按product-relationship.md的同一定义；主观质量仅提示且保留原理由，连续两稿同因交回。第6/7/8问、读反、合规与流程失败独立硬拦。",
+          "failure_severity": "consider",
           "return_to_stage": "direction",
           "evidence_required": true
         },
@@ -512,8 +521,8 @@
           "check_id": "blind-read-before-claim",
           "assessment": "machine",
           "question": "盲读是否在声明输入前完成保存，且对照和五问忠实引用盲读？",
-          "pass_condition": "print-core-v3：成图唯一输入清单hash、原始返回、保存时间严格早于对照；对照引用盲读hash；未知产品作用/三轴不一致/主关系歧义不得五问通过。",
-          "failure_severity": "return-on-observed-failure",
+          "pass_condition": "流程守卫：print-core-product-v7先只看成图保存开放盲读，真实输入/hash/时间/新隔离调用完整且先于对照；原盲读、原观察、原始返回与主清单逐字一致。八问意义偏弱按统一定义分级，不能借此旧检查强迫五问全true。",
+          "failure_severity": "hard-stop",
           "return_to_stage": "main-visual-generation",
           "evidence_required": true
         },
@@ -521,8 +530,8 @@
           "check_id": "locked-claim-and-device-removal",
           "assessment": "machine",
           "question": "每稿是否使用采用时锁定声明，去掉说明手段后产品关系是否仍成立？",
-          "pass_condition": "print-core-v4：锁定声明绑定方向盲评一句话，逐稿对照声明hash一致；改声明须回方向重新发散盲评且累计最多一次。只靠箭头、指向线、标注、透明重影等读出关系时，第1/3/4问为否并完整返工；造型语言去掉后关系仍成立可通过。",
-          "failure_severity": "return-on-observed-failure",
+          "pass_condition": "锁定声明与原盲读/hash必须真实一致，改声明仍回方向重选；说明手段与去掉后的关系逐字记录。关系不可读仅提示，不以手法判硬失败。",
+          "failure_severity": "hard-stop",
           "return_to_stage": "main-visual-generation",
           "evidence_required": true
         },
@@ -539,7 +548,7 @@
           "check_id": "independent-product-scene-review",
           "assessment": "human",
           "question": "产品是否真正处于场景中（透视、遮挡、接触、光影一致），而非贴片？",
-          "pass_condition": "独立第七问与每个产品三联局部放大绑定；失败是核心失败，不能抵消，产品局部返工后取得新独立返回；作者自评不能替代。",
+          "pass_condition": "独立第七问与每个产品三联局部放大绑定；失败是核心失败，不能抵消，产品局部返工后取得新独立返回；作者自评不能替代。 第7问的硬拦须指出画面中实际可见的空间、遮挡、接触或光影矛盾，并说明相互冲突的像素；不能仅从缺少预期阴影、包装较清晰、风格不同或视角观感不同推断可核实穿帮。缺少接触阴影或疑似贴片但尚不能确认实际矛盾时，记录brand-asset-pasted提示与原观察；不能用“没有发现预期证据”代替“发现实际冲突”。若实际矛盾可见，仍须硬拦，标签正确、产品意义成立或用户认可均不能抵消。生产前scene-object禁止纯贴图的计划守卫不变。",
           "failure_severity": "hard-stop",
           "return_to_stage": "production",
           "evidence_required": true
@@ -597,16 +606,27 @@
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "production",
           "evidence_required": true
-        }
-      ],
-      "hard_stops": [
+        },
         {
-          "stop_id": "brand-replaceable",
-          "condition": "换成其他品牌或产品后创意无损成立。",
-          "return_to_stage": "directions",
-          "required_resolution": "重建产品机制与品牌资产作用。"
+          "check_id": "independent-layout-review",
+          "assessment": "human",
+          "question": "文字在局部背景上是否清晰？阅读顺序、大空白及托字补丁只提醒，优先建议构图或明暗过渡。",
+          "pass_condition": "文字在局部背景上是否清晰？阅读顺序、大空白及托字补丁只提醒，优先建议构图或明暗过渡。",
+          "failure_severity": "return-on-observed-failure",
+          "return_to_stage": "production",
+          "evidence_required": true
+        },
+        {
+          "check_id": "verified-meaning-and-compliance",
+          "assessment": "human",
+          "question": "原盲读是否把主关系读反或与官方限制冲突？",
+          "pass_condition": "仅可核实读反或合规冲突硬拦；须绑定命题原文、原盲读及像素观察，不把歧义当读反。",
+          "failure_severity": "hard-stop",
+          "return_to_stage": "main-visual-generation",
+          "evidence_required": true
         }
       ],
+      "hard_stops": [],
       "waiver_policy": {
         "allowed": false,
         "reason_required": true,
@@ -658,6 +678,15 @@
           "pass_condition": "当前作品路径受控、哈希与审核范围一致；AIGC记录和平台申报仅作交付后提醒。 主画面来源必须为generated/edited/user-asset并绑定素材与来源证据；native-drawn完整稿不得作代表稿或通过稿。主画面失败且生图额度用尽时停止并交回失败稿和原因，待用户决定追加额度或换方向。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "technical-review",
+          "evidence_required": true
+        },
+        {
+          "check_id": "direction-cumulative-image-budget",
+          "assessment": "machine",
+          "question": "每次交回是否由image_budget机械汇总并展示本方向累计已生成N次？",
+          "pass_condition": "每次交回是否由image_budget机械汇总并展示本方向累计已生成N次？",
+          "failure_severity": "hard-stop",
+          "return_to_stage": "production",
           "evidence_required": true
         }
       ],

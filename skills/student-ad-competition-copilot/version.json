@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.19",
+  "skill_version": "0.2.20",
   "status": "stable-release",
-  "built_at": "2026-10-10",
-  "stable_release": "0.2.19",
+  "built_at": "2026-10-11",
+  "stable_release": "0.2.20",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -159,8 +159,8 @@
     },
     {
       "path": "references/schemas/print-ad-run-manifest.schema.json",
-      "bytes": 396547,
-      "sha256": "59af4e73623b71e3dc170721befb49c82a1d956ac18e290f3704f06eee951017"
+      "bytes": 849099,
+      "sha256": "70dfb03b9bf4e20fe5959a3e89d691db6239fdb9e65a1e718d98099dffc8a86a"
     },
     {
       "path": "references/schemas/production-request.schema.json",
@@ -189,8 +189,8 @@
     },
     {
       "path": "references/schemas/visual-review.schema.json",
-      "bytes": 74249,
-      "sha256": "35961f432e5d65fbee66827a103906f444a0210a8d8feddd163153a26eed2ab4"
+      "bytes": 97218,
+      "sha256": "9448c25d76c85a0dd541b73f69b0a74f5c19f08c0058c98f6c5cf3c61511a699"
     },
     {
       "path": "references/templates/ad-copy-direction-card.template.md",
@@ -294,8 +294,8 @@
     },
     {
       "path": "references/tracks/print-ad/playbook.md",
-      "bytes": 63975,
-      "sha256": "0170d5567aa286e1c25f2d2262a33929b6e2e6045b7bc61cfa311ba85bc9e85f"
+      "bytes": 71417,
+      "sha256": "631fecf0277bd5bd464cb0165459d66f208b837cb5dfb5d668e76753a13f6ad1"
     },
     {
       "path": "references/tracks/print-ad/quality-gates-v0.1.0.json",
@@ -333,9 +333,34 @@
       "sha256": "bdfc4778c36e62d16b4c937685b68da3b9bc0a3c695d80ec1bb499b5e76522f6"
     },
     {
+      "path": "references/tracks/print-ad/quality-gates-v0.16.0.json",
+      "bytes": 36331,
+      "sha256": "5dc87bc1ec73d93c2905af4f817a978ac46398e69a84561f70634b4de2fe5b16"
+    },
+    {
+      "path": "references/tracks/print-ad/quality-gates-v0.17.0.json",
+      "bytes": 36900,
+      "sha256": "5f6bff1041822dbaf40c93f22f8e83e64c9af57ab21cfa4dd8dea7d2cc48220a"
+    },
+    {
+      "path": "references/tracks/print-ad/quality-gates-v0.18.0.json",
+      "bytes": 38801,
+      "sha256": "fd17488ce1ac97c7b790d3078a65ae41e0edaea9ada32a9c1a40121a04a6481e"
+    },
+    {
+      "path": "references/tracks/print-ad/quality-gates-v0.19.0.json",
+      "bytes": 38936,
+      "sha256": "0ecf06c6f4a1ad3534cd0a63f6494f74eab5be7ece292554cb1368f71a89caaa"
+    },
+    {
       "path": "references/tracks/print-ad/quality-gates-v0.2.0.json",
       "bytes": 18960,
       "sha256": "412a43428e82eee251148048aa5ac8847a80d09952ebb754fcd3ab5f91cca78a"
+    },
+    {
+      "path": "references/tracks/print-ad/quality-gates-v0.20.0.json",
+      "bytes": 38691,
+      "sha256": "9b1675eddf0ae52dac27fccab79cd8dca3ed0aa5d67b7edc6edba6703f13efbf"
     },
     {
       "path": "references/tracks/print-ad/quality-gates-v0.3.0.json",
@@ -374,8 +399,8 @@
     },
     {
       "path": "references/tracks/print-ad/quality-gates.json",
-      "bytes": 36331,
-      "sha256": "5dc87bc1ec73d93c2905af4f817a978ac46398e69a84561f70634b4de2fe5b16"
+      "bytes": 39275,
+      "sha256": "c5bf6d9c55f9fae9332fb2453cf1d7e8b79fc825e487ab80cd3a44fc80ef5d4b"
     },
     {
       "path": "references/validation/typography-candidate-acceptance.json",
@@ -486,6 +511,11 @@
       "path": "references/validation/v0.2.2-acceptance.json",
       "bytes": 1332,
       "sha256": "36b20ee6b98113bd4f8429f8b4fe9020a58058798413eef4f01f84e54502a09c"
+    },
+    {
+      "path": "references/validation/v0.2.20-release-acceptance.json",
+      "bytes": 2227,
+      "sha256": "525e9cda95f2ad06a16173c43285de821d9c7b5adf861da778c8e6631644f5d2"
     },
     {
       "path": "references/validation/v0.2.3-acceptance.json",
@@ -609,13 +639,28 @@
     },
     {
       "path": "references/workflow/final-pixel-review.md",
-      "bytes": 31997,
-      "sha256": "98a1e0ca490e4f8facf1ab542621596be05dfcd6dd6caa2907ca15039226cee4"
+      "bytes": 35809,
+      "sha256": "cb21fa6a6df28aed789dfd3c29d02a182c9dec81e6d3fe435c11abb77c3ba433"
     },
     {
       "path": "references/workflow/image-tool-adaptation.md",
-      "bytes": 19380,
-      "sha256": "00db90d91a035fa33fab7b3532705bda338ce951b96327cdb4ad5e45993d3949"
+      "bytes": 21302,
+      "sha256": "49dd955b05a901dedf890b1f15abf4bf03f68c7b25cca36496863564aa4023d4"
+    },
+    {
+      "path": "references/workflow/product-relationship-v1.md",
+      "bytes": 3216,
+      "sha256": "af749f22c1efdef915d329b0d1f490638ad09c7dd2cda9beb94d68c00abc88cd"
+    },
+    {
+      "path": "references/workflow/product-relationship-v2.md",
+      "bytes": 3442,
+      "sha256": "6020db5ac7dc2042dc5c6c5289d8900faf82e20c02d3690583eeed144bc7d096"
+    },
+    {
+      "path": "references/workflow/product-relationship.md",
+      "bytes": 4324,
+      "sha256": "c8bd8e6a205a031f0c4b69564adfae44cf0e11cfea94b1b44f5b6adacc40c0ed"
     },
     {
       "path": "references/workflow/review-state-tools.md",
@@ -659,8 +704,8 @@
     },
     {
       "path": "scripts/current_artwork_contract.py",
-      "bytes": 8021,
-      "sha256": "cb852e1b23a0ec983f9b22fe492ebbaad12551233768f5ce3e76013f5cc0472d"
+      "bytes": 8136,
+      "sha256": "c6497d9a8276d896a74a6f6cb360aa1a804d08c30837270ade823ba4de738364"
     },
     {
       "path": "scripts/edit_svg_text.py",
@@ -669,18 +714,18 @@
     },
     {
       "path": "scripts/execution_contract.py",
-      "bytes": 11465,
-      "sha256": "d7350b7ccd2e9d420ee00af87d5ddf8c02233c6db268c558fece8c23840c80f3"
+      "bytes": 20948,
+      "sha256": "490b4a62508e223132333f5933d6b31df2ebd5b9a5cdaeab4df38fde413dca44"
     },
     {
       "path": "scripts/export_current_artwork.py",
-      "bytes": 7135,
-      "sha256": "aa63ccddccec4a3fd024de9023bb0c586f9f2d6d31ad0b2d7a67065a4c618718"
+      "bytes": 7959,
+      "sha256": "c87635891293b37c9481ec6ab4fef439e8ed2b61f6d3e2005c51788779e1a5ba"
     },
     {
       "path": "scripts/guard_production.py",
-      "bytes": 4622,
-      "sha256": "db51ac5ac2b598462f050f955ce45c8f197c0c605fe981410e9fd78e2582388b"
+      "bytes": 5026,
+      "sha256": "a36e4399e88bacd73cd6b2f5f87de5e9ca2bb8bfdd8a46e4b1d4c185c21e7443"
     },
     {
       "path": "scripts/inspect_svg_source.py",
@@ -694,33 +739,38 @@
     },
     {
       "path": "scripts/prepare_handoff.py",
-      "bytes": 3389,
-      "sha256": "a703ed76dac51eaf264054f8989970cf29934c8ac155285900c66e768df23f32"
+      "bytes": 4132,
+      "sha256": "de1187d108a2cebdd16a4660cc9910ed4e40606b68c610d2c9f5b92aa695067e"
     },
     {
       "path": "scripts/prepare_visual_views.py",
-      "bytes": 6901,
-      "sha256": "ce491ee46a6e2f37bb3852fa912ab8936e3cd425bae9a7fb16bd9b21e8634d8b"
+      "bytes": 7847,
+      "sha256": "3333a1922f27f01b3342f7b6f47141de94395206b4d2f3ae70b8e08429ffefe4"
+    },
+    {
+      "path": "scripts/product_relationship_contract.py",
+      "bytes": 10203,
+      "sha256": "010bb6bbd8764f2e39e95cf2885615c4001e4ec5c81b4f8b84e289aeca80f789"
     },
     {
       "path": "scripts/quality_gate_contract.py",
-      "bytes": 12756,
-      "sha256": "609827849fe34777340bcb00bdec28cffcc6a0232efaf379afcaeba984a48c34"
+      "bytes": 13684,
+      "sha256": "d506ba44963690f12e3c5fc28f44ece1f1b46604cae81f7f81b935d2e612813e"
     },
     {
       "path": "scripts/query_case_library.py",
-      "bytes": 11369,
-      "sha256": "ee7606dbcf5eec02fac1f4b4e5a9b990d0d65a0ba392a4775f38c173d583dc1b"
+      "bytes": 11672,
+      "sha256": "23e2115f2739db743a4205db72b3434f11f75ca5c3604a19b4c5e2c699cdc2ed"
     },
     {
       "path": "scripts/review_contract.py",
-      "bytes": 28798,
-      "sha256": "d7b6d630b84a17910a2a311e30d34b0e01459d53b6a760457a44869c498960fb"
+      "bytes": 29606,
+      "sha256": "4e0ba4d774acaad7a2e8b025d042e270a030eb94455e223d58841a867786c015"
     },
     {
       "path": "scripts/review_state.py",
-      "bytes": 16053,
-      "sha256": "4f6ba63e2cd6e406fa139d9471daa5cf48a08ea92b797492ce36b205792edade"
+      "bytes": 16546,
+      "sha256": "90fd6ad444ac80ec0b545da475c087aaf41ea333c3bf4272481c9752787a011f"
     },
     {
       "path": "scripts/validate_ad_copy.py",
@@ -749,8 +799,8 @@
     },
     {
       "path": "scripts/validate_print_ad_run.py",
-      "bytes": 147398,
-      "sha256": "bdaa350535a49249bcc7ebb19cea324dcf9f5ad46816078006478dfa5801d887"
+      "bytes": 190381,
+      "sha256": "53c81d2b7100584e2820cbc1d273b35a4e520998aa3dbab905a30a120742ff4a"
     },
     {
       "path": "scripts/validate_run.py",
@@ -774,13 +824,13 @@
     },
     {
       "path": "scripts/visual_review_contract.py",
-      "bytes": 67929,
-      "sha256": "1e691f79fbeb2cf79345e715b5cb720c5db9e25965feac2fbfd13ed8af5da17c"
+      "bytes": 90355,
+      "sha256": "90953eda193c041acf0bd3e74d97baf27fcd09ca9c0b0b953e4c3f7b79dde653"
     },
     {
       "path": "SKILL.md",
-      "bytes": 34243,
-      "sha256": "3a086f73323ec213bfce19927d8b4be946ab690bed141b477094a5dda408af47"
+      "bytes": 37732,
+      "sha256": "f2b4eeb2c87baf634a8d8ed06921fb4ae8a63c04bf1ce88ea9d0401509b35e75"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -788,13 +838,14 @@
       "sha256": "613bf434dc250f39d0fee8ebeffc8f8db6b3a2c58c791e6d52bb0e968992fbc9"
     }
   ],
-  "base_version": "0.2.18",
+  "base_version": "0.2.19",
   "internal_verification": {
-    "path": "references/validation/v0.2.19-release-acceptance.json",
-    "bytes": 2808,
-    "sha256": "1edb74ed8e4aa9ccba1eb9874adfff7f5eeb7b6d2282a8a039331a09c8b1652d"
+    "path": "references/validation/v0.2.20-release-acceptance.json",
+    "bytes": 2227,
+    "sha256": "525e9cda95f2ad06a16173c43285de821d9c7b5adf861da778c8e6631644f5d2"
   },
-  "rollback_release": "0.2.18",
-  "milestone": "causal-advisory-choice-carryover-product-in-scene-secondary-copy",
-  "promoted_candidate_manifest_sha256": "bf5f8fd4a77c9a581b76589ab073dd2c65de61419ef473a3fc846c7c7baceb14"
+  "rollback_release": "0.2.19",
+  "version": "0.2.20-rc.5",
+  "milestone": "scene-labels-guard-enforcement-viewer-meaning-review-early-handback-layout",
+  "promoted_candidate_manifest_sha256": "52d89ad131b4c7e4b79935a3e7032f8f59af50cc54c392c7abd5944669c8db5f"
 }

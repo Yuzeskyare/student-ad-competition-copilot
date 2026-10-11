@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.20",
+  "status": "release-qualified",
+  "change_id": "scene-labels-guard-enforcement-viewer-meaning-review-early-handback-layout",
+  "promoted_candidate": "0.2.20-rc.5",
+  "candidate_manifest_sha256": "52d89ad131b4c7e4b79935a3e7032f8f59af50cc54c392c7abd5944669c8db5f",
+  "runtime_scripts_changed_since_candidate": false,
+  "changes": [
+    "In-scene products are generated with their labels; official pixels only correct wrong brand/product text or logo; pasted product images are refused for scene objects",
+    "Every complete print draft binds a receipt from the packaged guard; wrapped or patched checkers and instructions to continue cannot bypass a block",
+    "The causal note uses neutral effect sources without pass/fail wording and stays advisory",
+    "Product relationship is judged by whether the viewer can read what the product does in the picture; only verifiable failures hard-block, subjective judgments are capped hints",
+    "Two consecutive drafts with the same creative issue hand back to the user; handbacks show cumulative generations per direction",
+    "Independent review adds legibility and layout checks; mandatory brand assets get a placement plan"
+  ],
+  "candidate_tests": {
+    "suites": 55,
+    "executions": 3493,
+    "failures": 0
+  },
+  "legacy_regressions": "Six stale snapshot assertions updated with Edward approval on 2026-10-11; no historical contract changed",
+  "distribution_cleanup": {
+    "removed_process_records": [
+      "references/validation/v0.2.20-candidate.json"
+    ],
+    "edited_documents": [],
+    "rule_content_changed": false
+  },
+  "image_generation_calls": 0,
+  "project_submission_ready": false,
+  "limits": [
+    "No newly produced artwork under the 0.2.20 print contract; calibration was zero-generation against earlier works",
+    "Independent review can miss sticker-look products and dark-on-dark text; production rules and the user remain the backstop",
+    "Automatic checks are model judgments, not human approval"
+  ],
+  "promotion_basis": "Verified candidate runtime with documented distribution cleanup; publication only after explicit user authorization."
+}

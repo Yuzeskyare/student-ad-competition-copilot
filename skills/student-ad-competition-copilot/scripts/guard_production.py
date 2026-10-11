@@ -20,12 +20,17 @@ def main():
     from pathlib import Path
     root = Path(args.run_dir).resolve()
     try:
+        from execution_contract import guard_runtime_identity
+        identity = guard_runtime_identity()
         target = inside(root, args.output)
         manifest_path = inside(root, args.manifest)
         if target.exists():
             raise ValueError("Use a new receipt path; do not overwrite production history")
         manifest = load(manifest_path)
         receipt = preflight(root, manifest, args.request_id, for_dispatch=True)
+        if guard_runtime_identity() != identity:
+            raise ValueError('Checker identity changed during preflight')
+        receipt['guard_identity'] = identity
         receipt["executed"] = False
         receipt["production_state"] = "authorized"
         if target in {inside(root, p) for p in receipt['request']['output_files']}:
@@ -34,6 +39,8 @@ def main():
         if args.execute and (not isinstance(command, list) or not command or not all(isinstance(v, str) and v for v in command)):
             raise ValueError("--execute requires an explicit command array in the approved request")
         if args.execute:
+            if guard_runtime_identity() != identity:
+                raise ValueError('Checker identity changed before dispatch')
             # Re-read immediately before dispatch, so a change after the first
             # check cannot reuse a stale receipt.
             fresh = preflight(root, load(manifest_path), args.request_id, for_dispatch=True)

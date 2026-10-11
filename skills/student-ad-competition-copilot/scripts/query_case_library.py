@@ -92,6 +92,12 @@ def in_scope(row: dict, competition: str | None, category: str | None) -> bool:
     return True
 
 
+def applicable_for_reference(row, competition, category):
+    """Retrieval scope includes source history; qualified reference scope does not."""
+    return (in_scope(row, competition, category)
+            and (not row.get('applicable_competitions') or competition in row['applicable_competitions']))
+
+
 def runtime_view(kind: str, row: dict, full: bool) -> dict:
     if full or kind != "method":
         return row

@@ -43,6 +43,8 @@ def main():
     for name in ('run-dir','source','version','unit','renderer','execution-evidence','output-dir'):
         parser.add_argument('--'+name,required=True)
     parser.add_argument('--native',required=True,help='Existing raster render (PNG/JPEG), not SVG; --source identifies the editable source')
+    parser.add_argument('--manifest', help='Optional run manifest; verifies release only for explicitly declared current print complete artwork')
+    parser.add_argument('--complete-artwork', action='store_true', help='Declare a print-ad complete draft under gate 0.17+; requires --manifest and package release')
     parser.add_argument('--target-renderer-verified',action='store_true')
     group=parser.add_mutually_exclusive_group()
     group.add_argument('--crop',action='append',type=lambda s:[int(v) for v in s.split(',')],metavar='LEFT,TOP,RIGHT,BOTTOM',help='Pixel edges, NOT width/height; repeat for multiple details')
@@ -55,6 +57,14 @@ def main():
     root=Path(args.run_dir).resolve()
     source,native,evidence=[inside(root,v) for v in (args.source,args.native,args.execution_evidence)]
     if not all(p.is_file() for p in (source,native,evidence)):parser.error('Source, native render and renderer execution evidence must exist')
+    if args.complete_artwork and not args.manifest:parser.error('--complete-artwork requires --manifest')
+    if args.complete_artwork:
+        from execution_contract import verify_artwork_release, release_required
+        from review_contract import load
+        manifest=load(inside(root,args.manifest))
+        if not release_required(root,manifest):parser.error('--complete-artwork here requires print-ad gate 0.17+')
+        for p in (source,native):
+            verify_artwork_release(root,manifest,dict(path=p.relative_to(root).as_posix(),sha256=digest(p)))
     dest=inside(root,args.output_dir)
     if dest.exists():parser.error('Use a new output directory; do not overwrite reviewed views')
     try:
