@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.20",
+  "skill_version": "0.2.20.1",
   "status": "stable-release",
-  "built_at": "2026-10-11",
-  "stable_release": "0.2.20",
+  "built_at": "2026-10-12",
+  "stable_release": "0.2.20.1",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -159,8 +159,8 @@
     },
     {
       "path": "references/schemas/print-ad-run-manifest.schema.json",
-      "bytes": 849099,
-      "sha256": "70dfb03b9bf4e20fe5959a3e89d691db6239fdb9e65a1e718d98099dffc8a86a"
+      "bytes": 855980,
+      "sha256": "d1f67526056d27608fdfac1c121821193d3553328a0d194295a72ccecc76616d"
     },
     {
       "path": "references/schemas/production-request.schema.json",
@@ -244,8 +244,8 @@
     },
     {
       "path": "references/templates/print-ad-run-manifest.template.json",
-      "bytes": 6460,
-      "sha256": "2fb6d8d99641239d0d493ef0c18f1387f79ab582a472671012833b7aa1b9cd0c"
+      "bytes": 6529,
+      "sha256": "4da90d94061532f4f7406bfc45b8c8a71e7195e53b634fb45147dbb010ebc88b"
     },
     {
       "path": "references/templates/production-request.template.json",
@@ -294,8 +294,8 @@
     },
     {
       "path": "references/tracks/print-ad/playbook.md",
-      "bytes": 71417,
-      "sha256": "631fecf0277bd5bd464cb0165459d66f208b837cb5dfb5d668e76753a13f6ad1"
+      "bytes": 71639,
+      "sha256": "b9c8b95cb51c149e44197a34748f26c4c086852af571750aa5177b12612da3d5"
     },
     {
       "path": "references/tracks/print-ad/quality-gates-v0.1.0.json",
@@ -518,6 +518,11 @@
       "sha256": "525e9cda95f2ad06a16173c43285de821d9c7b5adf861da778c8e6631644f5d2"
     },
     {
+      "path": "references/validation/v0.2.20.1-release-acceptance.json",
+      "bytes": 1390,
+      "sha256": "e8e7c85027e33c541bba345491ec1610c842b3367eed15bfdfdc836502feac02"
+    },
+    {
       "path": "references/validation/v0.2.3-acceptance.json",
       "bytes": 2357,
       "sha256": "12659f68a64c24c05f4a53b8993332511994ff792c65a27477a2771d163aeeb1"
@@ -628,6 +633,11 @@
       "sha256": "a9878196c4e05f8c015bd61633d1dc6411fc39933f6c53e55aebce95b04f0566"
     },
     {
+      "path": "references/workflow/direction-provenance.md",
+      "bytes": 1673,
+      "sha256": "9951f3f7ca741785be1dcff5d5873dc4d31f8a6a6e0ff890c22220644238610a"
+    },
+    {
       "path": "references/workflow/execution-to-requested-scope.md",
       "bytes": 6378,
       "sha256": "fe65545329af5d143a1b1f2bf2aae529fe68f5aa1bb9f3899f6c58db55274a8f"
@@ -714,8 +724,8 @@
     },
     {
       "path": "scripts/execution_contract.py",
-      "bytes": 20948,
-      "sha256": "490b4a62508e223132333f5933d6b31df2ebd5b9a5cdaeab4df38fde413dca44"
+      "bytes": 21313,
+      "sha256": "5534ee133a6e72baeb874c2530dbdf8108538d4c3c928bef5f15347f80a3f2e7"
     },
     {
       "path": "scripts/export_current_artwork.py",
@@ -799,8 +809,8 @@
     },
     {
       "path": "scripts/validate_print_ad_run.py",
-      "bytes": 190381,
-      "sha256": "53c81d2b7100584e2820cbc1d273b35a4e520998aa3dbab905a30a120742ff4a"
+      "bytes": 199896,
+      "sha256": "2760ffed59ea9a32c3247a1bf703a09d614770d21a39dab1bd04d2194896c6b7"
     },
     {
       "path": "scripts/validate_run.py",
@@ -829,8 +839,8 @@
     },
     {
       "path": "SKILL.md",
-      "bytes": 37732,
-      "sha256": "f2b4eeb2c87baf634a8d8ed06921fb4ae8a63c04bf1ce88ea9d0401509b35e75"
+      "bytes": 37959,
+      "sha256": "a1db646ef5f602c3d48c05e86acc52d878c79017474880df038c51bb415d82eb"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -838,14 +848,14 @@
       "sha256": "613bf434dc250f39d0fee8ebeffc8f8db6b3a2c58c791e6d52bb0e968992fbc9"
     }
   ],
-  "base_version": "0.2.19",
+  "base_version": "0.2.20",
   "internal_verification": {
-    "path": "references/validation/v0.2.20-release-acceptance.json",
-    "bytes": 2227,
-    "sha256": "525e9cda95f2ad06a16173c43285de821d9c7b5adf861da778c8e6631644f5d2"
+    "path": "references/validation/v0.2.20.1-release-acceptance.json",
+    "bytes": 1390,
+    "sha256": "e8e7c85027e33c541bba345491ec1610c842b3367eed15bfdfdc836502feac02"
   },
-  "rollback_release": "0.2.19",
-  "version": "0.2.20-rc.5",
-  "milestone": "scene-labels-guard-enforcement-viewer-meaning-review-early-handback-layout",
-  "promoted_candidate_manifest_sha256": "52d89ad131b4c7e4b79935a3e7032f8f59af50cc54c392c7abd5944669c8db5f"
+  "rollback_release": "0.2.20",
+  "version": "0.2.20.1-rc.1",
+  "milestone": "hotfix-undefined-load-and-superseded-direction-review-provenance",
+  "promoted_candidate_manifest_sha256": "f5a69018965e957645203539cd8f1b63d96d5cd0730b083c3085f9f355ae02e6"
 }

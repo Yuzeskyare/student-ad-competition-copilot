@@ -671,6 +671,9 @@
     },
     "proposition_message": {
       "$ref": "#/$defs/bound_file"
+    },
+    "direction_provenance_contract": {
+      "const": "print-direction-provenance-v1"
     }
   },
   "allOf": [
@@ -1499,6 +1502,20 @@
           },
           "core_creative_review": {
             "$ref": "#/$defs/core_creative_review_product_v7"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "direction_provenance_contract"
+        ]
+      },
+      "then": {
+        "properties": {
+          "direction_contract": {
+            "const": "print-direction-v10"
           }
         }
       }
@@ -28048,6 +28065,235 @@
             "observation": {
               "type": "string",
               "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "direction_blind_review_provenance_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "recorded_at",
+        "rounds",
+        "origins",
+        "superseded_rounds"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recorded_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rounds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "sha256"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "additionalProperties": false
+          },
+          "maxItems": 2
+        },
+        "origins": {
+          "type": "array",
+          "minItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "direction_id",
+              "method_id",
+              "benefit_angle",
+              "starting_point",
+              "starting_point_detail"
+            ],
+            "properties": {
+              "direction_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "method_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "benefit_angle": {
+                "type": "string",
+                "minLength": 1
+              },
+              "starting_point": {
+                "enum": [
+                  "consumer-moment",
+                  "product-benefit",
+                  "counter-intuitive"
+                ]
+              },
+              "starting_point_detail": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "allOf": [
+            {
+              "contains": {
+                "properties": {
+                  "starting_point": {
+                    "const": "consumer-moment"
+                  }
+                },
+                "required": [
+                  "starting_point"
+                ]
+              }
+            },
+            {
+              "contains": {
+                "properties": {
+                  "starting_point": {
+                    "const": "product-benefit"
+                  }
+                },
+                "required": [
+                  "starting_point"
+                ]
+              }
+            },
+            {
+              "contains": {
+                "properties": {
+                  "starting_point": {
+                    "const": "counter-intuitive"
+                  }
+                },
+                "required": [
+                  "starting_point"
+                ]
+              }
+            }
+          ]
+        },
+        "superseded_rounds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "record",
+              "superseded_by",
+              "reason_code",
+              "reason",
+              "origins"
+            ],
+            "properties": {
+              "record": {
+                "type": "object",
+                "required": [
+                  "path",
+                  "sha256"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                }
+              },
+              "superseded_by": {
+                "type": "object",
+                "required": [
+                  "path",
+                  "sha256"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                }
+              },
+              "reason_code": {
+                "enum": [
+                  "retained-count",
+                  "ranking-coverage",
+                  "drawability-coverage"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              },
+              "origins": {
+                "type": "array",
+                "minItems": 6,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "direction_id",
+                    "method_id",
+                    "benefit_angle",
+                    "starting_point",
+                    "starting_point_detail"
+                  ],
+                  "properties": {
+                    "direction_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "method_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "benefit_angle": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "starting_point": {
+                      "enum": [
+                        "consumer-moment",
+                        "product-benefit",
+                        "counter-intuitive"
+                      ]
+                    },
+                    "starting_point_detail": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              }
             }
           }
         }

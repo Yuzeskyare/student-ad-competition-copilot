@@ -535,7 +535,7 @@ def validate_repeated_failure_handoff(root, manifest, *, for_dispatch=False):
         else:independent.append(dict(row,creative_failure_reasons=raw['creative_failure_reasons'],production_failure_reasons=raw.get('production_failure_reasons',[])))
     triggers=repeated_creative_failures(independent)
     if not triggers:return []
-    production=load(inside(root,manifest['artifacts']['production_manifest']))
+    production=load_json(inside(root,manifest['artifacts']['production_manifest']))
     control=load(inside(root,manifest['execution_control']))
     history=production.get('failure_handoff_history',[])
     current=production.get('exhausted_failure_handoff')
@@ -635,7 +635,7 @@ def validate_main_visual_provenance_v6(root, manifest):
         if manifest.get('core_review_contract') in {'print-core-product-v4','print-core-product-v5','print-core-product-v6','print-core-product-v7'}:
             from visual_review_contract import image_budget_message
             message=image_budget_message(root,manifest)
-            production=load(inside(root,manifest['artifacts']['production_manifest']))
+            production=load_json(inside(root,manifest['artifacts']['production_manifest']))
             h=production.get('exhausted_failure_handoff')
             if h and message not in bound_file(root,h['user_facing_copy']).read_text(encoding='utf-8'):raise ValueError('Failure handback must expose cumulative generation count')
         record = load_json(inside(root, manifest['artifacts']['production_manifest']))
@@ -1048,6 +1048,79 @@ def direction_case_projection(root, reference, prepared_at, competition, *, qual
             'empty_reason': data['empty_reason']}
 
 
+def validate_superseded_direction_rounds(root, bundle, rubric_version, recorded):
+    """Audit failed protocol returns without turning them into adoption authority."""
+    from review_contract import bound_file, timestamp
+    def nonempty(value): return isinstance(value, str) and bool(value.strip())
+    def require(value, reason):
+        if not value: raise ValueError(reason)
+    accepted = {str(bound_file(root, x)): load_json(bound_file(root, x)) for x in bundle['rounds']}
+    rows = bundle['superseded_rounds']
+    require(isinstance(rows, list), 'superseded_rounds must be an explicit list')
+    seen_records, seen_raw, seen_sessions, seen_invocations = set(accepted), set(), set(), set()
+    for r in accepted.values():
+        seen_raw.add(str(bound_file(root, r['raw_return'])))
+        if r['checker_session_id']: seen_sessions.add(r['checker_session_id'])
+        if r['invocation_id']: seen_invocations.add(r['invocation_id'])
+    observations = []
+    for row in rows:
+        require(isinstance(row, dict) and set(row) == {'record', 'superseded_by', 'reason_code', 'reason', 'origins'}, 'Superseded round needs bound record, successor, actual protocol reason and origins')
+        require(nonempty(row['reason']), 'State why this independent round was superseded')
+        path = bound_file(root, row['record']); successor = str(bound_file(root, row['superseded_by']))
+        require(str(path) not in seen_records and successor in accepted, 'Superseded record must be distinct and lead to an accepted independent round')
+        seen_records.add(str(path)); r = load_json(path)
+        fields = {'rubric_version', 'checker_context', 'author_session_id', 'checker_session_id', 'invocation_id', 'unavailable_metadata', 'input_prepared_at', 'started_at', 'completed_at', 'inputs', 'request', 'raw_return', 'result', 'case_references'}
+        require(set(r) == fields and r['rubric_version'] == rubric_version and r['checker_context'] == 'fresh-isolated', 'Superseded record must preserve the same fixed independent contract')
+        require(nonempty(r['author_session_id']) and isinstance(r['unavailable_metadata'], dict) and set(r['unavailable_metadata']) <= {'checker_session_id', 'invocation_id'}, 'Superseded independent metadata is required')
+        for key, seen in [('checker_session_id', seen_sessions), ('invocation_id', seen_invocations)]:
+            require(nonempty(r[key]) or (r[key] is None and nonempty(r['unavailable_metadata'].get(key))), 'Missing independent metadata needs an explanation')
+            if r[key] is not None:
+                require(r[key] not in seen and (key != 'checker_session_id' or r[key] != r['author_session_id']), 'Superseded round must use its own independent invocation')
+                seen.add(r[key])
+        prepared, started, completed = (timestamp(r[k]) for k in ('input_prepared_at', 'started_at', 'completed_at'))
+        require(prepared <= started <= completed < timestamp(accepted[successor]['started_at']) <= recorded, 'Superseded call must precede its accepted replacement and bundle')
+        inputs = r['inputs']
+        require(isinstance(inputs, list) and len(inputs) == 3 and all(set(x) == {'role', 'file'} for x in inputs) and [x['role'] for x in inputs] == ['direction-sentences', 'reference-mechanisms', 'feedback-counterexamples'], 'Superseded inputs must preserve anonymous fixed roles')
+        content, references, counterexamples = (bound_file(root, x['file']).read_text(encoding='utf-8') for x in inputs)
+        candidates = json.loads(content)
+        require(isinstance(candidates, list) and len(candidates) >= 6, 'Superseded round still needs actually submitted candidates')
+        for c in candidates: validate_direction_sentence_v5(c)
+        ids = {c['direction_id'] for c in candidates}
+        require(len(ids) == len(candidates), 'Superseded input IDs must be unique')
+        canonical = Path(__file__).resolve().parents[1] / 'references/feedback/direction-counterexamples.json'
+        require(bound_file(root, inputs[2]['file']).read_bytes() == canonical.read_bytes(), 'Superseded counterexamples must match the fixed library')
+        # A failed structural return does not relax input qualification.
+        competition = bundle.get('_competition')
+        projection = direction_case_projection(root, r['case_references'], prepared, competition, qualified_scope=True)
+        require(json.loads(references) == projection, 'Superseded case input must match its qualified record')
+        request_fn = globals().get('direction_request_' + rubric_version.rsplit('-', 1)[1])
+        require(callable(request_fn) and bound_file(root, r['request']).read_text(encoding='utf-8') == request_fn(content, references, counterexamples), 'Superseded request must be the unmodified fixed rubric and inputs')
+        raw_path = bound_file(root, r['raw_return']); raw = load_json(raw_path)
+        require(str(raw_path) not in seen_raw, 'Original independent return cannot be registered twice')
+        seen_raw.add(str(raw_path))
+        require(raw == r['result'] and set(raw) == {'near_duplicates', 'ranking', 'drawability', 'all_weak', 'trope_screen', 'reference_assessment', 'causal_check', 'product_meaning_hints'} and type(raw['all_weak']) is bool, 'Superseded result must preserve all original fields exactly')
+        duplicates = raw['near_duplicates']; dropped, kept = set(), set()
+        require(isinstance(duplicates, list), 'Superseded duplicates must be original observations')
+        for d in duplicates:
+            require(isinstance(d, dict) and set(d) == {'discarded_direction_id', 'kept_direction_id', 'reason'} and nonempty(d['reason']), 'Superseded deduplication needs the actual independent reason')
+            drop, keep = d['discarded_direction_id'], d['kept_direction_id']
+            require(drop in ids and keep in ids and drop != keep and drop not in dropped, 'Invalid superseded duplicate observation')
+            dropped.add(drop); kept.add(keep)
+        require(not dropped.intersection(kept), 'Superseded duplicate representatives must remain distinct')
+        retained = ids - dropped
+        rank, draw = raw['ranking'], raw['drawability']
+        require(isinstance(rank, list) and isinstance(draw, list), 'Superseded ranking and drawability must be preserved lists')
+        require(all(isinstance(x, dict) and set(x) == {'direction_id', 'reason'} and x['direction_id'] in ids and nonempty(x['reason']) for x in rank), 'Invalid superseded ranking rows')
+        require(all(isinstance(x, dict) and set(x) == {'direction_id', 'drawable', 'reason'} and x['direction_id'] in ids and type(x['drawable']) is bool and nonempty(x['reason']) for x in draw), 'Invalid superseded drawability rows')
+        failures = {'retained-count': len(retained) < 6, 'ranking-coverage': len(rank) != len(retained) or {x['direction_id'] for x in rank} != retained, 'drawability-coverage': len(draw) != len(retained) or {x['direction_id'] for x in draw} != retained}
+        require(row['reason_code'] in failures and failures[row['reason_code']], 'Claimed supersession reason must be an observable failure in the original return')
+        origins = row['origins']; origin_fields = {'direction_id', 'method_id', 'benefit_angle', 'starting_point', 'starting_point_detail'}
+        require(isinstance(origins, list) and len(origins) == len(ids) and {x['direction_id'] for x in origins} == ids and all(set(x) == origin_fields and (x['method_id'] is None or nonempty(x['method_id'])) and nonempty(x['benefit_angle']) and x['starting_point'] in {'consumer-moment', 'product-benefit', 'counter-intuitive'} and nonempty(x['starting_point_detail']) for x in origins), 'Superseded candidates need their actual primary origins')
+        by_id = {x['direction_id']: x for x in origins}
+        observations.extend({'direction_id': d['discarded_direction_id'], 'method_id': by_id[d['discarded_direction_id']]['method_id'], 'raw_path': raw_path, 'duplicate': d} for d in duplicates)
+    return observations
+
+
 def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
     """Check recorded isolation, ordering and choices, without certifying judgment."""
     def require(value, reason):
@@ -1085,7 +1158,10 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
         adopted = time(adoption['adopted_at'])
         require(adoption['direction_id'] == manifest['selected_direction'], 'Blind review must bind selected direction')
         bundle = load_json(ref(adoption['blind_review']))
-        require(set(bundle) == {'run_id', 'recorded_at', 'rounds', 'origins'}
+        provenance = manifest.get('direction_provenance_contract') == 'print-direction-provenance-v1'
+        require(manifest.get('direction_provenance_contract') in {None, 'print-direction-provenance-v1'}, 'Unknown direction provenance contract')
+        require(not provenance or v10, 'Direction provenance requires the current direction rubric')
+        require(set(bundle) == ({'run_id', 'recorded_at', 'rounds', 'origins', 'superseded_rounds'} if provenance else {'run_id', 'recorded_at', 'rounds', 'origins'})
                 and bundle['run_id'] == manifest['run_id'], 'Blind review run identity/fields differ')
         recorded = time(bundle['recorded_at'])
         rounds = bundle['rounds']
@@ -1310,13 +1386,18 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
         else:
             require(adoption['direction_id'] == winner, 'Adopted direction must be ranked first')
         require((v7 and user_choice_v6) or next(x for x in raw['drawability'] if x['direction_id'] == winner)['drawable'], 'Ranked-first direction must be drawable in one image')
+        historical_observations = validate_superseded_direction_rounds(root, dict(bundle, _competition=manifest['competition']), rubric_version, recorded) if provenance else []
         retrieval = load_json(ref(adoption['method_retrieval']))
         require(time(retrieval['recorded_at']) <= recorded, 'Method decisions must be saved before blind bundle record')
         for decision in retrieval['decisions']:
             method = decision['method_id']
             candidates = decision.get('candidate_direction_ids')
+            historical = [x for x in historical_observations if x['method_id'] == method and decision.get('rejection_evidence') and x['raw_path'] == ref(decision['rejection_evidence'])]
+            if historical:
+                require(decision['decision'] == 'rejected' and decision.get('rejection_basis') == 'observed-failure', 'Superseded observations only document actual rejected candidates; they cannot authorize adoption or official constraints')
+                require(isinstance(candidates, list) and bool(candidates) and all(any(x['direction_id'] == i and x['duplicate']['reason'] in decision.get('reason', '') for x in historical) for i in candidates), 'Superseded rejection must quote the original independent deduplication reason')
             require(isinstance(candidates, list) and len(candidates) == len(set(candidates))
-                    and all(i in all_reviewed and origin_by_id[i]['method_id'] == method for i in candidates),
+                    and all((i in all_reviewed and origin_by_id[i]['method_id'] == method) or any(x['direction_id'] == i for x in historical) for i in candidates),
                     'Methods must first become submitted candidate directions, not preventive rejections')
             if decision['decision'] == 'rejected':
                 basis = decision.get('rejection_basis')

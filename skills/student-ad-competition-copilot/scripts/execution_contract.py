@@ -304,4 +304,6 @@ def validate_new_run_gate(root, manifest, contract, rows):
         require(scene_current or latest or previous,'New print run must use the contract active at its bound original event; no downgrade')
     elif not historical:
         require(scene_current or latest or previous or (gate=='print-ad.0.18.0' and manifest.get('direction_contract')=='print-direction-v8' and manifest.get('core_review_contract')=='print-core-product-v4'),'New print run must use the contract active at its bound original event; no downgrade')
+    provenance_historical = bool(origins) and min(origins) < timestamp('2026-10-12T09:18:51.043861+00:00')
+    require(provenance_historical or manifest.get('direction_provenance_contract') == 'print-direction-provenance-v1', 'New print run must use print-direction-provenance-v1; historical continuation needs bound original human evidence before the cutover.')
     return dict(historical_continuation=historical, gate=gate)

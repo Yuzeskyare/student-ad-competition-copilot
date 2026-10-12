@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.20.1",
+  "status": "release-qualified",
+  "change_id": "hotfix-undefined-load-and-superseded-direction-review-provenance",
+  "promoted_candidate": "0.2.20.1-rc.1",
+  "candidate_manifest_sha256": "f5a69018965e957645203539cd8f1b63d96d5cd0730b083c3085f9f355ae02e6",
+  "runtime_scripts_changed_since_candidate": false,
+  "changes": [
+    "Unified print check no longer crashes on an undefined function in the main-visual provenance branch",
+    "Production guard can record directions removed in a superseded independent direction review, bound to the original returns"
+  ],
+  "candidate_tests": {
+    "suites": 56,
+    "failures": 0
+  },
+  "legacy_regressions": "No rule or historical contract changed beyond the two fixes",
+  "distribution_cleanup": {
+    "removed_process_records": [
+      "references/validation/v0.2.20.1-candidate.json"
+    ],
+    "edited_documents": [],
+    "rule_content_changed": false
+  },
+  "image_generation_calls": 0,
+  "project_submission_ready": false,
+  "limits": [
+    "Fixes verified by tests and zero-generation replays; no new artwork produced under 0.2.20.1",
+    "Automatic checks are model judgments, not human approval"
+  ],
+  "promotion_basis": "Verified candidate runtime with documented distribution cleanup; publication only after explicit user authorization."
+}

@@ -525,3 +525,5 @@ direction_adoption.blind_review绑定本运行的方向记录（$defs.direction_
 新合同的创作指导与独立检查均先问观众能得到什么产品/品牌意义，按[产品关系与审稿分级](../../workflow/product-relationship.md)统一判断；方向盲评仅新增product_meaning_hints，选择清单保存全部product_meaning_advisories，向用户最多展示2条偏弱提示，原排序、可画、all_weak、采用、承接和守卫不变。先盲读后对照的顺序、真实像素、独立身份和声明锁仍须核验。
 
 第7问按[统一审稿定义](../../workflow/product-relationship.md)区分实际像素冲突与间接疑点；比较返回scene_evidence，间接疑点保留贴片提示，真实穿帮仍硬拦。
+
+新运行同时采用 `print-direction-provenance-v1`，被替代独立检查的真实候选与去重记录按[来源登记合同](../../workflow/direction-provenance.md)保留；历史合同按原解释继续验证。

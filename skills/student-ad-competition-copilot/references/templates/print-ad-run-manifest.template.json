@@ -161,5 +161,6 @@
   },
   "direction_contract": "print-direction-v7",
   "product_contract": "print-product-v2",
-  "secondary_copy_contract": "print-secondary-copy-v2"
+  "secondary_copy_contract": "print-secondary-copy-v2",
+  "direction_provenance_contract": "print-direction-provenance-v1"
 }
