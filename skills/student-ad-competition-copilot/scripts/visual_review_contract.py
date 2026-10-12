@@ -327,8 +327,8 @@ def inspect_proportional(root, unit, views, pending=None):
 
 def validate_pack_identity(pack, manifest):
     require(isinstance(pack, dict), 'Visual evidence must be an object')
-    require(pack.get('schema_version') in ('1.0.0', '2.0.0', '2.1.0', '2.2.0','2.3.0','2.4.0','2.5.0'),
-            'Visual evidence identity/scope mismatch: schema_version unsupported or missing; expected 1.0.0/2.0.0/2.1.0')
+    require(pack.get('schema_version') in ('1.0.0', '2.0.0', '2.1.0', '2.2.0','2.3.0','2.4.0','2.5.0','2.6.0'),
+            'Visual evidence identity/scope mismatch: schema_version unsupported or missing; expected 1.0.0/2.0.0/2.1.0/2.2.0/2.3.0/2.4.0/2.5.0/2.6.0')
     for key in ('run_id', 'run_scope'):
         require(pack.get(key) == manifest[key],
                 f'Visual evidence {key} mismatch: expected {manifest[key]!r}, actual {pack.get(key)!r}')

@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.20.1",
+  "skill_version": "0.2.20.2",
   "status": "stable-release",
   "built_at": "2026-10-12",
-  "stable_release": "0.2.20.1",
+  "stable_release": "0.2.20.2",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -403,6 +403,11 @@
       "sha256": "c5bf6d9c55f9fae9332fb2453cf1d7e8b79fc825e487ab80cd3a44fc80ef5d4b"
     },
     {
+      "path": "references/validation/print-product-pipeline-fixture.json",
+      "bytes": 18998,
+      "sha256": "906ca395b297435c950e82a9de7ab138ec853dff9d0a69550d35fe55b3d6f514"
+    },
+    {
       "path": "references/validation/typography-candidate-acceptance.json",
       "bytes": 450,
       "sha256": "c7ff574d03cf034afe03b0bdab93907c0b3ef480e69c6adc4aad33d87490d46f"
@@ -521,6 +526,11 @@
       "path": "references/validation/v0.2.20.1-release-acceptance.json",
       "bytes": 1390,
       "sha256": "e8e7c85027e33c541bba345491ec1610c842b3367eed15bfdfdc836502feac02"
+    },
+    {
+      "path": "references/validation/v0.2.20.2-release-acceptance.json",
+      "bytes": 1566,
+      "sha256": "95294f3defa4816bd7d0a818df7117983fb84a087ed7dd56bf2903d57643ab12"
     },
     {
       "path": "references/validation/v0.2.3-acceptance.json",
@@ -783,6 +793,11 @@
       "sha256": "90fd6ad444ac80ec0b545da475c087aaf41ea333c3bf4272481c9752787a011f"
     },
     {
+      "path": "scripts/test_print_product_pipeline.py",
+      "bytes": 26623,
+      "sha256": "1dcde5bc55bbbdf777b51a5b353f55c1e4f86187be63c30cf9046cfd9bceb8fa"
+    },
+    {
       "path": "scripts/validate_ad_copy.py",
       "bytes": 20201,
       "sha256": "53078d0f8115b08a7dab21712393a8c2c52c9810c414da627f4ba5ac7bc35a77"
@@ -809,8 +824,8 @@
     },
     {
       "path": "scripts/validate_print_ad_run.py",
-      "bytes": 199896,
-      "sha256": "2760ffed59ea9a32c3247a1bf703a09d614770d21a39dab1bd04d2194896c6b7"
+      "bytes": 201162,
+      "sha256": "1e1cd453bc76f71116573b862728ab51798767ee0c293ef304422224af8a762d"
     },
     {
       "path": "scripts/validate_run.py",
@@ -834,8 +849,8 @@
     },
     {
       "path": "scripts/visual_review_contract.py",
-      "bytes": 90355,
-      "sha256": "90953eda193c041acf0bd3e74d97baf27fcd09ca9c0b0b953e4c3f7b79dde653"
+      "bytes": 90393,
+      "sha256": "fb8a8107e9b7269a8a3b22e7b04ff871bb978692c8bf1d9bbac858ad5a9dd8d9"
     },
     {
       "path": "SKILL.md",
@@ -848,14 +863,14 @@
       "sha256": "613bf434dc250f39d0fee8ebeffc8f8db6b3a2c58c791e6d52bb0e968992fbc9"
     }
   ],
-  "base_version": "0.2.20",
+  "base_version": "0.2.20.1",
   "internal_verification": {
-    "path": "references/validation/v0.2.20.1-release-acceptance.json",
-    "bytes": 1390,
-    "sha256": "e8e7c85027e33c541bba345491ec1610c842b3367eed15bfdfdc836502feac02"
+    "path": "references/validation/v0.2.20.2-release-acceptance.json",
+    "bytes": 1566,
+    "sha256": "95294f3defa4816bd7d0a818df7117983fb84a087ed7dd56bf2903d57643ab12"
   },
-  "rollback_release": "0.2.20",
-  "version": "0.2.20.1-rc.1",
-  "milestone": "hotfix-undefined-load-and-superseded-direction-review-provenance",
-  "promoted_candidate_manifest_sha256": "f5a69018965e957645203539cd8f1b63d96d5cd0730b083c3085f9f355ae02e6"
+  "rollback_release": "0.2.20.1",
+  "version": "0.2.20.2-rc.1",
+  "milestone": "hotfix-visual-schema-2.6.0-pack-identity-and-full-chain-regression",
+  "promoted_candidate_manifest_sha256": "d7e1e4ac77438a1b9249e94f7aba7a1050422420d5b99da7ceb05f2363ee1b1b"
 }

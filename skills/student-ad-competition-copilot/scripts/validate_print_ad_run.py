@@ -998,18 +998,21 @@ def direction_case_projection(root, reference, prepared_at, competition, *, qual
     version = load_json(skill / 'version.json')
     pack = (skill / version['knowledge_manifest']['path']).parent.resolve()
     execution, query = raw['execution'], raw['query']
-    require(Path(execution['pack']).resolve() == pack
-            and execution['pack_manifest_sha256'] == hashlib.sha256((pack / 'manifest.json').read_bytes()).hexdigest(),
+    # A historical query may predate a Skill move or upgrade. Its pack identity
+    # is content-bound; absolute execution paths are retained as provenance.
+    active_hash = hashlib.sha256((pack / 'manifest.json').read_bytes()).hexdigest()
+    require(execution['pack_manifest_sha256'] == active_hash == version['knowledge_manifest']['sha256'],
             'Case references must use the active pack without expansion')
     require(timestamp(execution['started_at']) <= timestamp(execution['completed_at']) <= prepared_at,
             'Case query must finish before blind input preparation')
     command = execution['command']
     require(isinstance(command, list) and len(command) > 2
-            and Path(command[1]).resolve() == (skill / 'scripts/query_case_library.py').resolve()
+            and Path(command[1]).name == 'query_case_library.py'
             and '--kind' in command and command[command.index('--kind') + 1] == 'case'
             and '--limit' in command and command[command.index('--limit') + 1] == '100'
             and query['competition'] == 'academy-award' and query['category'] == 'print-ad'
-            and query['terms'] == [] and query['reference_role'] is None,
+            and query['terms'] == [] and query['reference_role'] is None
+            and query.get('original', '') == '' and query.get('explicit_terms', []) == [],
             'Retrieve the complete eligible Academy print track with existing query_case_library.py (limit 100)')
     eligibility = load_json(pack / 'eligibility.json')
     require(all(raw['eligibility'][key] == eligibility[key] for key in ('state_fingerprint', 'input_fingerprint')),
@@ -1618,17 +1621,30 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
                     'Fallback terms must match the actual command')
             require(index != 0 or not fallback, 'Keep the original query before fallback')
             skill_root = Path(__file__).resolve().parents[1]
-            active_pack = (skill_root / load_json(skill_root / 'version.json')['knowledge_manifest']['path']).parent
+            version = load_json(skill_root / 'version.json')
+            active_pack = (skill_root / version['knowledge_manifest']['path']).parent
             import hashlib
-            require(Path(execution['pack']).resolve() == active_pack.resolve()
-                    and execution['pack_manifest_sha256'] == hashlib.sha256((active_pack / 'manifest.json').read_bytes()).hexdigest(),
+            require(execution['pack_manifest_sha256'] == version['knowledge_manifest']['sha256']
+                    == hashlib.sha256((active_pack / 'manifest.json').read_bytes()).hexdigest(),
                     'Record the actual active pack; do not switch or expand it')
+            eligibility = load_json(active_pack / 'eligibility.json')
+            require(all(result['eligibility'][key] == eligibility[key] for key in ('state_fingerprint', 'input_fingerprint')),
+                    'Method qualification fingerprint differs')
             require(query['competition'] == manifest['competition'] and query['category'] == 'print-ad', 'Raw method output scope differs from the adopted direction')
             rows = result['results']
             require(isinstance(rows, list) and result['returned'] == len(rows), 'Keep the complete returned method list')
             ids = [r['record']['method_id'] for r in rows if r.get('kind') == 'method']
             require(len(ids) == len(rows) and len(ids) == len(set(ids)) and attempt['returned_method_ids'] == ids,
                     'Returned method IDs must match raw output, including empty results')
+            from knowledge_pack_contract import jsonl_rows
+            from query_case_library import runtime_view, eligible_for_runtime, in_scope
+            canonical = {r['method_id']: r for r in jsonl_rows(active_pack / 'method-cards.jsonl')}
+            require(all(ident in canonical
+                        and eligible_for_runtime('method', canonical[ident], eligibility)
+                        and in_scope(canonical[ident], manifest['competition'], 'print-ad')
+                        and row['record'] == runtime_view('method', canonical[ident], '--full' in command)
+                        for ident, row in zip(ids, rows)),
+                    'Returned methods must preserve qualified active-pack cards; do not switch or expand them')
             require(bool(ids) or text(result.get('empty_reason')), 'Empty results must be preserved honestly')
             all_ids.update(ids)
         decisions = retrieval['decisions']

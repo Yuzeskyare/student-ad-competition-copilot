@@ -1,0 +1,531 @@
+{
+  "boundary": "All direction/artwork judgments and reviewer identities are SYNTHETIC. Tests contract behavior only; no model calls or real approval.",
+  "sentences": [
+    {
+      "direction_id": "PA-01",
+      "statement": "巨大的瓶子穿过织物环；创意依据（人的时刻或洞察）：SYNTHETIC prolonged hand use needs a pause。",
+      "basis_type": "consumer-moment",
+      "basis": "SYNTHETIC prolonged hand use needs a pause"
+    },
+    {
+      "direction_id": "D2",
+      "statement": "瓶子托起一滴水；创意依据（人的时刻或洞察）：SYNTHETIC prolonged hand use needs a pause。",
+      "basis_type": "consumer-moment",
+      "basis": "SYNTHETIC prolonged hand use needs a pause"
+    },
+    {
+      "direction_id": "D3",
+      "statement": "瓶子织出衣服；创意依据（人的时刻或洞察）：SYNTHETIC prolonged hand use needs a pause。",
+      "basis_type": "consumer-moment",
+      "basis": "SYNTHETIC prolonged hand use needs a pause"
+    },
+    {
+      "direction_id": "X0",
+      "statement": "产品轮廓围出静音空隙；创意依据（人的时刻或洞察）：SYNTHETIC prolonged hand use needs a pause。",
+      "basis_type": "consumer-moment",
+      "basis": "SYNTHETIC prolonged hand use needs a pause"
+    },
+    {
+      "direction_id": "X1",
+      "statement": "水纹从缺口织回袖边；创意依据（人的时刻或洞察）：SYNTHETIC prolonged hand use needs a pause。",
+      "basis_type": "consumer-moment",
+      "basis": "SYNTHETIC prolonged hand use needs a pause"
+    },
+    {
+      "direction_id": "X2",
+      "statement": "一条明暗边界分开两种时间；创意依据（人的时刻或洞察）：SYNTHETIC prolonged hand use needs a pause。",
+      "basis_type": "consumer-moment",
+      "basis": "SYNTHETIC prolonged hand use needs a pause"
+    }
+  ],
+  "origins": [
+    {
+      "direction_id": "PA-01",
+      "method_id": "mc-attribute-bounded-exaggeration",
+      "benefit_angle": "SYNTHETIC-0",
+      "starting_point": "consumer-moment",
+      "starting_point_detail": "SYNTHETIC concrete scene/fact/reversal 0"
+    },
+    {
+      "direction_id": "D2",
+      "method_id": "mc-attribute-bounded-exaggeration",
+      "benefit_angle": "SYNTHETIC-1",
+      "starting_point": "product-benefit",
+      "starting_point_detail": "SYNTHETIC concrete scene/fact/reversal 1"
+    },
+    {
+      "direction_id": "D3",
+      "method_id": "mc-attribute-bounded-exaggeration",
+      "benefit_angle": "SYNTHETIC-2",
+      "starting_point": "counter-intuitive",
+      "starting_point_detail": "SYNTHETIC concrete scene/fact/reversal 2"
+    },
+    {
+      "direction_id": "X0",
+      "method_id": "mc-attribute-bounded-exaggeration",
+      "benefit_angle": "SYNTHETIC-extra-X0",
+      "starting_point": "consumer-moment",
+      "starting_point_detail": "SYNTHETIC concrete scene/fact/reversal 3"
+    },
+    {
+      "direction_id": "X1",
+      "method_id": "mc-attribute-bounded-exaggeration",
+      "benefit_angle": "SYNTHETIC-extra-X1",
+      "starting_point": "product-benefit",
+      "starting_point_detail": "SYNTHETIC concrete scene/fact/reversal 4"
+    },
+    {
+      "direction_id": "X2",
+      "method_id": "mc-attribute-bounded-exaggeration",
+      "benefit_angle": "SYNTHETIC-extra-X2",
+      "starting_point": "counter-intuitive",
+      "starting_point_detail": "SYNTHETIC concrete scene/fact/reversal 5"
+    }
+  ],
+  "decisions": [
+    {
+      "method_id": "mc-attribute-bounded-exaggeration",
+      "decision": "adopted",
+      "reason": "SYNTHETIC: applicable to relation",
+      "relation_or_input_change": "SYNTHETIC: connect official bottle to weaving loop",
+      "candidate_direction_ids": [
+        "PA-01",
+        "D2",
+        "D3",
+        "X0",
+        "X1",
+        "X2"
+      ]
+    },
+    {
+      "method_id": "mc-brand-keyword-audience-pain",
+      "decision": "rejected",
+      "reason": "SYNTHETIC: conflicts with action",
+      "relation_or_input_change": "SYNTHETIC: exclude background-only production input",
+      "candidate_direction_ids": [],
+      "rejection_basis": "official-hard-constraint",
+      "rejection_evidence": {
+        "path": "constraint.txt",
+        "sha256": "d698cfb07a70d1072397c9923a7002b094068c9decd9020a3de5429e4c09f184"
+      }
+    },
+    {
+      "method_id": "mc-controlled-contrast-axis",
+      "decision": "rejected",
+      "reason": "SYNTHETIC: conflicts with action",
+      "relation_or_input_change": "SYNTHETIC: exclude background-only production input",
+      "candidate_direction_ids": [],
+      "rejection_basis": "official-hard-constraint",
+      "rejection_evidence": {
+        "path": "constraint.txt",
+        "sha256": "d698cfb07a70d1072397c9923a7002b094068c9decd9020a3de5429e4c09f184"
+      }
+    },
+    {
+      "method_id": "mc-dimension-context-reconstruction",
+      "decision": "rejected",
+      "reason": "SYNTHETIC: conflicts with action",
+      "relation_or_input_change": "SYNTHETIC: exclude background-only production input",
+      "candidate_direction_ids": [],
+      "rejection_basis": "official-hard-constraint",
+      "rejection_evidence": {
+        "path": "constraint.txt",
+        "sha256": "d698cfb07a70d1072397c9923a7002b094068c9decd9020a3de5429e4c09f184"
+      }
+    },
+    {
+      "method_id": "mc-form-behavior-personification",
+      "decision": "rejected",
+      "reason": "SYNTHETIC: conflicts with action",
+      "relation_or_input_change": "SYNTHETIC: exclude background-only production input",
+      "candidate_direction_ids": [],
+      "rejection_basis": "official-hard-constraint",
+      "rejection_evidence": {
+        "path": "constraint.txt",
+        "sha256": "d698cfb07a70d1072397c9923a7002b094068c9decd9020a3de5429e4c09f184"
+      }
+    },
+    {
+      "method_id": "mc-heterogeneous-isomorphism",
+      "decision": "rejected",
+      "reason": "SYNTHETIC: conflicts with action",
+      "relation_or_input_change": "SYNTHETIC: exclude background-only production input",
+      "candidate_direction_ids": [],
+      "rejection_basis": "official-hard-constraint",
+      "rejection_evidence": {
+        "path": "constraint.txt",
+        "sha256": "d698cfb07a70d1072397c9923a7002b094068c9decd9020a3de5429e4c09f184"
+      }
+    },
+    {
+      "method_id": "mc-product-attribute-emotion-translation",
+      "decision": "rejected",
+      "reason": "SYNTHETIC: conflicts with action",
+      "relation_or_input_change": "SYNTHETIC: exclude background-only production input",
+      "candidate_direction_ids": [],
+      "rejection_basis": "official-hard-constraint",
+      "rejection_evidence": {
+        "path": "constraint.txt",
+        "sha256": "d698cfb07a70d1072397c9923a7002b094068c9decd9020a3de5429e4c09f184"
+      }
+    },
+    {
+      "method_id": "mc-semantic-association-chain",
+      "decision": "rejected",
+      "reason": "SYNTHETIC: conflicts with action",
+      "relation_or_input_change": "SYNTHETIC: exclude background-only production input",
+      "candidate_direction_ids": [],
+      "rejection_basis": "official-hard-constraint",
+      "rejection_evidence": {
+        "path": "constraint.txt",
+        "sha256": "d698cfb07a70d1072397c9923a7002b094068c9decd9020a3de5429e4c09f184"
+      }
+    }
+  ],
+  "direction_result": {
+    "near_duplicates": [],
+    "ranking": [
+      {
+        "direction_id": "PA-01",
+        "reason": "SYNTHETIC ranking"
+      },
+      {
+        "direction_id": "D2",
+        "reason": "SYNTHETIC ranking"
+      },
+      {
+        "direction_id": "D3",
+        "reason": "SYNTHETIC ranking"
+      },
+      {
+        "direction_id": "X0",
+        "reason": "SYNTHETIC distinct mechanism ranking"
+      },
+      {
+        "direction_id": "X1",
+        "reason": "SYNTHETIC distinct mechanism ranking"
+      },
+      {
+        "direction_id": "X2",
+        "reason": "SYNTHETIC distinct mechanism ranking"
+      }
+    ],
+    "drawability": [
+      {
+        "direction_id": "PA-01",
+        "drawable": true,
+        "reason": "SYNTHETIC drawable"
+      },
+      {
+        "direction_id": "D2",
+        "drawable": true,
+        "reason": "SYNTHETIC drawable"
+      },
+      {
+        "direction_id": "D3",
+        "drawable": true,
+        "reason": "SYNTHETIC drawable"
+      },
+      {
+        "direction_id": "X0",
+        "drawable": true,
+        "reason": "SYNTHETIC drawable"
+      },
+      {
+        "direction_id": "X1",
+        "drawable": true,
+        "reason": "SYNTHETIC drawable"
+      },
+      {
+        "direction_id": "X2",
+        "drawable": true,
+        "reason": "SYNTHETIC drawable"
+      }
+    ],
+    "all_weak": false,
+    "trope_screen": [
+      {
+        "direction_id": "PA-01",
+        "is_trope": false,
+        "reason": "SYNTHETIC independent classification",
+        "new_twist": null,
+        "counterexample_matches": [],
+        "twist_basis": null,
+        "object_relation_change": null
+      },
+      {
+        "direction_id": "D2",
+        "is_trope": false,
+        "reason": "SYNTHETIC independent classification",
+        "new_twist": null,
+        "counterexample_matches": [],
+        "twist_basis": null,
+        "object_relation_change": null
+      },
+      {
+        "direction_id": "D3",
+        "is_trope": false,
+        "reason": "SYNTHETIC independent classification",
+        "new_twist": null,
+        "counterexample_matches": [],
+        "twist_basis": null,
+        "object_relation_change": null
+      },
+      {
+        "direction_id": "X0",
+        "is_trope": false,
+        "reason": "SYNTHETIC independent classification",
+        "new_twist": null,
+        "counterexample_matches": [],
+        "twist_basis": null,
+        "object_relation_change": null
+      },
+      {
+        "direction_id": "X1",
+        "is_trope": false,
+        "reason": "SYNTHETIC independent classification",
+        "new_twist": null,
+        "counterexample_matches": [],
+        "twist_basis": null,
+        "object_relation_change": null
+      },
+      {
+        "direction_id": "X2",
+        "is_trope": false,
+        "reason": "SYNTHETIC independent classification",
+        "new_twist": null,
+        "counterexample_matches": [],
+        "twist_basis": null,
+        "object_relation_change": null
+      }
+    ],
+    "reference_assessment": [
+      {
+        "direction_id": "PA-01",
+        "reaches_reference": true,
+        "reason": "SYNTHETIC independent strength"
+      },
+      {
+        "direction_id": "D2",
+        "reaches_reference": true,
+        "reason": "SYNTHETIC independent strength"
+      },
+      {
+        "direction_id": "D3",
+        "reaches_reference": true,
+        "reason": "SYNTHETIC independent strength"
+      },
+      {
+        "direction_id": "X0",
+        "reaches_reference": true,
+        "reason": "SYNTHETIC independent strength"
+      },
+      {
+        "direction_id": "X1",
+        "reaches_reference": true,
+        "reason": "SYNTHETIC independent strength"
+      },
+      {
+        "direction_id": "X2",
+        "reaches_reference": true,
+        "reason": "SYNTHETIC independent strength"
+      }
+    ],
+    "causal_check": [
+      {
+        "direction_id": "PA-01",
+        "core_relation_still_holds_without_product": false,
+        "core_creative_relation_direct_source": "SYNTHETIC product own benefit directly creates relation",
+        "reason": "SYNTHETIC necessary mechanism"
+      },
+      {
+        "direction_id": "D2",
+        "core_relation_still_holds_without_product": false,
+        "core_creative_relation_direct_source": "SYNTHETIC product own benefit directly creates relation",
+        "reason": "SYNTHETIC necessary mechanism"
+      },
+      {
+        "direction_id": "D3",
+        "core_relation_still_holds_without_product": false,
+        "core_creative_relation_direct_source": "SYNTHETIC product own benefit directly creates relation",
+        "reason": "SYNTHETIC necessary mechanism"
+      },
+      {
+        "direction_id": "X0",
+        "core_relation_still_holds_without_product": false,
+        "core_creative_relation_direct_source": "SYNTHETIC product own benefit directly creates relation",
+        "reason": "SYNTHETIC necessary mechanism"
+      },
+      {
+        "direction_id": "X1",
+        "core_relation_still_holds_without_product": false,
+        "core_creative_relation_direct_source": "SYNTHETIC product own benefit directly creates relation",
+        "reason": "SYNTHETIC necessary mechanism"
+      },
+      {
+        "direction_id": "X2",
+        "core_relation_still_holds_without_product": false,
+        "core_creative_relation_direct_source": "SYNTHETIC product own benefit directly creates relation",
+        "reason": "SYNTHETIC necessary mechanism"
+      }
+    ]
+  },
+  "blind_raw": {
+    "action": "SYNTHETIC 巨瓶向右穿过织物环。",
+    "product_role": "SYNTHETIC the product matters at this need moment",
+    "ambiguities": [],
+    "explanatory_devices": [],
+    "relation_without_devices": "SYNTHETIC product shape and contact depict relation without explanation.",
+    "product_relation_visible": true
+  },
+  "comparison_raw": {
+    "blind_read_sha256": "77063033605d6215a0395440f58a6af6606069ed7f484947c3eb4c20365ca306",
+    "comparison": {
+      "action": {
+        "matches": true,
+        "blind_observation": "SYNTHETIC 巨瓶向右穿过织物环。",
+        "claim_observation": "SYNTHETIC 声明同向且产品穿环。"
+      },
+      "change_direction": {
+        "matches": true,
+        "blind_observation": "SYNTHETIC 巨瓶向右穿过织物环。",
+        "claim_observation": "SYNTHETIC 声明同向且产品穿环。"
+      },
+      "product_role": {
+        "matches": true,
+        "blind_observation": "SYNTHETIC the product matters at this need moment",
+        "claim_observation": "SYNTHETIC 声明同向且产品穿环。"
+      },
+      "ambiguities": [],
+      "explanatory_devices": [],
+      "device_removal": {
+        "blind_observation": "SYNTHETIC product shape and contact depict relation without explanation.",
+        "relation_still_holds": true,
+        "observation": "SYNTHETIC direct shape/contact"
+      },
+      "product_label": {
+        "observation": "SYNTHETIC official and final matching brand"
+      },
+      "product_scene": [],
+      "layout": {
+        "text_readable": true,
+        "reading_order": "SYNTHETIC headline then product",
+        "empty_space": "SYNTHETIC purposeful",
+        "support_devices": [],
+        "observation": "SYNTHETIC clear local contrast"
+      }
+    },
+    "answers": {
+      "product_in_core_relation": {
+        "answer": true,
+        "observation": "SYNTHETIC pixel observation: visible official bottle weaving loops",
+        "blind_read_sha256": "77063033605d6215a0395440f58a6af6606069ed7f484947c3eb4c20365ca306",
+        "comparison_evidence": [
+          "action",
+          "change_direction",
+          "product_role",
+          "ambiguities"
+        ]
+      },
+      "action_depicted_without_copy": {
+        "answer": true,
+        "observation": "SYNTHETIC pixel observation: visible official bottle weaving loops",
+        "blind_read_sha256": "77063033605d6215a0395440f58a6af6606069ed7f484947c3eb4c20365ca306",
+        "comparison_evidence": [
+          "action",
+          "change_direction",
+          "product_role",
+          "ambiguities"
+        ]
+      },
+      "product_action_understood_in_three_seconds": {
+        "answer": true,
+        "observation": "SYNTHETIC pixel observation: visible official bottle weaving loops",
+        "blind_read_sha256": "77063033605d6215a0395440f58a6af6606069ed7f484947c3eb4c20365ca306",
+        "comparison_evidence": [
+          "action",
+          "change_direction",
+          "product_role",
+          "ambiguities"
+        ]
+      },
+      "claimed_relation_depicted": {
+        "answer": true,
+        "observation": "SYNTHETIC independent pixel observation",
+        "blind_read_sha256": "77063033605d6215a0395440f58a6af6606069ed7f484947c3eb4c20365ca306",
+        "comparison_evidence": [
+          "action",
+          "change_direction",
+          "product_role",
+          "ambiguities"
+        ]
+      },
+      "creative_scene_not_generic": {
+        "answer": true,
+        "observation": "SYNTHETIC independent pixel observation",
+        "blind_read_sha256": "77063033605d6215a0395440f58a6af6606069ed7f484947c3eb4c20365ca306",
+        "comparison_evidence": [
+          "action",
+          "change_direction",
+          "product_role",
+          "ambiguities"
+        ]
+      },
+      "product_label_consistent_readable": {
+        "answer": true,
+        "observation": "SYNTHETIC official brand readable forward",
+        "blind_read_sha256": "77063033605d6215a0395440f58a6af6606069ed7f484947c3eb4c20365ca306",
+        "comparison_evidence": [
+          "product_label"
+        ]
+      },
+      "product_in_scene": {
+        "answer": true,
+        "observation": "SYNTHETIC no scene products declared",
+        "blind_read_sha256": "77063033605d6215a0395440f58a6af6606069ed7f484947c3eb4c20365ca306",
+        "comparison_evidence": [
+          "product_scene"
+        ]
+      },
+      "layout_readable": {
+        "answer": true,
+        "observation": "SYNTHETIC readable current pixels",
+        "blind_read_sha256": "77063033605d6215a0395440f58a6af6606069ed7f484947c3eb4c20365ca306",
+        "comparison_evidence": [
+          "layout"
+        ]
+      }
+    },
+    "core_claim_sha256": "dc2e772a9d4764bbf6905a26aac628869862757068cce022dd8555616e31c391",
+    "layout_review": {
+      "text_readable": true,
+      "reading_order": "SYNTHETIC headline then product",
+      "empty_space": "SYNTHETIC purposeful",
+      "support_devices": [],
+      "observation": "SYNTHETIC clear local contrast"
+    },
+    "brand_asset_review": [],
+    "product_meaning": {
+      "established": true,
+      "observed_meaning": "SYNTHETIC the product matters at this need moment",
+      "expected_meaning": "SYNTHETIC expected official meaning",
+      "observation": "SYNTHETIC pixels"
+    },
+    "meaning_check": {
+      "reversed": false,
+      "blind_observation": "SYNTHETIC 巨瓶向右穿过织物环。",
+      "expected_observation": "SYNTHETIC expected relation",
+      "pixel_observation": "SYNTHETIC no reversal"
+    },
+    "compliance_check": {
+      "violated": false,
+      "restriction_quote": "",
+      "pixel_observation": "SYNTHETIC no prohibited effect"
+    },
+    "review_issues": [],
+    "scene_evidence": {
+      "basis": "no-conflict",
+      "observation": "SYNTHETIC no scene products declared"
+    }
+  }
+}

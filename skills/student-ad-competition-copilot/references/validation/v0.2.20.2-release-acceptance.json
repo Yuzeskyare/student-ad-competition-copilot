@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.20.2",
+  "status": "release-qualified",
+  "change_id": "hotfix-visual-schema-2.6.0-pack-identity-and-full-chain-regression",
+  "promoted_candidate": "0.2.20.2-rc.1",
+  "candidate_manifest_sha256": "d7e1e4ac77438a1b9249e94f7aba7a1050422420d5b99da7ceb05f2363ee1b1b",
+  "runtime_scripts_changed_since_candidate": false,
+  "changes": [
+    "Visual evidence identity accepts schema 2.6.0 required by the print-product-v3 contract",
+    "Case and method retrieval identity uses the knowledge-pack manifest hash and eligibility fingerprints instead of absolute paths",
+    "Adds a native full-chain print regression (direction to delivery, synthetic images) to the release gate"
+  ],
+  "candidate_tests": {
+    "suites": 57,
+    "executions": 3510,
+    "failures": 0,
+    "full_chain_regression": "passed"
+  },
+  "legacy_regressions": "No rule or historical contract changed beyond the two fixes",
+  "distribution_cleanup": {
+    "removed_process_records": [
+      "references/validation/v0.2.20.2-candidate.json"
+    ],
+    "edited_documents": [],
+    "rule_content_changed": false
+  },
+  "image_generation_calls": 0,
+  "project_submission_ready": false,
+  "limits": [
+    "Full-chain regression uses synthetic records and images; no new artwork produced under 0.2.20.2",
+    "Automatic checks are model judgments, not human approval"
+  ],
+  "promotion_basis": "Verified candidate runtime with documented distribution cleanup; publication only after explicit user authorization."
+}
