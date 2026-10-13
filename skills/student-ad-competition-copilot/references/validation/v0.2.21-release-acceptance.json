@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.21",
+  "status": "release-qualified",
+  "change_id": "in-image-copy-diverse-visual-methods-product-posture-a4-paths-carryover",
+  "promoted_candidate": "0.2.21-rc.6",
+  "candidate_manifest_sha256": "f48c2dbe5ab69ce746c1c339afd7f7f4e0a3d84de3ae1837932abed20d4018ff",
+  "runtime_scripts_changed_since_candidate": false,
+  "changes": [
+    "Product relationship reads the whole artwork including in-image copy; only copy outside the artwork is excluded",
+    "Prototype stage hard-stops only verifiable reversal or compliance conflicts; subjective relation judgments are hints",
+    "Direction divergence explores substantively different visual methods via the style entry table and self-checks single-material sets; no quotas or bans",
+    "A4 handback choices (change direction / revise action / continue) all have valid paths; first poster of a series passes production-candidate checks",
+    "Product posture and perspective are planned from action and camera before generation; label check requires recognizable correct text, not a frontal label",
+    "Version carryover always cites the original user choice, with actionable errors for repeated upgrades"
+  ],
+  "candidate_tests": {
+    "suites": 60,
+    "executions": 3553,
+    "failures": 0,
+    "full_chain_assertions": 73
+  },
+  "legacy_regressions": "No rule or historical contract changed beyond the two fixes",
+  "distribution_cleanup": {
+    "removed_process_records": [
+      "references/validation/v0.2.21-candidate.json"
+    ],
+    "edited_documents": [],
+    "rule_content_changed": false
+  },
+  "image_generation_calls": 0,
+  "project_submission_ready": false,
+  "limits": [
+    "Real trial: two approved print works under candidate rules; other changes verified by zero-generation calibration and synthetic full-chain regression",
+    "Independent review can still miss pasted-on looks and dark-on-dark text; the user remains the final judge",
+    "Automatic checks are model judgments, not human approval"
+  ],
+  "promotion_basis": "Verified candidate runtime with documented distribution cleanup; publication only after explicit user authorization."
+}

@@ -16,7 +16,7 @@
 
 高清、批量或全稿生产前保存一个请求JSON：`id`、`operation`、明确的`output_scope`、`representatives`作品引用；本地命令另含`command`字符串数组（不用shell）。代表内容通过或明确生产授权的决定，通过`production_request_sha256`绑定整个请求。请求的工具、提示、参数、输出范围或本地命令变化后重新核对，不能重用旧请求哈希。
 
-用户已明确授权在本轮范围内继续生产时，使用`production-authorization`并引用原消息；不能因为Skill默认检查点再询问同一权限。该授权不等于看过成品或内容通过。源消息只有生产授权时`content_pass`仍为pending。
+用户已明确授权在本轮范围内继续生产时，使用`production-authorization`并引用原消息；不能因为Skill默认检查点再询问同一权限。representatives是生产前授权材料，保留请求、授权与回执原字节。平面production-candidate的完整稿验收范围从core_creative_review.current_assessment_ids对应artifact读取，并核对completed守卫产出、所属当前请求及output_scope；delivery-candidate仍从final_artifacts读取。该授权不等于看过成品或内容通过。源消息只有生产授权时`content_pass`仍为pending。
 
 在**实际生产调用之前**运行（路径均按运行目录解释；`--output`须为新的回执文件）：
 
@@ -83,3 +83,7 @@ guard_production 的 status:authorized 仅表示授权前检；production_state 
 宿主未提供事件ID或发生时间时保持未知，observed_at只能表示观察时间。真实用户认可可按原话记载，但正式合同仍保留元数据不足状态，不能补造字段或要求用户重复说“通过”来掩盖缺失。这个边界不撤销用户已经给出的认可，也不把历史任务改写为新合同已通过。
 
 审核绑定后的作品、请求与其依赖生产脚本均保留原字节；修字体或更新元信息另存版本，不覆写旧稿/脚本再沿用旧哈希。只错调用元信息时保留前后记录并修元信息，不顺带改图。具体当前图/源/调用/别名核对见[当前作品集合](current-artwork-set.md)。
+
+## 连续版本迁移的选择承接
+
+连续升级每次都从最初真实kind=user-choice记录直接承接到当前Skill版本，不把kind=user-choice-carryover当作original_selection。可只读沿旧carryover.original_selection找到最初记录，但校验入口不接受链式来源。original_selection、original_source_event、original_sentences以及old_version_manifest均引用最初选择时的材料；new_version_manifest、新盲评与new_judgment引用本次当前版本。保留所有中间承接和旧返回原字节，用户原话、实际decided_at与方向原句逐字不变。新判断仍须按原覆盖规则核对，不能借连续升级扩大用户认可。遇到original actual user choice或successor不是当前版本的报错，按上述路径新建记录重查；不改旧承接的new_version或原哈希。这条直接路径避免递归链、循环及中间授权的含义，不放松现有来源/原句/新判断校验。

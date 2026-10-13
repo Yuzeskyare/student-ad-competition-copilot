@@ -6,16 +6,229 @@ real human approval. The local producer copies a supplied synthetic raster.
 """
 from pathlib import Path
 from datetime import datetime, timezone
-import argparse, copy, json, os, subprocess, sys
+import argparse, copy, json, os, shutil, subprocess, sys
 
 sys.dont_write_bytecode=True
 SKILL=Path(__file__).resolve().parents[1]
 import validate_print_ad_run as v
 import visual_review_contract as visual
-from review_contract import digest, load
+from review_contract import digest, load, fingerprint
 from current_artwork_contract import validate_current
 
 def now(): return datetime.now(timezone.utc).isoformat()
+
+def regression_carryover(root, manifest, dr, bundle_ref, save, text, stages):
+    """Two version upgrades use the original choice, never a carried choice."""
+    original = load(root/manifest['direction_adoption']['selection_record']['path'])
+    original_ref = save('migration/original-selection.json', original)
+    original_sentences = dr['inputs'][0]['file']
+    sentences = json.loads((root/original_sentences['path']).read_text(encoding='utf-8'))
+    event = save('migration/original-event.json', dict(actor_type='human',kind='user-message',
+        event_id='SYNTHETIC-original-choice',occurred_at=original['decided_at'],
+        text=original['statement'],source_authorization=original['source']))
+    old_version = save('migration/original-version.json', dict(skill_version='0.0.0',version='0.0.0',fixture='SYNTHETIC'))
+    frozen = root/'migration/SYNTHETIC-intermediate-skill'
+    shutil.copytree(SKILL, frozen)
+    intermediate_version = load(frozen/'version.json')
+    intermediate_version.update(skill_version='0.0.1',version='0.0.1')
+    (frozen/'version.json').write_text(json.dumps(intermediate_version,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    helper = text('migration/check.py', '''from pathlib import Path
+import json, sys
+sys.path.insert(0, sys.argv[1])
+import validate_print_ad_run as v
+root=Path(sys.argv[2])
+result=v.validate_direction_blind_review(root,json.loads((root/sys.argv[3]).read_text(encoding='utf-8')))
+print(json.dumps(result,ensure_ascii=False))
+raise SystemExit(0 if result['passed'] else 1)
+''')
+    def migrate(label, package):
+        newdr = copy.deepcopy(dr)
+        newdr.update(checker_session_id='SYNTHETIC-'+label,invocation_id='SYNTHETIC-'+label+'-call',
+                     input_prepared_at=now(),started_at=now(),completed_at=now())
+        # Each upgrade retains its own independent return and binding.
+        newdr['raw_return'] = save('migration/'+label+'-raw.json',newdr['result'])
+        bundle = load(root/bundle_ref['path'])
+        bundle.update(rounds=[save('migration/'+label+'-review.json',newdr)],recorded_at=now())
+        newbundle = save('migration/'+label+'-bundle.json',bundle)
+        choice = load(root/manifest['direction_adoption']['choice_list']['path'])
+        choice['presented_at'] = now()
+        newchoice = save('migration/'+label+'-choice-list.json',choice)
+        version = load(package/'version.json')
+        carried = dict(original,kind='user-choice-carryover',carryover=dict(
+            reason='SYNTHETIC version-only migration from original actual choice',re_review_reason='skill-version-migration',
+            original_selection=original_ref,original_source_event=event,original_sentences=original_sentences,
+            old_version='0.0.0',old_version_manifest=old_version,new_version=version['skill_version'],
+            new_version_manifest=save('migration/'+label+'-version.json',version),new_blind_review=newbundle,
+            new_judgment=v.direction_judgment_v7(newdr['result'],original['direction_id'],newdr['raw_return']),carried_at=now()))
+        selected = save('migration/'+label+'-carryover.json',carried)
+        adopted = now()
+        lock = load(root/manifest['direction_adoption']['claim_lock']['path'])
+        lock.update(adopted_at=adopted,blind_review=newbundle)
+        m = copy.deepcopy(manifest)
+        m['direction_adoption'].update(adopted_at=adopted,blind_review=newbundle,choice_list=newchoice,
+            selection_record=selected,claim_lock=save('migration/'+label+'-lock.json',lock))
+        return m, carried, newdr, newbundle
+    def expect(label,m,accepted,reason=None,package=SKILL):
+        if package == SKILL:
+            result=v.validate_direction_blind_review(root,m)
+        else:
+            manifest_ref=save('migration/'+label+'-manifest.json',m)
+            cmd=[sys.executable,'-X','utf8','-B',str(root/helper['path']),str(package/'scripts'),str(root),manifest_ref['path']]
+            r=subprocess.run(cmd,capture_output=True,text=True,encoding='utf-8')
+            text('logs/'+label+'.log',r.stdout+r.stderr)
+            assert r.returncode in (0,1),(label,r.stderr)
+            result=json.loads(r.stdout)
+        assert result['passed']==accepted,(label,result)
+        assert reason is None or reason in str(result['evidence']),(label,result,reason)
+        stages.append(dict(stage=label,expected_accept=accepted,result=result))
+    first,first_choice,_,_=migrate('upgrade-1',frozen)
+    expect('carryover-first-upgrade',first,True,package=frozen)
+    protected=[original_ref,original['source'],original_sentences,event,first['direction_adoption']['selection_record']]
+    before={r['path']:digest(root/r['path']) for r in protected}
+    latest,carried,newdr,newbundle=migrate('upgrade-2',SKILL)
+    expect('carryover-second-upgrade-direct-original',latest,True)
+    stale=copy.deepcopy(latest);stale['direction_adoption']['selection_record']=first['direction_adoption']['selection_record']
+    expect('carryover-stale-successor-recovery',stale,False,'Create a new carryover from the earliest')
+    def reject(label,mutate,reason):
+        bad=copy.deepcopy(carried);mutate(bad)
+        m=copy.deepcopy(latest);m['direction_adoption']['selection_record']=save('migration/'+label+'.json',bad)
+        expect(label,m,False,reason)
+    reject('carryover-chain-rejected',lambda s:s['carryover'].update(original_selection=first['direction_adoption']['selection_record']),'earliest kind=user-choice')
+    forged=copy.deepcopy(first_choice)
+    forged['carryover']['original_selection']['sha256']='0'*64
+    forged_ref=save('migration/forged-chain.json',forged)
+    reject('carryover-forged-chain-rejected',lambda s:s['carryover'].update(original_selection=forged_ref),'earliest kind=user-choice')
+    reject('carryover-original-hash-rejected',lambda s:s['carryover']['original_selection'].update(sha256='0'*64),'changed evidence')
+    altered=copy.deepcopy(sentences);altered[0]['statement']+=' '
+    changed_ref=save('migration/changed-original-sentence.json',altered)
+    reject('carryover-changed-sentence-rejected',lambda s:s['carryover'].update(original_sentences=changed_ref),'byte-identical')
+    altered=copy.deepcopy(sentences);altered[0]['statement']='改'+altered[0]['statement'][1:]
+    changed_ref=save('migration/changed-original-character.json',altered)
+    reject('carryover-changed-character-rejected',lambda s:s['carryover'].update(original_sentences=changed_ref),'byte-identical')
+    reject('carryover-changed-user-quote-rejected',lambda s:s.update(statement=s['statement']+' forged'),'actual source')
+    false_event=load(root/event['path']);false_event['actor_type']='assistant'
+    false_event_ref=save('migration/forged-source-event.json',false_event)
+    reject('carryover-forged-human-event-rejected',lambda s:s['carryover'].update(original_source_event=false_event_ref),'human')
+    assert before=={r['path']:digest(root/r['path']) for r in protected}
+    stages.append(dict(stage='carryover-original-and-intermediate-bytes-preserved',passed=True,sha256=before))
+    return latest,newdr,newbundle
+
+def regression_a4(root, manifest, production, row, seed, direction_record, bundle_ref, inputs, feedback, references, save, text, image, stages):
+    """Exercise the actual A4 dispatch interlock with synthetic independent returns."""
+    from PIL import Image
+    from product_relationship_contract import creative_hints
+    original = copy.deepcopy(manifest['direction_adoption'])
+    original_lock = load(root/original['claim_lock']['path'])
+    question = 'product_action_understood_in_three_seconds'
+    failures = []
+    for index in (1, 2):
+        im = Image.open(root/'art.png').copy();im.putpixel((index, 0), (index, 0, 0))
+        observed = image('a4-failed-'+str(index)+'.png', im)
+        failed = copy.deepcopy(row)
+        failed.update(id='SYNTHETIC-A4-'+str(index), observed_image=observed, artifact=dict(observed,version='SYNTHETIC-failed-'+str(index),units=['1']))
+        raw = copy.deepcopy(seed['comparison_raw'])
+        raw['answers'][question].update(answer=False,observation='SYNTHETIC repeated unclear relation '+str(index))
+        raw['review_issues']=[dict(severity='hint',question=question,reason_code='main-relation-ambiguous',observation=raw['answers'][question]['observation'],priority=1)]
+        raw['core_claim_sha256']=original_lock['statement_sha256']
+        failed['answers']=raw['answers']
+        failed.update(review_issues=raw['review_issues'],meaning_check=raw['meaning_check'],compliance_check=raw['compliance_check'])
+        check=dict(checker_context='fresh-isolated',checker_session_id='SYNTHETIC-A4-independent-'+str(index),author_session_id='SYNTHETIC-author',raw_return=save('a4-raw-'+str(index)+'.json',raw))
+        failed['independent_check']=save('a4-check-'+str(index)+'.json',check)
+        failed['checked_at']=now()
+        failed['creative_failure_reasons']=[dict(question=i['question'],reason_code=i['reason_code'],observation=i['observation']) for i in creative_hints(raw,raw['answers'])]
+        failures.append(failed)
+    trigger=v.repeated_creative_failures(failures)[0]
+    base=copy.deepcopy(manifest)
+    base['core_creative_review']['assessments']=failures
+    base['artifacts']['production_manifest']='a4-production.json'
+    base['execution_control']='a4-control.json'
+    prod=copy.deepcopy(production)
+    save('a4-production.json',prod)
+    handback='换方向 / 改动作后继续 / 照原样继续\n'+visual.image_budget_message(root,base)+'\n'+'\n'.join(x['path'] for x in trigger['failed_artifacts'])+'\n'+'\n'.join(o for r in trigger['common_reasons'] for o in r['observations'])
+    handoff=dict(state='stopped',reason='SYNTHETIC repeated hint',decision_request='change-direction-or-action-or-continue',trigger_sha256=fingerprint(trigger),failed_artifacts=trigger['failed_artifacts'],common_reasons=trigger['common_reasons'],user_facing_copy=text('a4-handback.md',handback))
+    prod['exhausted_failure_handoff']=handoff;save('a4-production.json',prod);save('a4-control.json',dict(state='stopped'))
+    def expect(label,m,p,accepted,reason=None):
+        save('a4-production.json',p)
+        try:
+            result=v.validate_repeated_failure_handoff(root,m,for_dispatch=True);error=None
+        except (ValueError,KeyError) as exc:result=None;error=str(exc)
+        assert (error is None)==accepted,(label,error)
+        assert reason is None or reason in error,(label,error,reason)
+        stages.append(dict(stage=label,expected_accept=accepted,actual_accept=error is None,error=error))
+    expect('a4-unresolved-stop',base,prod,False,'Await')
+    def user(choice):
+        quote='SYNTHETIC 我选择'+choice+'；明确登记动作范围，不代表作品批准'
+        source=save('a4-user-'+choice+'.json',dict(actor_type='human',kind='user-message',event_id='SYNTHETIC-A4-'+choice,occurred_at=now(),text=quote))
+        return dict(choice=choice,source=source,quote=quote)
+    same=copy.deepcopy(prod);same['exhausted_failure_handoff']['resolution']=user('照原样继续')
+    expect('a4-continue-unchanged',base,same,True)
+    action=copy.deepcopy(prod);resolution=user('改动作后继续');action['exhausted_failure_handoff']['resolution']=resolution
+    plan=dict(recorded_at=now(),source=resolution['source'],quote=resolution['quote'],changed_scope='SYNTHETIC make the hand contact and visible relation clearer within the original sentence',baseline=trigger['failed_artifacts'][-1],original_direction_adoption=original,original_statement=text('a4-original-claim.txt',original_lock['statement']),image_budget=copy.deepcopy(prod['image_budget']))
+    action['action_revision_plan']=save('a4-action-plan.json',plan)
+    expect('a4-change-action-retain-lock',base,action,True)
+    assert action['image_budget']==prod['image_budget']
+    for label,edit,reason in [
+        ('a4-expand-budget',lambda b:b.update(limit=b['limit']+1),'existing budget limit'),
+        ('a4-reset-budget-revision',lambda b:b.update(revision_id='SYNTHETIC-reset'),'original bound budget snapshot'),
+        ('a4-truncate-budget-history',lambda b:b.update(revision_index=2,prior_revisions=[]),'Retain every earlier')]:
+        bad=copy.deepcopy(action);edit(bad['image_budget']);expect(label,base,bad,False,reason)
+    for label,change,reason in [
+        ('a4-unbound-user',lambda p:p.update(source=text('a4-fake-source.txt','SYNTHETIC author action')),'same actual user'),
+        ('a4-empty-action',lambda p:p.update(changed_scope=''),'concrete action'),
+        ('a4-change-statement-old-lock',lambda p:p.update(revised_statement='SYNTHETIC changed sentence'),'changed statement cannot reuse'),
+        ('a4-forged-original',lambda p:p.update(original_statement=text('a4-forged-claim.txt','SYNTHETIC forged original')),'exact original statement')]:
+        bad=copy.deepcopy(plan);change(bad);p=copy.deepcopy(action);p['action_revision_plan']=save(label+'.json',bad);expect(label,base,p,False,reason)
+    # A real second direction round is needed when the locked sentence changes.
+    def readopt(label,retain):
+        ids={s['direction_id']: (s['direction_id'] if retain and i==0 else label+'-'+str(i)) for i,s in enumerate(seed['sentences'])}
+        def remap(value):
+            if isinstance(value,list):return [remap(x) for x in value]
+            if isinstance(value,dict):return {k:(ids.get(x,x) if k.endswith('direction_id') else remap(x)) for k,x in value.items()}
+            return value
+        sentences=remap(copy.deepcopy(seed['sentences']))
+        sentences[0]['statement']=sentences[0]['statement'].replace('穿过织物环','穿过展开的织物环')
+        content=json.dumps(sentences,ensure_ascii=False,indent=2)+'\n'
+        raw=remap(load(root/direction_record['raw_return']['path']))
+        dr=copy.deepcopy(direction_record)
+        dr.update(checker_session_id='SYNTHETIC-'+label,invocation_id='SYNTHETIC-'+label+'-call',input_prepared_at=now(),started_at=now(),completed_at=now(),inputs=[dict(role='direction-sentences',file=text(label+'-sentences.json',content)),*inputs[1:]],request=text(label+'-request.txt',(v.direction_request_v11 if manifest['direction_contract']=='print-direction-v11' else v.direction_request_v10)(content,references,feedback)),raw_return=save(label+'-raw.json',raw),result=raw)
+        bundle=load(root/bundle_ref['path']);bundle['rounds'].append(save(label+'-record.json',dr));bundle['recorded_at']=now()
+        origins=remap(copy.deepcopy(seed['origins']))
+        bundle['origins'] += [x for x in origins if not retain or x['direction_id']!=original['direction_id']]
+        newbundle=save(label+'-bundle.json',bundle)
+        rows=v.direction_choice_rows_v7(sentences,raw)
+        visible='\n'.join('## '+x['direction_id']+'\n'+x['statement']+'\n'+x['basis']+'\n'+v.direction_choice_judgment_text_v6(x)+'\n'+x['checker_comment']+'\n'+v.direction_choice_causal_text_v8(x['causal_check']) for x in rows)
+        choice=save(label+'-choice.json',dict(presented_at=now(),rows=rows,causal_advisories=v.direction_choice_advisory_rows_v7(sentences,raw),product_meaning_advisories=raw['product_meaning_hints'],user_facing_copy=text(label+'-choice.md',visible)))
+        ident=sentences[0]['direction_id'];statement='SYNTHETIC select '+ident
+        selection=save(label+'-selection.json',dict(kind='user-choice',actor='user',direction_id=ident,decided_at=now(),statement=statement,source=text(label+'-selection.txt',statement)))
+        adopted=now();lock=save(label+'-lock.json',dict(direction_id=ident,statement=sentences[0]['statement'],statement_sha256=v.claim_digest(sentences[0]['statement']),adopted_at=adopted,blind_review=newbundle))
+        adoption=dict(original,direction_id=ident,adopted_at=adopted,blind_review=newbundle,selection_record=selection,claim_lock=lock,choice_list=choice,previous_adoptions=[original])
+        return dict(base,selected_direction=ident,direction_adoption=adoption),sentences[0]['statement']
+    amended,newclaim=readopt('SYNTHETIC-action-amended',True)
+    result=v.validate_direction_blind_review(root,amended);assert result['passed'],result
+    newplan=dict(plan,revised_statement=newclaim);p=copy.deepcopy(action);p['action_revision_plan']=save('a4-amended-plan.json',newplan)
+    expect('a4-change-action-new-claim-new-round',amended,p,True)
+    # Historical and current locks can share the direction ID, but an old current
+    # draft cannot satisfy the amended statement. Consume the actual earlier core
+    # record to exercise lock routing rather than only checking the A4 decision.
+    old_current=copy.deepcopy(amended)
+    old_current['core_creative_review']=copy.deepcopy(manifest['core_creative_review'])
+    old_current['artifacts']['production_manifest']=manifest['artifacts']['production_manifest']
+    result=next(r for r in v.validate_creative_contract(root,old_current) if r['name']=='core-creative-pixel-review')
+    assert not result['passed'] and 'Current draft must use current adopted direction lock' in str(result['evidence']),result
+    stages.append(dict(stage='a4-amended-current-old-claim-rejected',expected_accept=False,result=result))
+    bad=copy.deepcopy(amended);bad['direction_adoption']['claim_lock']=original['claim_lock']
+    expect('a4-amended-reuses-old-lock',bad,p,False,'Claim lock must bind')
+    bad=copy.deepcopy(amended);bad['direction_adoption'].pop('previous_adoptions')
+    expect('a4-amended-hides-history',bad,p,False,'new lock and independent')
+    swap=copy.deepcopy(prod);swap['exhausted_failure_handoff']['resolution']=user('换方向')
+    changed,_=readopt('SYNTHETIC-direction-new',False)
+    swap['image_budget']=dict(swap['image_budget'],direction_id=changed['selected_direction'])
+    expect('a4-change-direction',changed,swap,True)
+    expect('a4-change-direction-same-id',base,prod | {'exhausted_failure_handoff':swap['exhausted_failure_handoff']},False,'different adopted direction')
+    forged=copy.deepcopy(same);forged['exhausted_failure_handoff']['resolution']['quote']='SYNTHETIC 照原样继续 fabricated'
+    expect('a4-fabricated-user-quote',base,forged,False,'quotation')
+    save(manifest['artifacts']['production_manifest'],production)
+
 
 def run_pipeline(root):
     from PIL import Image, ImageDraw
@@ -33,13 +246,13 @@ def run_pipeline(root):
     def text(name,value):
         p=root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(value,encoding='utf-8');return ref(name)
     def image(name,im):im.save(root/name);return ref(name)
-    def cli(label,script,args):
+    def cli(label,script,args,accepted_codes=(0,)):
         cmd=[sys.executable,'-X','utf8','-B',str(SKILL/'scripts'/script),*map(str,args)]
         env=dict(os.environ,PYTHONDONTWRITEBYTECODE='1',PYTHONIOENCODING='utf-8')
         r=subprocess.run(cmd,cwd=root,env=env,capture_output=True,text=True,encoding='utf-8')
         text('logs/'+label+'.log',r.stdout+r.stderr)
         stages.append(dict(stage=label,command=cmd,exit_code=r.returncode))
-        assert r.returncode==0,(label,r.stdout+r.stderr)
+        assert r.returncode in accepted_codes,(label,r.stdout+r.stderr)
         return r
     def require_result(label,result):
         stages.append(dict(stage=label,result=result));assert result['passed'],result
@@ -74,6 +287,7 @@ def run_pipeline(root):
     manifest=dict(schema_version='0.4.0',run_id='SYNTHETIC-pipeline',competition='academy-award',category='print-ad',brief_id='SYNTHETIC-brief',selected_direction=ident,series_mode='single',run_scope='production-candidate',aigc_used='no',method_validation_status='not-claimed',creative_contract='print-core-v4',direction_contract=dc,product_contract='print-product-v3',core_review_contract=cc,secondary_copy_contract='print-secondary-copy-v2',direction_provenance_contract='print-direction-provenance-v1',execution_profile='bound-production-v1',execution_control='control.json',review_contract='review.json',artifacts={'quality_gate_results':'gates.json','production_manifest':'production-before.json'})
     manifest['direction_adoption']=dict(direction_id=ident,adopted_at=adopted,method_retrieval=retrieval,blind_review=bundle,selection_mode='user',selection_record=selected,claim_lock=lock,choice_list=choice)
     require_result('direction-choice-and-lock',v.validate_direction_blind_review(root,manifest))
+    manifest,dr,bundle=regression_carryover(root,manifest,dr,bundle,save,text,stages)
     # Query migration is tested without altering historical times/paths.
     original=load(root/'cases.json');historical=copy.deepcopy(original)
     historical['execution']['pack']=str(root/'removed-skill/references/case-library/v0.2.1')
@@ -92,7 +306,7 @@ def run_pipeline(root):
     supplied=image('supplied.png',native);official=image('official.png',native.crop((200,200,500,400)))
     baseline=image('before.png',Image.new('RGB',native.size,'white'))
     mask=Image.new('L',native.size,255);maskref=image('mask.png',mask)
-    plan=dict(contract='print-product-plan-v3',element_id='cell',registered_at=now(),official=official,role='scene-object',generation_method='reference-generate-label',choice_reason='SYNTHETIC direct label generation contract simulation',container_contact_structure='SYNTHETIC housing and contact',canvas_size=list(native.size),edit_mask=maskref,container_contact_mask=maskref,missing_structure_assets=[])
+    plan=dict(contract='print-product-plan-v4',element_id='cell',registered_at=now(),official=official,role='scene-object',generation_method='reference-generate-label',choice_reason='SYNTHETIC direct label generation contract simulation',container_contact_structure='SYNTHETIC housing and contact',canvas_size=list(native.size),edit_mask=maskref,container_contact_mask=maskref,missing_structure_assets=[],posture_and_perspective=dict(action_and_support='SYNTHETIC supported in housing with visible contact',camera_relation='SYNTHETIC oblique view of housing and product face',perspective_and_occlusion='SYNTHETIC far end foreshortened, contact edges occlude the product'))
     planref=save('product-plan.json',plan)
     prod=dict(main_visual_contract='main-visual-v1',main_visuals=[],image_budget=dict(direction_id=ident,revision_id='SYNTHETIC',revision_index=1,prior_revisions=[],limit=2,used=0),product_scene_plans=[plan],mandatory_brand_asset_placements=[])
     prodref=save('production-before.json',prod)
@@ -111,12 +325,35 @@ def run_pipeline(root):
         stages.append(dict(stage=label,expected_accept=accepted,actual_accept=result['passed']))
     save('methods.json',original_methods);retrieval_data['attempts'][0]['output']=ref('methods.json');save('retrieval.json',retrieval_data);manifest['direction_adoption']['method_retrieval']=ref('retrieval.json')
     producer=text('producer.py',"from pathlib import Path\nPath('art.png').write_bytes(Path('supplied.png').read_bytes())\nprint('SYNTHETIC local raster copy; zero image-generation calls')\n")
-    representative=dict(supplied,version='SYNTHETIC-input',units=['1'])
+    # Pre-production direction material is intentionally a different exact object.
+    representative=dict(ref('choice.md'),version='SYNTHETIC-choices',units=[ident])
     q=dict(id='SYNTHETIC-produce',prepared_at=now(),operation='local',execution_profile='bound-production-v1',main_visual_action='create',main_visual_source='user-asset',product_operation='generate',product_targets=[dict(element_id='cell',role='scene-object')],product_plan_record=prodref,input_files=[producer,supplied,official,maskref],brand_asset_mode='not-used',brand_asset_reason='SYNTHETIC supplied raster; official product input separately bound',output_files=['art.png'],output_scope=['1'],representatives=[representative],command=[sys.executable,'-B','producer.py'])
     qref=save('request.json',q);auth=save('authorization.json',dict(actor_type='human',kind='user-message',event_id='SYNTHETIC-auth',occurred_at=now(),text='SYNTHETIC authorize fixture request'))
     decision=dict(id='SYNTHETIC-auth',checked_at=load(root/'authorization.json')['occurred_at'],source=auth,quote='SYNTHETIC authorize fixture request',stage='production-authorization',decision='pass',reviewed_artifacts=[representative],production_request_sha256=qref['sha256'])
     contract=dict(schema_version='1.0.0',run_id=manifest['run_id'],track='print-ad',content_status='pending',decisions=[decision],production_requests=[qref],production_receipts=[],final_artifacts=[])
     save('review.json',contract);save('manifest.json',manifest)
+    # Test the actual production guard, before any producer runs.
+    from jsonschema import Draft202012Validator
+    schema=load(SKILL/'references/schemas/print-ad-run-manifest.schema.json')
+    validator=Draft202012Validator({'$ref':'#/$defs/main_visual_production_product_v6','$defs':schema['$defs']})
+    validator.validate(prod)
+    for label,mutate in [
+        ('product-plan-missing-pose',lambda p:p.pop('posture_and_perspective')),
+        ('product-plan-missing-camera',lambda p:p['posture_and_perspective'].pop('camera_relation')),
+        ('product-plan-blank-perspective',lambda p:p['posture_and_perspective'].update(perspective_and_occlusion='   '))]:
+        bad=copy.deepcopy(prod);mutate(bad['product_scene_plans'][0])
+        assert list(validator.iter_errors(bad)),label
+        badref=save('negative-'+label+'-production.json',bad)
+        badmanifest=copy.deepcopy(manifest);badmanifest['artifacts']['production_manifest']=badref['path']
+        badq=copy.deepcopy(q);badq['product_plan_record']=badref
+        badqref=save('negative-'+label+'-request.json',badq)
+        badcontract=copy.deepcopy(contract);badcontract['production_requests']=[badqref]
+        badcontract['decisions'][0]['production_request_sha256']=badqref['sha256']
+        save('review.json',badcontract);save('negative-'+label+'-manifest.json',badmanifest)
+        r=cli(label,'guard_production.py',['--run-dir',root,'--manifest','negative-'+label+'-manifest.json','--request-id',q['id'],'--output',label+'-guard.json','--execute'],accepted_codes=(1,))
+        assert 'posture_and_perspective' in r.stdout+r.stderr,(label,r.stdout+r.stderr)
+        assert not (root/'art.png').exists(),label
+    save('review.json',contract)
     cli('production-guard-and-local-copy','guard_production.py',['--run-dir',root,'--manifest','manifest.json','--request-id',q['id'],'--output','guard.json','--execute'])
     receipt=load(root/'guard.json');assert receipt['executed'] and receipt['production_state']=='completed'
     contract['production_receipts']=[ref('guard.json')];save('review.json',contract)
@@ -141,14 +378,96 @@ def run_pipeline(root):
     compare=meta(cc,'compare');compare.update(started_at=now(),completed_at=now(),blind_read=blindref,core_claim_sha256=row['core_claim_sha256'],inputs=[dict(role=k,file=f) for k,f in [('artwork',final),('official-product-asset',official),('core-action',text('claim.txt',claim)),('thumbnail',thumb),('proposition-message',ref('brief.txt')),('product-triptych:cell',trip['image'])]],request=text('compare-request.txt',getattr(v,'INDEPENDENT_COMPARE_RUBRIC_PRODUCT_V8' if current else 'INDEPENDENT_COMPARE_RUBRIC_PRODUCT_V7')+'\n核心动作/关系：'+claim+'\n盲读记录SHA256：'+blindref['sha256']+'\n锁定声明SHA256：'+row['core_claim_sha256']),raw_return=save('compare-raw.json',rawcore))
     row['independent_check']=save('compare.json',compare);row['checked_at']=now()
     v.validate_blind_core(root,row,render,compare,set(),load(root/'claim-lock.json'));stages.append(dict(stage='blind-compare-eight-questions-product-scene-layout',passed=True,question_count=len(row['answers'])))
+    # The new orientation observation uses the existing advisory boundary.
+    from product_relationship_contract import hard_failure
+    orientation=copy.deepcopy(rawcore)
+    concern='SYNTHETIC product view resembles official asset; grip/view may be mismatched, no verified pixel conflict'
+    orientation['answers']['product_in_scene']['observation']=concern
+    orientation['scene_evidence']=dict(basis='indirect-concern',observation=concern)
+    orientation['review_issues'].append(dict(severity='hint',question='brand-asset',reason_code='brand-asset-pasted',observation=concern,priority=1))
+    assert not hard_failure(orientation,orientation['answers'])
+    stages.append(dict(stage='product-orientation-concern-only-hints',passed=True,question_7=True))
+    orientation['review_issues'][-1]['severity']='hard'
+    try:hard_failure(orientation,orientation['answers']);rejected=False
+    except ValueError:rejected=True
+    assert rejected
+    stages.append(dict(stage='product-orientation-subjective-hard-rejected',passed=True))
+    conflict=copy.deepcopy(rawcore)
+    conflict['answers']['product_in_scene'].update(answer=False,observation='SYNTHETIC actual intersecting contact pixels')
+    conflict['scene_evidence']=dict(basis='visible-conflict',observation=conflict['answers']['product_in_scene']['observation'])
+    conflict['review_issues'].append(dict(severity='hard',question='product_in_scene',reason_code='scene-integration',observation=conflict['scene_evidence']['observation'],priority=1))
+    assert hard_failure(conflict,conflict['answers'])
+    stages.append(dict(stage='product-visible-conflict-still-hard',passed=True))
     unit=dict(artifact=art,render_record=renderref,checks=[dict(check=k,status='pass',views=['native'],observation='SYNTHETIC pixel observation',assessment_method='author-inspection') for k in visual.BASE_CHECKS|{'visual-only-meaning','communication-clarity','visible-element-delete-test'}],critical_review=[dict(kind=k,status='pass' if k=='brand-product' else 'not-applicable',views=['native'],detail_required=False,observation='SYNTHETIC inspection',evidence=[official] if k=='brand-product' else []) for k in ['key-text','brand-product','data-citations']],issues=[],product_present=True,product_presence_observation='SYNTHETIC one visible product',product_integration=[product],text_elements=[dict(element_id='title',role='headline',text='SYNTHETIC TITLE',bounds=[20,20,170,40]),dict(element_id='mark',role='brand-product-mark',text='BRAND CATEGORY MARK',bounds=[240,240,400,270])],secondary_copy=dict(contract='print-secondary-copy-v2',used=False,reason='SYNTHETIC picture and title are sufficient; no secondary copy',element_ids=[],title_element_ids=['title'],checks={k:'not-applicable' for k in ['hierarchy','thumbnail_legibility','series_consistency','copy_semantics']}))
-    manifest['run_scope']='delivery-candidate';contract['final_artifacts']=[art];save('review.json',contract)
-    manifest['artifacts']['visual_review']='visual.json';save('visual.json',dict(schema_version='2.6.0',run_id=manifest['run_id'],run_scope='delivery-candidate',units=[unit]))
+    manifest['artifacts']['visual_review']='visual.json';save('visual.json',dict(schema_version='2.6.0',run_id=manifest['run_id'],run_scope='production-candidate',units=[unit]))
     prod['main_visuals']=[dict(artifact=art,source='user-asset',role='passed',core_check='passed',sources=[supplied],evidence=[ref('guard.json')])]
     save('production-after.json',prod);manifest['artifacts']['production_manifest']='production-after.json'
     manifest['proposition_message']=row['proposition_message']
     manifest['core_creative_review']=dict(assessments=[row],current_assessment_ids=[row['id']],completed_draft_render_records=[renderref])
-    for result in visual.validate_visual_review(root,manifest):require_result('visual-evidence-2.6.0',result)
+    for result in visual.validate_visual_review(root,manifest):require_result('production-visual-evidence-2.6.0',result)
+    # Series first-member production review, before any final approval/delivery.
+    for key in ['brief_evidence','direction_cards','concept_gate','official_asset_manifest','human_visual_review']:
+        manifest['artifacts'][key]=key+'.json';save(key+'.json',dict(boundary='SYNTHETIC fixture evidence',evidence=[]))
+    save('gates.json',dict(document_type='gate-results',schema_version='0.1.0',definition_set_id=gates['definition_set_id'],track='print-ad',run_id=manifest['run_id'],results=[dict(gate_id=g['gate_id'],status='pass',passed_check_ids=[c['check_id'] for c in g['checks']],failed_check_ids=[],boundaries=[],waiver_reason=None,checked_at=now(),reviewers=[dict(type='human',id='SYNTHETIC-reviewer'),dict(type='machine',id='SYNTHETIC-checker')],evidence_paths=['compare.json']) for g in gates['gates']]))
+    supplyreview=save('external-production-review.json',dict(status='pass',scope='production-candidate',assets=[supplied],observation='SYNTHETIC supplied bitmap decoded'))
+    manifest['visual_generation_capability']=dict(status='unavailable',provider=None,operations=[],checked_at=now(),evidence='SYNTHETIC supplied pixels',user_decision='use-external-assets',impact_acknowledged=True,external_supply=dict(kind='provided-assets',status='ready',scope='production-candidate',evidence='SYNTHETIC supplied fixture bitmap',assets=[supplied],review=supplyreview))
+    production_manifest=copy.deepcopy(manifest)
+    production_manifest.update(series_mode='series',visual_review_request_ids=[q['id']])
+    production_manifest['series_plan']=dict(manifest['series_plan'],mode='series',units=['1','2','3'],shared_mechanism='SYNTHETIC shared product relation',member_roles=[dict(unit=str(i),benefit_or_action=claim,contribution='SYNTHETIC member '+str(i)) for i in range(1,4)])
+    contract['final_artifacts']=[art];save('review.json',contract)
+    production_manifest['artifacts']['technical_validation']='production-technical.json'
+    production_manifest['artifacts']['run_status']='production-status.json'
+    save('production-status.json',dict(content_review_status='pending',review_decision_ids=[],method_run_complete=False))
+    save('production-technical.json',dict(technical_validation_status='pass',failure_names=[],files=[dict(path=str(root/'art.png'),sha256=art['sha256'])],boundary='SYNTHETIC raster record'))
+    save('production-manifest.json',production_manifest)
+    cli('series-first-production-unified','validate_run.py',['--run-dir',root,'--manifest','production-manifest.json','--output','production-unified.json'])
+    first=load(root/'production-unified.json')
+    assert first['technical_pass'] and not first['content_pass'] and not first['delivery_complete'] and first['status']=='passed',first
+    assert not first['repair_checks'] and any(x['name']=='final-pixel-evidence' and x['passed'] for x in first['run_validation']['checks']),first
+    stages.append(dict(stage='series-first-production-candidate',passed=True,series_units=['1','2','3'],current_units=['1'],content_pass=False,delivery_complete=False))
+    def reject_visual(label,m,expected):
+        result=visual.validate_visual_review(root,m)
+        assert any(not x['passed'] and expected in str(x['evidence']) for x in result),(label,result)
+        stages.append(dict(stage=label,expected_accept=False,result=result))
+    original_contract=copy.deepcopy(contract)
+    for label,mutate,reason in [
+        ('production-unknown-request',lambda m:m.update(visual_review_request_ids=['unknown']),'unknown or cancelled'),
+        ('production-unselected-owner',lambda m:m.update(visual_review_request_ids=[]),'unique current'),
+        ('production-duplicate-current',lambda m:m['core_creative_review'].update(current_assessment_ids=[row['id'],row['id']]),'unique current'),
+        ('production-duplicate-assessment-record',lambda m:m['core_creative_review']['assessments'].append(copy.deepcopy(m['core_creative_review']['assessments'][0])),'exactly one complete artwork'),
+        ('production-forged-output',lambda m:m['core_creative_review']['assessments'][0]['artifact'].update(sha256='0'*64),'changed evidence'),
+        ('production-same-unit-old-object',lambda m:m['core_creative_review']['assessments'][0].update(artifact=dict(supplied,version=art['version'],units=['1'])),'guard release')]:
+        m=copy.deepcopy(production_manifest);mutate(m);reject_visual(label,m,reason)
+    broken=copy.deepcopy(receipt);broken['production_state']='running';contract['production_receipts']=[save('uncompleted-guard.json',broken)];save('review.json',contract)
+    reject_visual('production-uncompleted-release',production_manifest,'guard release')
+    contract=copy.deepcopy(original_contract);save('review.json',contract)
+    other=copy.deepcopy(q);other['id']='SYNTHETIC-unselected'
+    otherref=save('other-request.json',other)
+    contract['production_requests'].append(otherref);save('review.json',contract)
+    reject_visual('production-known-unselected-owner',dict(production_manifest,visual_review_request_ids=[other['id']]),'selected non-cancelled')
+    cancellation=save('other-cancelled.json',dict(request_id=other['id'],request_sha256=otherref['sha256'],executed=False,reason='SYNTHETIC unstarted request cancelled',cancelled_at=now()))
+    contract['production_cancellations']=[cancellation];save('review.json',contract)
+    reject_visual('production-selected-cancelled-request',dict(production_manifest,visual_review_request_ids=[other['id']]),'unknown or cancelled')
+    contract=copy.deepcopy(original_contract);save('review.json',contract)
+    for label,edit,reason in [
+        ('production-duplicate-pixel-unit',lambda p:p['units'].append(copy.deepcopy(p['units'][0])),'Duplicate reviewed visual unit'),
+        ('production-stale-artifact-version',lambda p:p['units'][0]['artifact'].update(version='SYNTHETIC-old'),'Current render source differs')]:
+        pixels=load(root/'visual.json');edit(pixels);save('visual.json',pixels)
+        result=visual.validate_visual_review(root,production_manifest)
+        assert any(not x['passed'] for x in result),(label,result)
+        stages.append(dict(stage=label,expected_accept=False,result=result))
+        save('visual.json',dict(schema_version='2.6.0',run_id=manifest['run_id'],run_scope='production-candidate',units=[unit]))
+    # A request authorized for two units must not be represented by one current page.
+    multi=copy.deepcopy(q);multi.update(id='SYNTHETIC-two-units',output_scope=['1','2'])
+    multiref=save('two-unit-request.json',multi);multi_receipt=copy.deepcopy(receipt)
+    multi_receipt.update(request_id=multi['id'],request_sha256=multiref['sha256'],request=multi)
+    contract['production_requests']=[multiref];contract['production_receipts']=[save('two-unit-guard.json',multi_receipt)];save('review.json',contract)
+    reject_visual('production-output-scope-sample',dict(production_manifest,visual_review_request_ids=[multi['id']]),'every selected request output_scope')
+    contract=copy.deepcopy(original_contract);save('review.json',contract)
+    regression_a4(root,manifest,prod,row,seed,dr,bundle,inputs,feedback,references,save,text,image,stages)
+    manifest['run_scope']='delivery-candidate';contract['final_artifacts']=[art];save('review.json',contract)
+    save('visual.json',dict(schema_version='2.6.0',run_id=manifest['run_id'],run_scope='delivery-candidate',units=[unit]))
+    for result in visual.validate_visual_review(root,manifest):require_result('delivery-visual-evidence-2.6.0',result)
     bundle_current=dict(native=final,preview=thumb,purpose='creative-master',render_record=save('current-render.json',dict(source=final,execution_evidence=ref('guard.json'),render=final,compared_artifact=art,correspondence='matched',observation='SYNTHETIC raster bytes identical')),process_review=dict(render=final,status='clear',observation='SYNTHETIC no process labels'),no_scene_reason='SYNTHETIC raster is native source',native_inspection=dict(observation='SYNTHETIC raster reopened',evidence=ref('guard.json')))
     member=dict(art,current_source=bundle_current)
     contract['final_artifacts']=[member]
@@ -167,6 +486,11 @@ def run_pipeline(root):
     save('manifest.json',manifest)
     cli('unified-check','validate_run.py',['--run-dir',root,'--manifest','manifest.json','--output','unified.json'])
     check=load(root/'unified.json');assert check['technical_pass'] and check['content_pass'] and not check['delivery_complete'],check
+    incomplete_series=dict(manifest,series_mode='series',series_plan=production_manifest['series_plan'])
+    try:validate_current(root,incomplete_series,contract);rejected=False
+    except ValueError as exc:rejected='Current members differ from the effective series plan' in str(exc)
+    assert rejected, 'Delivery candidate must still require all three series members'
+    stages.append(dict(stage='delivery-series-first-only-rejected',expected_accept=False,actual_accept=False))
     validate_current(root,manifest,contract);stages.append(dict(stage='current-artwork',passed=True))
     cli('export','export_current_artwork.py',['--run-dir',root,'--manifest','manifest.json','--destination','export'])
     readiness=load(SKILL/'references/templates/submission-readiness.template.json');readiness.update(run_id=manifest['run_id'],track='print-ad',competition='academy-award',method_scope='artwork-delivery')

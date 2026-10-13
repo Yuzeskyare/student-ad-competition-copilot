@@ -3742,6 +3742,257 @@
           }
         }
       ]
+    },
+    "product_scene_plan_v4": {
+      "type": "object",
+      "properties": {
+        "contract": {
+          "const": "print-product-plan-v4"
+        },
+        "element_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "registered_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "official": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "additionalProperties": false
+        },
+        "role": {
+          "enum": [
+            "scene-object",
+            "display-object"
+          ]
+        },
+        "generation_method": {
+          "enum": [
+            "reference-generate-label",
+            "reference-edit-label-remap",
+            "official-asset-composite"
+          ]
+        },
+        "choice_reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "container_contact_structure": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canvas_size": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "edit_mask": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "additionalProperties": false
+        },
+        "container_contact_mask": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "additionalProperties": false
+        },
+        "label_defect": {
+          "enum": [
+            "wrong-text",
+            "deformed",
+            "pseudo-text",
+            "inverted"
+          ]
+        },
+        "correction_reason": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "correction_bounds": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "missing_structure_assets": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "structure_assets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "path",
+              "sha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "posture_and_perspective": {
+          "type": "object",
+          "required": [
+            "action_and_support",
+            "camera_relation",
+            "perspective_and_occlusion"
+          ],
+          "properties": {
+            "action_and_support": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "camera_relation": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "perspective_and_occlusion": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract",
+        "element_id",
+        "registered_at",
+        "official",
+        "role",
+        "generation_method",
+        "choice_reason",
+        "missing_structure_assets"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "role": {
+                "const": "scene-object"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "container_contact_structure",
+              "canvas_size",
+              "edit_mask",
+              "container_contact_mask",
+              "posture_and_perspective"
+            ],
+            "properties": {
+              "generation_method": {
+                "enum": [
+                  "reference-generate-label",
+                  "reference-edit-label-remap"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "generation_method": {
+                "const": "official-asset-composite"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "display_reason"
+            ],
+            "properties": {
+              "role": {
+                "const": "display-object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "generation_method": {
+                "const": "reference-edit-label-remap"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "label_defect",
+              "correction_reason",
+              "correction_bounds"
+            ]
+          }
+        }
+      ]
     }
   }
 }

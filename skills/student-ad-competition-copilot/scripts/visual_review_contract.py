@@ -369,9 +369,38 @@ def validate_visual_review(root, manifest):
                         and len(set(selected))==len(selected),'Select explicit unique current production request IDs')
                 known={load(bound_file(root,r))['id'] for r in contract['production_requests']}
                 require(set(selected)<=known and not set(selected)&set(cancelled),'Visual scope names unknown or cancelled requests')
+            requests = {}
             for ref in contract['production_requests']:
                 request = load(bound_file(root, ref))
                 if request['id'] not in cancelled and (selected is None or request['id'] in selected):
+                    require(request['id'] not in requests, 'Duplicate current production request ID')
+                    requests[request['id']] = (ref, request)
+            if (manifest['category'] == 'print-ad' and manifest['run_scope'] == 'production-candidate'
+                    and manifest.get('creative_contract') == 'print-core-v4'):
+                from execution_contract import verify_artwork_release
+                review = manifest.get('core_creative_review', {})
+                current = review.get('current_assessment_ids')
+                require(isinstance(current, list) and current and all(isinstance(x, str) and x for x in current)
+                        and len(set(current)) == len(current), 'Register explicit unique current complete artwork assessment IDs')
+                covered = {ident: set() for ident in requests}
+                for ident in current:
+                    matches = [r for r in review.get('assessments', []) if r.get('id') == ident]
+                    require(len(matches) == 1, 'Every current assessment ID must identify exactly one complete artwork')
+                    artwork = matches[0]['artifact']
+                    keys = coverage(root, [artwork])
+                    require(not expected & keys, 'Duplicate current complete artwork unit')
+                    release = verify_artwork_release(root, manifest, artwork)
+                    owner = requests.get(release['request_id'])
+                    require(owner is not None and release['request_sha256'] == owner[0]['sha256'],
+                            'Current artwork must belong to a selected non-cancelled production request')
+                    units = set(artwork['units'])
+                    require(units <= set(owner[1]['output_scope']), 'Current artwork units exceed their production request output_scope')
+                    covered[release['request_id']] |= units
+                    expected |= keys
+                require(all(covered[ident] == set(request['output_scope']) for ident, (_, request) in requests.items()),
+                        'Current complete artworks must cover every selected request output_scope; no sample-to-full extrapolation')
+            else:
+                for _, request in requests.values():
                     expected |= coverage(root, request['representatives'])
         require(expected, 'Visual evidence needs explicit production or delivery scope')
         actual = set(); pending = []; secondary_rows = []
@@ -392,7 +421,9 @@ def validate_visual_review(root, manifest):
             pending.extend(dict(item, units=unit['artifact']['units']) for item in unit_pending)
             require(not actual & keys, 'Duplicate reviewed visual unit')
             actual |= keys
-        require(expected == actual, 'Visual evidence must cover every declared artwork/page, with no sample-to-full extrapolation')
+        require(expected == actual, 'Visual evidence must cover every declared artwork/page, with no sample-to-full extrapolation; '
+                + str(dict(run_scope=manifest['run_scope'], selected_request_ids=manifest.get('visual_review_request_ids'),
+                           missing=sorted(expected-actual), unexpected=sorted(actual-expected))))
         if secondary:
             try:
                 inspect_secondary_series(secondary_rows, manifest.get('series_mode', 'single'))
@@ -544,7 +575,23 @@ def validate_scene_product_plan_v3(root, plan):
         box(plan['correction_bounds'])
     return plan
 
+def validate_scene_product_plan_v4(root, plan):
+    """Check preparation completeness, never score the artistic choice of angle."""
+    require(plan.get('contract') == 'print-product-plan-v4', 'Missing preproduction product scene plan')
+    if plan.get('role') == 'scene-object':
+        pose = plan.get('posture_and_perspective')
+        keys = {'action_and_support', 'camera_relation', 'perspective_and_occlusion'}
+        require(isinstance(pose, dict) and set(pose) == keys
+                and all(nonempty(pose[k]) for k in keys),
+                'Product posture_and_perspective needs action/support, camera relation and perspective/occlusion before dispatch')
+    # All existing reference, mask, role, time and label-repair checks still run.
+    legacy = dict(plan, contract='print-product-plan-v3')
+    legacy.pop('posture_and_perspective', None)
+    validate_scene_product_plan_v3(root, legacy)
+    return plan
+
 def validate_scene_product_plan(root, plan):
+    if plan.get('contract')=='print-product-plan-v4': return validate_scene_product_plan_v4(root,plan)
     if plan.get('contract')=='print-product-plan-v3': return validate_scene_product_plan_v3(root,plan)
     return validate_scene_product_plan_legacy(root,plan)
 
@@ -1028,7 +1075,7 @@ def direction_image_total(root, record, direction_id):
 
 
 def image_budget_message(root, manifest):
-    if manifest.get('core_review_contract') not in {'print-core-product-v4','print-core-product-v5','print-core-product-v6','print-core-product-v7'}:return None
+    if manifest.get('core_review_contract') not in {'print-core-product-v4','print-core-product-v5','print-core-product-v6','print-core-product-v7','print-core-product-v8'}:return None
     record=load(inside(root,manifest['artifacts']['production_manifest']))
     total=direction_image_total(root,record,manifest['selected_direction'])
     return '本方向累计已生成 '+str(total)+' 次'
@@ -1111,18 +1158,18 @@ def measure_local_text_contrast(root, image_ref, text_mask_ref, background_mask_
 
 
 def delivery_advisories(root, manifest):
-    if manifest.get('core_review_contract') not in {'print-core-product-v4','print-core-product-v5','print-core-product-v6','print-core-product-v7'}:return []
+    if manifest.get('core_review_contract') not in {'print-core-product-v4','print-core-product-v5','print-core-product-v6','print-core-product-v7','print-core-product-v8'}:return []
     review=manifest.get('core_creative_review',{})
     notices=[]
     for row in review.get('assessments',[]):
         if row['id'] not in review.get('current_assessment_ids',[]):continue
         record=load(bound_file(root,row['independent_check']))
         raw=load(bound_file(root,record['raw_return']))
-        if manifest.get('core_review_contract') in {'print-core-product-v5','print-core-product-v6','print-core-product-v7'}:
+        if manifest.get('core_review_contract') in {'print-core-product-v5','print-core-product-v6','print-core-product-v7','print-core-product-v8'}:
             from product_relationship_contract import validate_issues
             notices.extend(i for i in validate_issues(raw,row['answers']) if i['severity']=='hint')
             continue
         notices.extend(validate_participation_and_layout(raw,row['answers']))
         notices.extend(['阅读顺序观察：'+raw['layout_review']['reading_order'],
                         '空白观察：'+raw['layout_review']['empty_space']])
-    return [i['observation'] for i in sorted(notices,key=lambda i:i['priority'])[:2]] if manifest.get('core_review_contract') in {'print-core-product-v5','print-core-product-v6','print-core-product-v7'} else notices
+    return [i['observation'] for i in sorted(notices,key=lambda i:i['priority'])[:2]] if manifest.get('core_review_contract') in {'print-core-product-v5','print-core-product-v6','print-core-product-v7','print-core-product-v8'} else notices

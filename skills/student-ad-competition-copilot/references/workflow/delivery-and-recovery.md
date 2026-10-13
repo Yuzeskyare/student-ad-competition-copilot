@@ -34,7 +34,7 @@
 
 混合门部分完成时用 in-progress，保留真实 passed_check_ids、reviewers、evidence_paths 与 checked_at；未完成项不记通过，已观察失败用 fail。等待原因由尚未完成的必需检查推导：机器项未做是work，机器项已完成且只剩人审是human。机器记录和路径错误仍须先修复，不把所有混合门一律交用户处理。not-run 表示尚未开展，不用于抹去已有检查。
 
-新平面质量门使用 print-ad.0.3.0；历史 print-ad.0.1.0 / print-ad.0.2.0 由各自保留定义验证，不能把旧字段自动解释成新版方法通过，也不重写历史回执。视觉协议的兼容与定性/实测边界见[最终画面验收](final-pixel-review.md)。
+新平面质量门及合同组合由[现行Playbook](../tracks/print-ad/playbook.md)和[现行质量门定义](../tracks/print-ad/quality-gates.json)确定，不在恢复页重复固定版本。历史运行按其真实绑定版本选择保留定义验证，不能把旧字段自动解释成新版方法通过，也不重写历史回执。视觉协议的兼容与定性/实测边界见[最终画面验收](final-pixel-review.md)。
 
 命令中的解释器占位符、路径和不同 shell 写法见[统一执行约定](image-tool-adaptation.md#python-与命令执行约定)。
 

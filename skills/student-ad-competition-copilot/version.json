@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.20.2",
+  "skill_version": "0.2.21",
   "status": "stable-release",
-  "built_at": "2026-10-12",
-  "stable_release": "0.2.20.2",
+  "built_at": "2026-10-13",
+  "stable_release": "0.2.21",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -159,8 +159,8 @@
     },
     {
       "path": "references/schemas/print-ad-run-manifest.schema.json",
-      "bytes": 855980,
-      "sha256": "d1f67526056d27608fdfac1c121821193d3553328a0d194295a72ccecc76616d"
+      "bytes": 988083,
+      "sha256": "1f287d7c481de62946bb52bb55747bdc52b618390e0e0975ca4345450c55df86"
     },
     {
       "path": "references/schemas/production-request.schema.json",
@@ -189,8 +189,8 @@
     },
     {
       "path": "references/schemas/visual-review.schema.json",
-      "bytes": 97218,
-      "sha256": "9448c25d76c85a0dd541b73f69b0a74f5c19f08c0058c98f6c5cf3c61511a699"
+      "bytes": 103519,
+      "sha256": "1fcd058285caa7066bb21fe7437745b1c560938583c0b068f99a00d9b57b2c22"
     },
     {
       "path": "references/templates/ad-copy-direction-card.template.md",
@@ -244,8 +244,8 @@
     },
     {
       "path": "references/templates/print-ad-run-manifest.template.json",
-      "bytes": 6529,
-      "sha256": "4da90d94061532f4f7406bfc45b8c8a71e7195e53b634fb45147dbb010ebc88b"
+      "bytes": 6566,
+      "sha256": "c5d9a0f6c6ec25998fdb7b099986cb537591a9a1c2cd00413a6bdc188706bace"
     },
     {
       "path": "references/templates/production-request.template.json",
@@ -294,8 +294,8 @@
     },
     {
       "path": "references/tracks/print-ad/playbook.md",
-      "bytes": 71639,
-      "sha256": "b9c8b95cb51c149e44197a34748f26c4c086852af571750aa5177b12612da3d5"
+      "bytes": 76217,
+      "sha256": "f37d104e36f5368ea69ddb5ae4e9399ec188454d1bda8d48188803738e88613c"
     },
     {
       "path": "references/tracks/print-ad/quality-gates-v0.1.0.json",
@@ -363,6 +363,11 @@
       "sha256": "9b1675eddf0ae52dac27fccab79cd8dca3ed0aa5d67b7edc6edba6703f13efbf"
     },
     {
+      "path": "references/tracks/print-ad/quality-gates-v0.21.0.json",
+      "bytes": 39275,
+      "sha256": "c5bf6d9c55f9fae9332fb2453cf1d7e8b79fc825e487ab80cd3a44fc80ef5d4b"
+    },
+    {
       "path": "references/tracks/print-ad/quality-gates-v0.3.0.json",
       "bytes": 19833,
       "sha256": "2404fcf572f58f57c2b4ba9106b37fdc1815e5d71b65a448601152586b73d177"
@@ -399,8 +404,8 @@
     },
     {
       "path": "references/tracks/print-ad/quality-gates.json",
-      "bytes": 39275,
-      "sha256": "c5bf6d9c55f9fae9332fb2453cf1d7e8b79fc825e487ab80cd3a44fc80ef5d4b"
+      "bytes": 39962,
+      "sha256": "bbad7c1e70922ebc904f371327fcf50054a9f20ccb2614602f6da3982ae8b15f"
     },
     {
       "path": "references/validation/print-product-pipeline-fixture.json",
@@ -533,6 +538,11 @@
       "sha256": "95294f3defa4816bd7d0a818df7117983fb84a087ed7dd56bf2903d57643ab12"
     },
     {
+      "path": "references/validation/v0.2.21-release-acceptance.json",
+      "bytes": 2215,
+      "sha256": "bb806b2c8b20bd5975cbf2d4d8c8d2f7f2855a9648d3401e3e0b3cb85e2a2157"
+    },
+    {
       "path": "references/validation/v0.2.3-acceptance.json",
       "bytes": 2357,
       "sha256": "12659f68a64c24c05f4a53b8993332511994ff792c65a27477a2771d163aeeb1"
@@ -639,8 +649,8 @@
     },
     {
       "path": "references/workflow/delivery-and-recovery.md",
-      "bytes": 11644,
-      "sha256": "a9878196c4e05f8c015bd61633d1dc6411fc39933f6c53e55aebce95b04f0566"
+      "bytes": 11790,
+      "sha256": "5811cbb7ae5a6ec32f528b6aa22b494e8ac4def91a00ab996d9fb488b716ad03"
     },
     {
       "path": "references/workflow/direction-provenance.md",
@@ -654,18 +664,18 @@
     },
     {
       "path": "references/workflow/feedback-to-creation.md",
-      "bytes": 6971,
-      "sha256": "f1395db7d0e882ca2be41dc9b36a1ab0835550f02e9c031dc09c7863546d15cf"
+      "bytes": 7085,
+      "sha256": "842e8f663d58a7aa5799202540114aa930a9e3ad9d2d6791c8760280041ab08c"
     },
     {
       "path": "references/workflow/final-pixel-review.md",
-      "bytes": 35809,
-      "sha256": "cb21fa6a6df28aed789dfd3c29d02a182c9dec81e6d3fe435c11abb77c3ba433"
+      "bytes": 38790,
+      "sha256": "feda42e740f9cbc29d3c37b9c2583bd2336778863e5676317633dbc7c085c14b"
     },
     {
       "path": "references/workflow/image-tool-adaptation.md",
-      "bytes": 21302,
-      "sha256": "49dd955b05a901dedf890b1f15abf4bf03f68c7b25cca36496863564aa4023d4"
+      "bytes": 23186,
+      "sha256": "12cd9a533ea5a48bfa96b63067f36d46a3d3f1703b688aca7fee303002a224db"
     },
     {
       "path": "references/workflow/product-relationship-v1.md",
@@ -678,9 +688,14 @@
       "sha256": "6020db5ac7dc2042dc5c6c5289d8900faf82e20c02d3690583eeed144bc7d096"
     },
     {
-      "path": "references/workflow/product-relationship.md",
+      "path": "references/workflow/product-relationship-v3.md",
       "bytes": 4324,
       "sha256": "c8bd8e6a205a031f0c4b69564adfae44cf0e11cfea94b1b44f5b6adacc40c0ed"
+    },
+    {
+      "path": "references/workflow/product-relationship.md",
+      "bytes": 5132,
+      "sha256": "7974199ebf4290410303381cb76f7c595158a74099c2fac8f482ef4017448160"
     },
     {
       "path": "references/workflow/review-state-tools.md",
@@ -689,8 +704,8 @@
     },
     {
       "path": "references/workflow/typography-direction.md",
-      "bytes": 14344,
-      "sha256": "5d0433db484d30ad594c3927a58ecdbb3836a0381e9cd53aadd44e995a866060"
+      "bytes": 14735,
+      "sha256": "ab1cde36afa940b23280f545e0081f0febef0db09b5d819c6f2cf8d5011d5b87"
     },
     {
       "path": "references/workflow/user-review-checkpoints.md",
@@ -704,8 +719,8 @@
     },
     {
       "path": "references/workflow/version-bound-review.md",
-      "bytes": 13411,
-      "sha256": "4da09a9f882ce829ac70f09728017e4ee54aaa9a614964ab7dd16c36d69b58eb"
+      "bytes": 14693,
+      "sha256": "6dbc62d00aaae4425e36bc74a24e8831a9174187e5fc98f00367880ee56e9c14"
     },
     {
       "path": "references/workflow/visual-generation-capability-gate.md",
@@ -714,8 +729,8 @@
     },
     {
       "path": "references/workflow/visual-style-direction.md",
-      "bytes": 11037,
-      "sha256": "739cda26374d52bbe40728793b1fddbc01bad2361d5aed6f2afb6d25a9d87ef9"
+      "bytes": 13655,
+      "sha256": "2a8a95024b50867540e8519c18171cd3df4e3e9d598453a3dc54c967a91483ad"
     },
     {
       "path": "scripts/creative_iteration_contract.py",
@@ -734,8 +749,8 @@
     },
     {
       "path": "scripts/execution_contract.py",
-      "bytes": 21313,
-      "sha256": "5534ee133a6e72baeb874c2530dbdf8108538d4c3c928bef5f15347f80a3f2e7"
+      "bytes": 22098,
+      "sha256": "85ed6cbd6372fe8962c28a2ea5023f290a977444cb1e867a6d1233e1be59c327"
     },
     {
       "path": "scripts/export_current_artwork.py",
@@ -769,13 +784,13 @@
     },
     {
       "path": "scripts/product_relationship_contract.py",
-      "bytes": 10203,
-      "sha256": "010bb6bbd8764f2e39e95cf2885615c4001e4ec5c81b4f8b84e289aeca80f789"
+      "bytes": 10346,
+      "sha256": "a759120497dc06813c935d5698fc006944b365a333a0ea444a44f10184fd22d5"
     },
     {
       "path": "scripts/quality_gate_contract.py",
-      "bytes": 13684,
-      "sha256": "d506ba44963690f12e3c5fc28f44ece1f1b46604cae81f7f81b935d2e612813e"
+      "bytes": 13774,
+      "sha256": "a5ce53f0942a6a72515240b69455622f1401c0b473c010cb6a51e4d350e3e61a"
     },
     {
       "path": "scripts/query_case_library.py",
@@ -794,8 +809,8 @@
     },
     {
       "path": "scripts/test_print_product_pipeline.py",
-      "bytes": 26623,
-      "sha256": "1dcde5bc55bbbdf777b51a5b353f55c1e4f86187be63c30cf9046cfd9bceb8fa"
+      "bytes": 56854,
+      "sha256": "7106555929cd614039c3a2f3cf154e7f39441897594a8c1fca0b1efe3e40d47c"
     },
     {
       "path": "scripts/validate_ad_copy.py",
@@ -824,8 +839,8 @@
     },
     {
       "path": "scripts/validate_print_ad_run.py",
-      "bytes": 201162,
-      "sha256": "1e1cd453bc76f71116573b862728ab51798767ee0c293ef304422224af8a762d"
+      "bytes": 211730,
+      "sha256": "4f69240df66b40f42150f627ce25c293c384b07365b7f031dd50e7e0f60359d4"
     },
     {
       "path": "scripts/validate_run.py",
@@ -849,13 +864,13 @@
     },
     {
       "path": "scripts/visual_review_contract.py",
-      "bytes": 90393,
-      "sha256": "fb8a8107e9b7269a8a3b22e7b04ff871bb978692c8bf1d9bbac858ad5a9dd8d9"
+      "bytes": 94071,
+      "sha256": "f56dc4f9ed4b0e5062a22cfd2952b68c74eefbdb678878c21ccf441921744ceb"
     },
     {
       "path": "SKILL.md",
-      "bytes": 37959,
-      "sha256": "a1db646ef5f602c3d48c05e86acc52d878c79017474880df038c51bb415d82eb"
+      "bytes": 38880,
+      "sha256": "ea17c85275d633badb9e93ae837cfff1abf84cc0a844061e5ffb542ffc133eae"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -863,14 +878,14 @@
       "sha256": "613bf434dc250f39d0fee8ebeffc8f8db6b3a2c58c791e6d52bb0e968992fbc9"
     }
   ],
-  "base_version": "0.2.20.1",
+  "base_version": "0.2.20.2",
   "internal_verification": {
-    "path": "references/validation/v0.2.20.2-release-acceptance.json",
-    "bytes": 1566,
-    "sha256": "95294f3defa4816bd7d0a818df7117983fb84a087ed7dd56bf2903d57643ab12"
+    "path": "references/validation/v0.2.21-release-acceptance.json",
+    "bytes": 2215,
+    "sha256": "bb806b2c8b20bd5975cbf2d4d8c8d2f7f2855a9648d3401e3e0b3cb85e2a2157"
   },
-  "rollback_release": "0.2.20.1",
-  "version": "0.2.20.2-rc.1",
-  "milestone": "hotfix-visual-schema-2.6.0-pack-identity-and-full-chain-regression",
-  "promoted_candidate_manifest_sha256": "d7e1e4ac77438a1b9249e94f7aba7a1050422420d5b99da7ceb05f2363ee1b1b"
+  "rollback_release": "0.2.20.2",
+  "version": "0.2.21-rc.6",
+  "milestone": "in-image-copy-diverse-visual-methods-product-posture-a4-paths-carryover",
+  "promoted_candidate_manifest_sha256": "f48c2dbe5ab69ce746c1c339afd7f7f4e0a3d84de3ae1837932abed20d4018ff"
 }

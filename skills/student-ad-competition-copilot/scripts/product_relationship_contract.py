@@ -3,6 +3,7 @@ from pathlib import Path
 
 DEFINITION = (Path(__file__).resolve().parents[1] / 'references/workflow/product-relationship.md').read_text(encoding='utf-8')
 HISTORICAL_DEFINITION = (Path(__file__).resolve().parents[1] / 'references/workflow/product-relationship-v1.md').read_text(encoding='utf-8')
+RELEASE_020_DEFINITION = (Path(__file__).resolve().parents[1] / 'references/workflow/product-relationship-v3.md').read_text(encoding='utf-8')
 PREVIOUS_DEFINITION = (Path(__file__).resolve().parents[1] / 'references/workflow/product-relationship-v2.md').read_text(encoding='utf-8')
 QUESTIONS = ('product_in_core_relation', 'action_depicted_without_copy', 'claimed_relation_depicted', 'creative_scene_not_generic', 'product_action_understood_in_three_seconds')
 HARD_QUESTIONS = {'product_label_consistent_readable': 'label', 'product_in_scene': 'scene-integration', 'layout_readable': 'layout'}

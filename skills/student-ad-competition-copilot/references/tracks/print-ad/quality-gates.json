@@ -2,7 +2,7 @@
   "$schema": "../../schemas/track-quality-gates.schema.json",
   "document_type": "gate-definitions",
   "schema_version": "0.1.0",
-  "definition_set_id": "print-ad.0.21.0",
+  "definition_set_id": "print-ad.0.22.0",
   "track": "print-ad",
   "playbook": "playbook.md",
   "gates": [
@@ -189,7 +189,7 @@
       "order": 30,
       "stage": "prototype",
       "gate_type": "human",
-      "purpose": "在高清生产前验证动作、因果、产品作用和短时理解。",
+      "purpose": "在高清生产前诊断完整图文的关系与阅读，未成稿或证据不足保留待验证。",
       "applicability": {
         "mode": "always"
       },
@@ -207,7 +207,7 @@
           "check_id": "visual-only-meaning",
           "assessment": "human",
           "question": "图像承担的表达是否可见，完整图文是否共同成立？",
-          "pass_condition": "按product-relationship.md开放盲读观众所得意义；没读出、偏弱、不完全兑现或歧义保留提示，不要求产品做动作。明确读反或合规冲突仍按独立可核实失败硬拦。",
+          "pass_condition": "按product-relationship.md盲读完整图文，图内文字可以读；遮字只诊断文字依赖，不判否。没读出、偏弱、歧义或不成立保存提示，两份不同完整稿同因提示走A4；未成稿或未完成独立观察保留not-run/in-progress，不自动通过。",
           "failure_severity": "consider",
           "return_to_stage": "prototype",
           "evidence_required": true
@@ -216,7 +216,7 @@
           "check_id": "product-in-relation",
           "assessment": "human",
           "question": "产品特征或利益与本次判断有何联系？",
-          "pass_condition": "只用product-relationship.md同一定义：观众从像素能得到预期产品/品牌意义；不要求产品动作或本职结果，公益按信息判断。偏弱或不成立保留提示，重复两稿同因沿A4交回。",
+          "pass_condition": "观众不靠作品外作者说明，从完整图文得到预期产品/品牌意义；不要求产品动作或本职结果，公益按信息判断。偏弱或不成立提示，同方向连续两份不同完整稿同因走A4交回；待验证项不能记为通过。",
           "failure_severity": "consider",
           "return_to_stage": "prototype",
           "evidence_required": true
@@ -225,7 +225,16 @@
           "check_id": "thumbnail-hierarchy",
           "assessment": "human",
           "question": "实际浏览尺度的阅读顺序是否清楚，容器或界面是否有语义？",
-          "pass_condition": "焦点和品牌确认可辨；整体真实界面可以成立，无关卡片骨架仍失败。",
+          "pass_condition": "记录实际浏览尺度的焦点、品牌确认与阅读顺序；主观层级或无语义容器保留提示，尚未观察保留待验证。必需文字可读性仍在成稿第8问独立核验。",
+          "failure_severity": "consider",
+          "return_to_stage": "prototype",
+          "evidence_required": true
+        },
+        {
+          "check_id": "verified-reversal-or-compliance",
+          "assessment": "human",
+          "question": "有无可核实的主关系读反或合规冲突？",
+          "pass_condition": "完成独立观察后未发现读反或合规冲突；读反须列原盲读、锁定预期与相反方向的成图证据，合规冲突须列官方限制原文及成图冲突。未读出、偏弱、歧义、作品外说明不能补足或尚未成稿均不能冒充可核实失败；未完成时保留待验证。",
           "failure_severity": "hard-stop",
           "return_to_stage": "prototype",
           "evidence_required": true
@@ -233,22 +242,16 @@
       ],
       "hard_stops": [
         {
-          "stop_id": "explanation-dependent",
-          "condition": "画面必须依赖大段创意说明才能理解。",
-          "return_to_stage": "prototype",
-          "required_resolution": "重做视觉关系，不增加解释性小字。"
-        },
-        {
           "stop_id": "abstract-action",
-          "condition": "所选表达的关键关系在实际图文中不成立；动作型看不出必要作用，静态型缺少预期对比或联系。",
+          "condition": "独立盲读的关键关系被可核实地读反：列明原盲读、锁定预期及相反方向的成图证据；不包括没读出、不成立、偏弱或歧义。",
           "return_to_stage": "prototype",
-          "required_resolution": "回到具体失败层重建；不强制所有表达拟人化或添加动作。"
+          "required_resolution": "按可核实读反的具体责任层修正并独立复查；主观关系失败仅提示，连续两份不同完整稿同因走A4。"
         },
         {
-          "stop_id": "generic-card-shell",
-          "condition": "主要构图依赖重复圆角卡片、网页UI面板或仪表盘外壳，且不能证明真实对象或内容关系语义。",
+          "stop_id": "verified-compliance-conflict",
+          "condition": "官方命题或合规限制原文与当前图文存在可核实冲突。",
           "return_to_stage": "prototype",
-          "required_resolution": "移除无语义模板，按内容重建；真实界面按实际整体范围核验，不强制局部化。"
+          "required_resolution": "修正已核实冲突并独立复查；不得用作者说明或用户认可抵消。"
         }
       ],
       "waiver_policy": {
@@ -484,7 +487,7 @@
         {
           "check_id": "product-meaning-consistent",
           "assessment": "human",
-          "question": "观众不靠文案能否说出产品在这张图里是干什么的，且与预期产品意义一致？",
+          "question": "观众不靠作者在作品之外的额外说明能否说出产品在这张图里是干什么的，且与预期产品意义一致？",
           "pass_condition": "按product-relationship.md记录观众实际读到的产品意义；说不出、读反，或产品只陈列在与画面需要无关的位置、持产品微笑而无可见联系，为不成立。不成立仅提示；可核实读反另硬拦。",
           "failure_severity": "consider",
           "return_to_stage": "directions",

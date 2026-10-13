@@ -65,11 +65,15 @@ metadata:
 
 ## 开放式视觉风格选择
 
+平面方向发散时，主动以多样的、艺术性的、富有创意的视觉方法构思；从各自场景出发，按[正面视觉探索要求](references/workflow/visual-style-direction.md#方向发散的正面要求)借助“选择入口”表思考对象、载体与手法，整组尽量探索实质不同的视觉路子，同一个点子换画风不算新方向。命题或用户指定工艺照常使用，不设数量或比例配额，不禁用任何材质。
+
+平面方向清单交出前，作者按[方向发散的整组自查](references/workflow/visual-style-direction.md#方向发散的整组自查)并排看核心对象/载体与艺术语言，并说明产品角色的创意理由；命题或用户需要的共同材质照常保留。自查不新增硬拦或风格/材质配额，方向盲评和采用逻辑保持。
+
 先确认传播目的，再独立判断文字职责与艺术语言。字体专项不自动要求文字主视觉，产品相关不等于包装必须充当机关。平面广告与营销策划在确定视觉方向及生图前读取[视觉风格选择](references/workflow/visual-style-direction.md)。未指定风格不默认摄影写实；高完成度不等于照片感。依据命题、受众、品牌与页面任务选择真实影响图像与文字面貌的视觉语言；标题及辅助信息的文字系统、方向与制作按[文字设计](references/workflow/typography-direction.md)在代表稿前落实，示例只启发、不构成白名单。沿用已有方向/代表稿审核，不新增风格枚举、打分表或审核轮次。
 
 ## 平面范围与修改继承
 
-平面方向选择前必须先实际运行 `scripts/query_case_library.py --kind method`，保存原始结果及 `02-direction/method-retrieval.json`，再读取方法步骤形成取舍，最后记录方向采用时间。检索记录必须已存在且严格早于采用，包含实际命令、活动包、原问题与回退词、返回 id、逐项采用/拒绝理由及具体改变的关系或制作输入；空结果原样保留。新运行使用 `creative_contract: print-core-v4` 、direction_contract: print-direction-v10、product_contract: print-product-v3 、core_review_contract: print-core-product-v7 和 print-ad.0.21.0，成图独立核心检查必须先只看成图盲读并保存，再给声明与官方产品图对照，七问引用两步证据；主关系歧义保留提示，明确读反与可见接触穿帮按[产品关系与审稿分级](references/workflow/product-relationship.md)硬拦，不能用声明补读。缺记录或事后补检索校验失败；细节与字段见 Playbook 方向段。方向采用前仍分别判断产品联系与具体创意贡献。收到创意关系、艺术表达或系列增量失败反馈后，下一次制作前按[反馈进入创作](references/workflow/feedback-to-creation.md)重入适用方法步骤，复用方向笔记说明本轮真正改变的关系与画面。多轮记录/范围同步使用[当前集合与事件工具](references/workflow/review-state-tools.md)，不手写第二套“当前”名单，不把方法名、结构检查或内部高分当创意通过。
+平面方向选择前必须先实际运行 `scripts/query_case_library.py --kind method`，保存原始结果及 `02-direction/method-retrieval.json`，再读取方法步骤形成取舍，最后记录方向采用时间。检索记录必须已存在且严格早于采用，包含实际命令、活动包、原问题与回退词、返回 id、逐项采用/拒绝理由及具体改变的关系或制作输入；空结果原样保留。新运行使用 `creative_contract: print-core-v4` 、direction_contract: print-direction-v11、product_contract: print-product-v3 、core_review_contract: print-core-product-v8 和 print-ad.0.22.0，成图独立核心检查必须先只看成图盲读并保存，再给声明与官方产品图对照，七问引用两步证据；主关系歧义保留提示，明确读反与可见接触穿帮按[产品关系与审稿分级](references/workflow/product-relationship.md)硬拦，不能用声明补读。缺记录或事后补检索校验失败；细节与字段见 Playbook 方向段。方向采用前仍分别判断产品联系与具体创意贡献。收到创意关系、艺术表达或系列增量失败反馈后，下一次制作前按[反馈进入创作](references/workflow/feedback-to-creation.md)重入适用方法步骤，复用方向笔记说明本轮真正改变的关系与画面。多轮记录/范围同步使用[当前集合与事件工具](references/workflow/review-state-tools.md)，不手写第二套“当前”名单，不把方法名、结构检查或内部高分当创意通过。
 
 平面方向阶段主动判断单幅或系列，说明形态、计划成员、共享机制、变量与每幅增量；新正式运行在`series_plan`保存该范围。数量服从命题与用户约束，不默认单幅，也不强凑三幅。代表稿只验证机制和风格；通过后持续完成已授权范围，多个先后方向分别判断，不能把代表稿批准收窄为单幅最终交付。用户明确要求系列时不得单幅豁免。
 
@@ -171,7 +175,7 @@ metadata:
 
 场景内产品（scene-object）必须作为场景的一部分生成或编辑进入画面，不得只把官方产品图或标签以贴片形式放进画面；独立展示物和版式 Logo 可用官方原件，但生产前计划必须声明为 display-object 并写 display_reason。
 
-新平面合同 print-core-v4 / print-direction-v10 / print-product-v3 / print-ad.0.21.0 使用核心审稿 print-core-product-v7，在方向采用时锁定用户选定方向原句（明确委托时为第一名）及UTF-8声明hash，所有完整稿都用原声明对照。改声明视为换方向，回方向重新发散和盲评，累计最多重新发散1次。盲读保留说明手段及去掉后的观察，按[产品关系与审稿分级](references/workflow/product-relationship.md)判断观众得到的意义；不能强迫画动作、接触或本职结果，也不能因说明手段存在自动否定场景创意。八问各自保留像素理由，主观质量仅提示；详细合同见[平面Playbook](references/tracks/print-ad/playbook.md#独立核心检查与宿主路径)。
+新平面合同 print-core-v4 / print-direction-v11 / print-product-v3 / print-ad.0.22.0 使用核心审稿 print-core-product-v8，在方向采用时锁定用户选定方向原句（明确委托时为第一名）及UTF-8声明hash，所有完整稿都用原声明对照。改声明视为换方向，回方向重新发散和盲评，累计最多重新发散1次。盲读保留说明手段及去掉后的观察，按[产品关系与审稿分级](references/workflow/product-relationship.md)判断观众得到的意义；不能强迫画动作、接触或本职结果，也不能因说明手段存在自动否定场景创意。八问各自保留像素理由，主观质量仅提示；详细合同见[平面Playbook](references/tracks/print-ad/playbook.md#独立核心检查与宿主路径)。
 
 ### 方向与主画面边界
 
@@ -179,11 +183,11 @@ metadata:
 
 人物、场景、产品互动等主画面必须来自实际图像生成/编辑或用户提供的素材。禁止用代码绘制SVG/矢量图形或几何拼贴整体重建主画面顶替生图；排版、文字、辅助图形与局部合成仍可原生完成。生产记录逐稿标明主画面来源generated/edited/user-asset并绑定证据；native-drawn完整稿只能保留为失败历史，不得作代表稿或通过稿。主画面检查失败且额度用尽时必须停下，交回失败稿与原因，请用户决定追加额度或换方向。字段和生产前阻断见[平面playbook](references/tracks/print-ad/playbook.md)。
 
-平面场景产品按[最终画面验收](references/workflow/final-pixel-review.md#产品合成与局部像素合同)执行官方参考直接生成标签、必要时局部修正与区外零差异；新质量门print-ad.0.21.0包含独立产品文字第6问与是否在场景中的第7问，并在生产前强制登记产品进场景计划。
+平面场景产品按[最终画面验收](references/workflow/final-pixel-review.md#产品合成与局部像素合同)执行官方参考直接生成标签、必要时局部修正与区外零差异；新质量门print-ad.0.22.0包含独立产品文字第6问与是否在场景中的第7问，并在生产前强制登记产品进场景计划。
 
-新平面运行的方向因果盲评提示、版本迁移选择承接和产品生产前计划/生产后独立第七问，执行 [平面 playbook](references/tracks/print-ad/playbook.md) 的 print-ad.0.21.0 合同。
+新平面运行的方向因果盲评提示、版本迁移选择承接和产品生产前计划/生产后独立第七问，执行 [平面 playbook](references/tracks/print-ad/playbook.md) 的 print-ad.0.22.0 合同。
 
-方向因果提示使用 print-direction-v10：逐条写“核心效果来自：产品本职（含正常结果、赋能结果）/ 人的动作 / 场景设定 / 产品未参与的其他东西”之一，并给一句理由。只有画面或文案把效果归给产品、而产品未参与产生该效果时，才提醒“这里借用了产品没参与的效果”；人的自主动作、场景设定、症状表现或护理选择本身不构成产品归因。不使用合格/不合格判词，不按品类或命题类型分支。causal_check 记录 direction_id、effect_source、reason、attributed_to_product、product_participates、reminder；最后一项等于归因成立且产品未参与。选择清单的 rows 和覆盖全部输入（含去重项）的 causal_advisories 原样展示。提示不影响排序、可画、all_weak、自动采用、user_override、版本迁移承接或生产许可，因果提示不改变[产品关系与审稿分级](references/workflow/product-relationship.md)中的意义判断与分级。历史 v7 返回按原定义保留，不转换旧结论冒充新独立返回。
+方向因果提示使用 print-direction-v11：逐条写“核心效果来自：产品本职（含正常结果、赋能结果）/ 人的动作 / 场景设定 / 产品未参与的其他东西”之一，并给一句理由。只有画面或文案把效果归给产品、而产品未参与产生该效果时，才提醒“这里借用了产品没参与的效果”；人的自主动作、场景设定、症状表现或护理选择本身不构成产品归因。不使用合格/不合格判词，不按品类或命题类型分支。causal_check 记录 direction_id、effect_source、reason、attributed_to_product、product_participates、reminder；最后一项等于归因成立且产品未参与。选择清单的 rows 和覆盖全部输入（含去重项）的 causal_advisories 原样展示。提示不影响排序、可画、all_weak、自动采用、user_override、版本迁移承接或生产许可，因果提示不改变[产品关系与审稿分级](references/workflow/product-relationship.md)中的意义判断与分级。历史 v7 返回按原定义保留，不转换旧结论冒充新独立返回。
 
 平面次级文案按[文字设计](references/workflow/typography-direction.md)判断是否使用；现有作品记录登记理由，使用时来源与层级/420px识读/系列检查和独立语义检查齐备。没有次级文案不算缺项；语义失败只返工文字层。新成图使用print-secondary-copy-v2与visual-review2.6.0，只检查明确登记为次级文案的文字元素；页脚事实限定/必需信息与品牌标识继续按既有规则检查，历史合同保留。
 
@@ -195,11 +199,11 @@ metadata:
 
 仅平面 print-ad.0.17.0 及以后合同的完整稿，在审稿记录接收、导出、交付及 current artwork 选择消费时须由包内 guard_production.py 直接放行并绑定产出。守卫自动写 request_id、request_sha256、outputs 的实际 SHA256，以及 guard_identity 中守卫和包内检查器脚本哈希；--execute 结束后才有可消费的 completed 记录，预检 authorized 不能代替产出放行。prepare_visual_views.py 保持原调用方式；仅声明为上述新合同完整稿时，用 --complete-artwork --manifest 核对。原型、用户素材、营销视觉和旧合同按原行为准备视图；当前集合、导出、交付和完整稿审查重新核对记录及字节。缺记录、产出改变或检查器不是本包文件，一律拒绝。认为检查器有误时停下向用户报告具体报错和输入，不得包装、修补、monkeypatch、替换检查器，也不得在守卫拒绝后用其它脚本产出同一稿。历史稿没有新哈希不能补填为当时放行：保留旧记录，按新合同重新授权、在新路径经守卫执行必要的制作/确定性复制与复核，形成当前时间的新证据；该记录不认证旧生产过程。
 
-同一方向连续两个不同完整稿出现同一条独立创意提示，按[产品关系与审稿分级](references/workflow/product-relationship.md)及现有A4机制立即交回。全部提示与原像素观察存记录，最多2条向用户展示；机械核对问题编号和原因码，不由作者自述同因。制作失败不计入。继续须绑定真实用户选择、两稿及共同理由，额度与方向采用/声明锁不变。
+同一方向连续两个不同完整稿出现同一条独立创意提示，按[产品关系与审稿分级](references/workflow/product-relationship.md)及现有A4机制立即交回。全部提示与原像素观察存记录，最多2条向用户展示；机械核对问题编号和原因码，不由作者自述同因。制作失败不计入。继续须绑定真实用户选择、两稿及共同理由；三种选择分别按完整稿检查的A4继续规则登记，累计额度、独立审稿与原失败记录继续生效。
 
 用户要求继续、做到成品或不要提问，不能覆盖生产守卫拒绝。拒绝后只能按报错修正记录并重新通过，或停下把拒绝原因原样交给用户；不得自写“边界说明”代替放行。新合同完整稿在接收独立审稿记录、选择 current artwork、导出及交付时核对包内守卫放行；通用视觉准备工具仍可用于原型、用户素材、营销视觉和历史合同。
 
-当前质量门为print-ad.0.21.0，core_review_contract=print-core-product-v7，direction_contract=print-direction-v10，产品合同仍print-product-v3。创作、方向盲评、开放盲读、核心八问与A4原因码统一引用[产品关系与审稿分级](references/workflow/product-relationship.md)。新比较同时绑定proposition_message的真实命题信息。旧合同及历史rubric原样保留。
+当前质量门为print-ad.0.22.0，core_review_contract=print-core-product-v8，direction_contract=print-direction-v11，产品合同仍print-product-v3。创作、方向盲评、开放盲读、核心八问与A4原因码统一引用[产品关系与审稿分级](references/workflow/product-relationship.md)。新比较同时绑定proposition_message的真实命题信息。旧合同及历史rubric原样保留。
 
 新独立审稿行声明 `required_brand_assets` 并与 manifest 逐项一致；比较输入按 `mandatory-brand-asset:<element_id>` 绑定官方资产，只给像素、官方事实与原锁定声明。盲读仍只看成图。每个必需资产都返回观察，不能省略“像贴上去的”提示。产品关系按统一定义判断观众得到的意义，不以使用动作或本职结果为必要条件；仅看结果也不能替画面补意义。
 
