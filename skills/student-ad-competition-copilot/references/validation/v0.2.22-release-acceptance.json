@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.22",
+  "status": "release-qualified",
+  "change_id": "direction-purpose-check-and-product-role-set-review",
+  "promoted_candidate": "0.2.22-rc.1",
+  "candidate_manifest_sha256": "bf94930a2ffd44c50c7aca7e0c896b7222b7d5b4038c68b237683a2f7bcbcf26",
+  "runtime_scripts_changed_since_candidate": false,
+  "changes": [
+    "Directions quote the brief purpose verbatim; the independent direction check receives the excerpt and returns a purpose hint (drift/unclear as hints, clear reversal under existing grading)",
+    "Set self-check covers product roles: an all-display set must be justified by the brief or re-derived from each scene; no quotas"
+  ],
+  "candidate_tests": {
+    "suites": 60,
+    "new_tests": 20,
+    "full_chain_assertions": 75,
+    "failures": 0
+  },
+  "legacy_regressions": "No rule or historical contract changed beyond the two fixes",
+  "distribution_cleanup": {
+    "removed_process_records": [
+      "references/validation/v0.2.22-candidate.json"
+    ],
+    "edited_documents": [],
+    "rule_content_changed": false
+  },
+  "image_generation_calls": 0,
+  "project_submission_ready": false,
+  "limits": [
+    "Purpose hints verified by zero-generation calibration (天士力 aligned 8/8, 三金 replay flagged drift); no new artwork yet under 0.2.22",
+    "Automatic checks are model judgments, not human approval"
+  ],
+  "promotion_basis": "Verified candidate runtime with documented distribution cleanup; publication only after explicit user authorization."
+}

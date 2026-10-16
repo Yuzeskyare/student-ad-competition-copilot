@@ -323,6 +323,10 @@ def direction_choice_causal_text_v8(causal):
 
 def validate_direction_choice_list_v8(root,adoption,by_id,result,completed,decided):
     choice=load_json(bound_file(root,adoption['choice_list']))
+    if 'purpose_check' in result:
+        from direction_purpose_contract import validate_purpose_choice
+        validate_purpose_choice(root, choice, result)
+        choice = {k:v for k,v in choice.items() if k != 'purpose_advisories'}
     meaning_advice='product_meaning_hints' in result
     if meaning_advice:
         from product_relationship_contract import validate_direction_meaning
@@ -804,7 +808,7 @@ def load_claim_lock(root, adoption):
     bundle = load_json(bound_file(root, lock['blind_review']))
     last = load_json(bound_file(root, bundle['rounds'][-1]))
     sentences = json.loads(bound_file(root, last['inputs'][0]['file']).read_text(encoding='utf-8'))
-    winner = (adoption['direction_id'] if last.get('rubric_version') in {'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'}
+    winner = (adoption['direction_id'] if last.get('rubric_version') in {'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}
               else last['result']['ranking'][0]['direction_id'])
     original = next(v['statement'] for v in sentences if v['direction_id'] == winner)
     if winner != lock['direction_id'] or original != lock['statement']:
@@ -862,6 +866,11 @@ def direction_request_v10(content,references,counterexamples):
 
 def direction_request_v11(content,references,counterexamples):
     return direction_request_v8(content,references,counterexamples) + '\n' + PRODUCT_RELATIONSHIP_DEFINITION + '\n方向阶段仅增加product_meaning_hints数组，每个输入direction_id写audience_meaning、weak布尔、observation。只提示，不改变原排序、可画、all_weak、采用、承接或守卫。'
+
+def direction_request_v12(content,references,counterexamples,purpose_content):
+    from direction_purpose_contract import direction_request_with_purpose
+    return direction_request_with_purpose(content,references,counterexamples,purpose_content)
+
 
 def validate_blind_core(root, row, render, record, invocation_keys, locked_claim=None):
     """Extend the existing five-question check; historical v2 remains unchanged."""
@@ -1157,8 +1166,8 @@ def validate_superseded_direction_rounds(root, bundle, rubric_version, recorded)
         prepared, started, completed = (timestamp(r[k]) for k in ('input_prepared_at', 'started_at', 'completed_at'))
         require(prepared <= started <= completed < timestamp(accepted[successor]['started_at']) <= recorded, 'Superseded call must precede its accepted replacement and bundle')
         inputs = r['inputs']
-        require(isinstance(inputs, list) and len(inputs) == 3 and all(set(x) == {'role', 'file'} for x in inputs) and [x['role'] for x in inputs] == ['direction-sentences', 'reference-mechanisms', 'feedback-counterexamples'], 'Superseded inputs must preserve anonymous fixed roles')
-        content, references, counterexamples = (bound_file(root, x['file']).read_text(encoding='utf-8') for x in inputs)
+        require(isinstance(inputs, list) and len(inputs) == (4 if rubric_version == 'print-direction-v12' else 3) and all(set(x) == {'role', 'file'} for x in inputs[:3]) and [x['role'] for x in inputs] == ['direction-sentences', 'reference-mechanisms', 'feedback-counterexamples'] + (['proposition-purpose'] if rubric_version == 'print-direction-v12' else []), 'Superseded inputs must preserve anonymous fixed roles')
+        content, references, counterexamples = (bound_file(root, x['file']).read_text(encoding='utf-8') for x in inputs[:3])
         candidates = json.loads(content)
         require(isinstance(candidates, list) and len(candidates) >= 6, 'Superseded round still needs actually submitted candidates')
         for c in candidates: validate_direction_sentence_v5(c)
@@ -1171,11 +1180,16 @@ def validate_superseded_direction_rounds(root, bundle, rubric_version, recorded)
         projection = direction_case_projection(root, r['case_references'], prepared, competition, qualified_scope=True)
         require(json.loads(references) == projection, 'Superseded case input must match its qualified record')
         request_fn = globals().get('direction_request_' + rubric_version.rsplit('-', 1)[1])
-        require(callable(request_fn) and bound_file(root, r['request']).read_text(encoding='utf-8') == request_fn(content, references, counterexamples), 'Superseded request must be the unmodified fixed rubric and inputs')
+        require(callable(request_fn) and bound_file(root, r['request']).read_text(encoding='utf-8') == request_fn(content, references, counterexamples, *([bound_file(root, inputs[3]['file']).read_text(encoding='utf-8')] if rubric_version == 'print-direction-v12' else [])), 'Superseded request must be the unmodified fixed rubric and inputs')
         raw_path = bound_file(root, r['raw_return']); raw = load_json(raw_path)
         require(str(raw_path) not in seen_raw, 'Original independent return cannot be registered twice')
         seen_raw.add(str(raw_path))
-        require(raw == r['result'] and set(raw) == {'near_duplicates', 'ranking', 'drawability', 'all_weak', 'trope_screen', 'reference_assessment', 'causal_check', 'product_meaning_hints'} and type(raw['all_weak']) is bool, 'Superseded result must preserve all original fields exactly')
+        require(raw == r['result'] and set(raw) == ({'near_duplicates', 'ranking', 'drawability', 'all_weak', 'trope_screen', 'reference_assessment', 'causal_check', 'product_meaning_hints'} | ({'purpose_check'} if rubric_version == 'print-direction-v12' else set())) and type(raw['all_weak']) is bool, 'Superseded result must preserve all original fields exactly')
+        if rubric_version == 'print-direction-v12':
+            from direction_purpose_contract import validate_purpose_excerpt, validate_purpose_check
+            purpose = bound_file(root, inputs[3]['file']).read_text(encoding='utf-8')
+            validate_purpose_excerpt(root, purpose)
+            validate_purpose_check(raw, candidates, purpose)
         duplicates = raw['near_duplicates']; dropped, kept = set(), set()
         require(isinstance(duplicates, list), 'Superseded duplicates must be original observations')
         for d in duplicates:
@@ -1219,17 +1233,18 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
 
     try:
         import re
-        v11 = manifest.get('direction_contract') == 'print-direction-v11'
-        v10 = manifest.get('direction_contract') in {'print-direction-v10','print-direction-v11'}
-        v9 = manifest.get('direction_contract') in {'print-direction-v9','print-direction-v10','print-direction-v11'}
-        v8 = manifest.get('direction_contract') in {'print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'}
-        v7 = manifest.get('direction_contract') in {'print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'}
-        v6 = manifest.get('direction_contract') in {'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'}
-        v5 = manifest.get('direction_contract') in {'print-direction-v5', 'print-direction-v6', 'print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'}
-        v4 = manifest.get('direction_contract') in {'print-direction-v4', 'print-direction-v5', 'print-direction-v6', 'print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'}
-        v3 = manifest.get('direction_contract') in {'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6', 'print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'}
-        v2 = manifest.get('direction_contract') in {'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6', 'print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'}
-        rubric_version = 'print-direction-v11' if v11 else 'print-direction-v10' if v10 else 'print-direction-v9' if v9 else 'print-direction-v8' if v8 else 'print-direction-v7' if v7 else 'print-direction-v6' if v6 else ('print-direction-v5' if v5 else ('print-direction-v4' if v4 else ('print-direction-v3' if v3 else ('print-direction-v2' if v2 else 'print-direction-v1'))))
+        v12 = manifest.get('direction_contract') == 'print-direction-v12'
+        v11 = manifest.get('direction_contract') in {'print-direction-v11','print-direction-v12'}
+        v10 = manifest.get('direction_contract') in {'print-direction-v10','print-direction-v11','print-direction-v12'}
+        v9 = manifest.get('direction_contract') in {'print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}
+        v8 = manifest.get('direction_contract') in {'print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}
+        v7 = manifest.get('direction_contract') in {'print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}
+        v6 = manifest.get('direction_contract') in {'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}
+        v5 = manifest.get('direction_contract') in {'print-direction-v5', 'print-direction-v6', 'print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}
+        v4 = manifest.get('direction_contract') in {'print-direction-v4', 'print-direction-v5', 'print-direction-v6', 'print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}
+        v3 = manifest.get('direction_contract') in {'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6', 'print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}
+        v2 = manifest.get('direction_contract') in {'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6', 'print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}
+        rubric_version = 'print-direction-v12' if v12 else 'print-direction-v11' if v11 else 'print-direction-v10' if v10 else 'print-direction-v9' if v9 else 'print-direction-v8' if v8 else 'print-direction-v7' if v7 else 'print-direction-v6' if v6 else ('print-direction-v5' if v5 else ('print-direction-v4' if v4 else ('print-direction-v3' if v3 else ('print-direction-v2' if v2 else 'print-direction-v1'))))
         minimum = 6 if v2 else 3
         adoption = manifest.get('direction_adoption')
         require(isinstance(adoption,dict) and {'direction_id','adopted_at','blind_review','method_retrieval'} <= set(adoption), 'Missing direction_adoption in this manifest: bind the saved selected direction adoption object (blind_review, method_retrieval, selection_record, claim_lock and choice_list) to the current manifest; do not merely save a sidecar. Recheck the real evidence and guard before production; no boundary note can replace authorization.')
@@ -1286,11 +1301,12 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
                         'Re-divergence allowed only after all-weak first return')
             previous_end = completed
             inputs = r['inputs']
-            require(isinstance(inputs, list) and len(inputs) == (3 if v3 else (2 if v2 else 1))
+            require(isinstance(inputs, list) and len(inputs) == (4 if v12 else 3 if v3 else (2 if v2 else 1))
                     and all(set(x) == {'role', 'file'} for x in inputs)
                     and inputs[0]['role'] == 'direction-sentences'
                     and (not v2 or inputs[1]['role'] == 'reference-mechanisms')
-                    and (not v3 or inputs[2]['role'] == 'feedback-counterexamples'),
+                    and (not v3 or inputs[2]['role'] == 'feedback-counterexamples')
+                    and (not v12 or inputs[3]['role'] == 'proposition-purpose'),
                     'Blind inputs must contain only direction sentences, no author reasons')
             content = ref(inputs[0]['file']).read_text(encoding='utf-8')
             candidates = json.loads(content)
@@ -1336,6 +1352,11 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
                     require(len(entry_ids) == len(library['entries']) and bool(entry_ids),
                             'Feedback counterexample entry identities must be unique and nonempty')
                     expected_request = (direction_request_v11 if v11 else direction_request_v10 if v10 else direction_request_v9 if v9 else direction_request_v8 if v8 else direction_request_v7 if v7 else direction_request_v6 if v6 else (direction_request_v5 if v5 else (direction_request_v4 if v4 else direction_request_v3)))(content, references_content, counterexamples_content)
+                    if v12:
+                        from direction_purpose_contract import validate_purpose_excerpt, direction_request_with_purpose
+                        purpose_content = ref(inputs[3]['file']).read_text(encoding='utf-8')
+                        validate_purpose_excerpt(root, purpose_content)
+                        expected_request = direction_request_with_purpose(content, references_content, counterexamples_content, purpose_content)
                 else:
                     expected_request = direction_request_v2(content, references_content)
             else:
@@ -1350,6 +1371,7 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
                 return_fields |= {'trope_screen', 'reference_assessment'}
             if v7: return_fields.add('causal_check')
             if v9:return_fields.add('product_meaning_hints')
+            if v12:return_fields.add('purpose_check')
             require(raw == r['result'] and set(raw) == return_fields,
                     'Preserve original blind return, ranking and drawability exactly')
             require(type(raw['all_weak']) is bool, 'all_weak must be a checker boolean')
@@ -1429,6 +1451,9 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
                 else:
                     require(raw['all_weak'] or strength['reaches_reference'] is not False,
                             'Ranked-first below reference strength must trigger all_weak')
+            if v12:
+                from direction_purpose_contract import validate_purpose_check
+                validate_purpose_check(raw, candidates, purpose_content)
             if v9:
                 from product_relationship_contract import validate_direction_meaning
                 validate_direction_meaning(raw,ids)
@@ -1609,16 +1634,16 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
         require(gate_id != 'print-ad.0.15.0' or (manifest.get('product_contract') == 'print-product-v1' and manifest.get('direction_contract') == 'print-direction-v6'), 'print-ad.0.15.0 requires print-product-v1 and print-direction-v6')
         require(gate_id!='print-ad.0.16.0' or (manifest.get('product_contract')=='print-product-v2' and manifest.get('direction_contract')=='print-direction-v7'),'print-ad.0.16.0 requires print-product-v2 and print-direction-v7')
         require('product_contract' not in manifest or ((manifest['product_contract'] == 'print-product-v1' and gate_id == 'print-ad.0.15.0') or (manifest['product_contract']=='print-product-v2' and gate_id=='print-ad.0.16.0') or (manifest['product_contract']=='print-product-v3' and gate_id in {'print-ad.0.17.0','print-ad.0.18.0','print-ad.0.19.0','print-ad.0.20.0','print-ad.0.21.0','print-ad.0.22.0'})), 'print-product-v1 requires print-ad.0.15.0; no downgrade')
-        require(gate_id not in {'print-ad.0.17.0','print-ad.0.18.0','print-ad.0.19.0','print-ad.0.20.0','print-ad.0.21.0','print-ad.0.22.0'} or (manifest.get('product_contract')=='print-product-v3' and manifest.get('direction_contract') in {'print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'}), 'Current gate requires product-v3 and direction-v8')
-        require(manifest.get('direction_contract') not in {'print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'} or (gate_id in {'print-ad.0.17.0','print-ad.0.18.0','print-ad.0.19.0','print-ad.0.20.0','print-ad.0.21.0','print-ad.0.22.0'} and manifest.get('product_contract')=='print-product-v3'), 'Neutral directions require the current gate and product contract')
+        require(gate_id not in {'print-ad.0.17.0','print-ad.0.18.0','print-ad.0.19.0','print-ad.0.20.0','print-ad.0.21.0','print-ad.0.22.0'} or (manifest.get('product_contract')=='print-product-v3' and manifest.get('direction_contract') in {'print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}), 'Current gate requires product-v3 and direction-v8')
+        require(manifest.get('direction_contract') not in {'print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'} or (gate_id in {'print-ad.0.17.0','print-ad.0.18.0','print-ad.0.19.0','print-ad.0.20.0','print-ad.0.21.0','print-ad.0.22.0'} and manifest.get('product_contract')=='print-product-v3'), 'Neutral directions require the current gate and product contract')
         require(gate_id!='print-ad.0.18.0' or manifest.get('core_review_contract') in {'print-core-product-v4','print-core-product-v5','print-core-product-v6','print-core-product-v7','print-core-product-v8'},'Current gate requires the new independent result/layout rubric')
         meaning_core=manifest.get('core_review_contract') in {'print-core-product-v5','print-core-product-v6','print-core-product-v7','print-core-product-v8'}
         require(gate_id!='print-ad.0.19.0' or (meaning_core and manifest.get('direction_contract')=='print-direction-v9'),'Current meaning gate requires new rubric and direction advice')
         require(not meaning_core or (gate_id=='print-ad.0.19.0' if manifest['core_review_contract']=='print-core-product-v5' else gate_id=='print-ad.0.20.0' if manifest['core_review_contract']=='print-core-product-v6' else gate_id=='print-ad.0.21.0' if manifest['core_review_contract']=='print-core-product-v7' else gate_id=='print-ad.0.22.0'),'Meaning rubric cannot use historical gate')
         require(gate_id!='print-ad.0.20.0' or (manifest.get('core_review_contract')=='print-core-product-v6' and manifest.get('direction_contract')=='print-direction-v10'),'Current meaning gate requires new rubric and direction advice')
         require(gate_id!='print-ad.0.21.0' or (manifest.get('core_review_contract')=='print-core-product-v7' and manifest.get('direction_contract')=='print-direction-v10'),'Current scene evidence gate requires the new comparison rubric')
-        require(gate_id!='print-ad.0.22.0' or (manifest.get('core_review_contract')=='print-core-product-v8' and manifest.get('direction_contract')=='print-direction-v11'),'Current complete-artwork meaning gate requires the matching blind, comparison and direction contracts')
-        require(manifest.get('direction_contract')!='print-direction-v11' or gate_id=='print-ad.0.22.0','Current direction meaning contract cannot use a historical gate')
+        require(gate_id!='print-ad.0.22.0' or (manifest.get('core_review_contract')=='print-core-product-v8' and manifest.get('direction_contract') in {'print-direction-v11','print-direction-v12'}),'Current complete-artwork meaning gate requires the matching blind, comparison and direction contracts')
+        require(manifest.get('direction_contract') not in {'print-direction-v11','print-direction-v12'} or gate_id=='print-ad.0.22.0','Current direction meaning contract cannot use a historical gate')
         current_core = manifest.get('core_review_contract') in {'print-core-product-v4','print-core-product-v5','print-core-product-v6','print-core-product-v7','print-core-product-v8'}
         product_scene = manifest.get('product_contract') in {'print-product-v2','print-product-v3'}
         product_check = manifest.get('product_contract') in {'print-product-v1','print-product-v2','print-product-v3'}
@@ -1649,9 +1674,9 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
                 'print-direction-v6 requires the new quality gate; no downgrade')
         require(manifest.get('direction_contract') != 'print-direction-v7' or (gate_id == 'print-ad.0.16.0' and manifest.get('product_contract') == 'print-product-v2'),
                 'print-direction-v7 requires print-ad.0.16.0 and print-product-v2; no downgrade')
-        require(not locked_claims or manifest.get('direction_contract') in {'print-direction-v1', 'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'},
+        require(not locked_claims or manifest.get('direction_contract') in {'print-direction-v1', 'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'},
                 'Locked core declaration requires independent direction adoption')
-        require('direction_contract' not in manifest or (manifest['direction_contract'] in {'print-direction-v1', 'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'} and independent),
+        require('direction_contract' not in manifest or (manifest['direction_contract'] in {'print-direction-v1', 'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'} and independent),
                 'Independent direction contract requires print-core-v2 even with historical gates')
         require(manifest.get('direction_contract') != 'print-direction-v2' or locked_claims,
                 'print-direction-v2 retains print-core-v4 adoption claim lock')
@@ -1739,7 +1764,7 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
     except (OSError, ValueError, KeyError, TypeError, AttributeError, IndexError) as exc:
         checks.append(check('method-retrieval-before-adoption', False, str(exc)))
 
-    if manifest.get('direction_contract') in {'print-direction-v1', 'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'}:
+    if manifest.get('direction_contract') in {'print-direction-v1', 'print-direction-v2', 'print-direction-v3', 'print-direction-v4', 'print-direction-v5', 'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}:
         checks.append(validate_direction_blind_review(root, manifest))
 
     if manifest.get('run_scope') == 'concept-only' and (not independent or 'core_creative_review' not in manifest):
@@ -2030,7 +2055,7 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
                 if present and error is None:
                     resolved["aigc_record"] = path
 
-    if manifest.get('direction_contract') in {'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'} and run_scope in {'production-candidate', 'delivery-candidate'}:
+    if manifest.get('direction_contract') in {'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'} and run_scope in {'production-candidate', 'delivery-candidate'}:
         checks.append(validate_main_visual_provenance_v6(run_dir, manifest))
 
     if "quality_gate_results" in resolved:

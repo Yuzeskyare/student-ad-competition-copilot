@@ -112,7 +112,7 @@ def require(value, message):
 
 def dispatch_inputs(root, manifest, contract, request):
     from review_contract import bound_file, inside, load, digest
-    if manifest.get('direction_contract') in {'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'}:
+    if manifest.get('direction_contract') in {'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}:
         from validate_print_ad_run import validate_direction_blind_review, validate_main_visual_dispatch_v6
         direction = validate_direction_blind_review(root, manifest)
         require(direction['passed'], 'Direction choice must be completed before production: ' + str(direction['evidence']))
@@ -123,8 +123,8 @@ def dispatch_inputs(root, manifest, contract, request):
         require(gate.get('definition_set_id')=='print-ad.0.16.0','New dispatch requires print-ad.0.16.0')
         from visual_review_contract import validate_product_dispatch_v2
         validate_product_dispatch_v2(root,manifest,request)
-    if manifest.get('direction_contract') in {'print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'} or manifest.get('product_contract')=='print-product-v3':
-        require(manifest.get('direction_contract') in {'print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11'} and manifest.get('product_contract')=='print-product-v3', 'Current direction/product contracts cannot be downgraded')
+    if manifest.get('direction_contract') in {'print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'} or manifest.get('product_contract')=='print-product-v3':
+        require(manifest.get('direction_contract') in {'print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'} and manifest.get('product_contract')=='print-product-v3', 'Current direction/product contracts cannot be downgraded')
         require(load(inside(root,manifest['artifacts']['quality_gate_results'])).get('definition_set_id') in {'print-ad.0.17.0','print-ad.0.18.0','print-ad.0.19.0','print-ad.0.20.0','print-ad.0.21.0','print-ad.0.22.0'},'Current dispatch requires print-ad.0.17.0 or later current contract')
         from visual_review_contract import validate_product_dispatch_v2
         validate_product_dispatch_v2(root,manifest,request)
@@ -298,7 +298,7 @@ def validate_new_run_gate(root, manifest, contract, rows):
     scene_current=(gate=='print-ad.0.21.0' and manifest.get('product_contract')=='print-product-v3' and manifest.get('direction_contract')=='print-direction-v10' and manifest.get('core_review_contract')=='print-core-product-v7')
     artwork_cutoff=timestamp('2026-10-11T22:54:07.571875+00:00')
     artwork_historical=bool(origins) and min(origins)<artwork_cutoff
-    artwork_current=(gate=='print-ad.0.22.0' and manifest.get('product_contract')=='print-product-v3' and manifest.get('direction_contract')=='print-direction-v11' and manifest.get('core_review_contract')=='print-core-product-v8')
+    artwork_current=(gate=='print-ad.0.22.0' and manifest.get('product_contract')=='print-product-v3' and manifest.get('direction_contract') in {'print-direction-v11','print-direction-v12'} and manifest.get('core_review_contract')=='print-core-product-v8')
     if not artwork_historical:
         require(artwork_current,'New print run must use the current product meaning and complete-artwork contracts; historical continuation needs bound original human evidence before the cutover.')
     elif not scene_historical:

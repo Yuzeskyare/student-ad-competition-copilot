@@ -11,6 +11,7 @@ import argparse, copy, json, os, shutil, subprocess, sys
 sys.dont_write_bytecode=True
 SKILL=Path(__file__).resolve().parents[1]
 import validate_print_ad_run as v
+from direction_purpose_contract import direction_purpose_text, validate_purpose_check
 import visual_review_contract as visual
 from review_contract import digest, load, fingerprint
 from current_artwork_contract import validate_current
@@ -36,6 +37,7 @@ def regression_carryover(root, manifest, dr, bundle_ref, save, text, stages):
 import json, sys
 sys.path.insert(0, sys.argv[1])
 import validate_print_ad_run as v
+from direction_purpose_contract import direction_purpose_text, validate_purpose_check
 root=Path(sys.argv[2])
 result=v.validate_direction_blind_review(root,json.loads((root/sys.argv[3]).read_text(encoding='utf-8')))
 print(json.dumps(result,ensure_ascii=False))
@@ -190,14 +192,14 @@ def regression_a4(root, manifest, production, row, seed, direction_record, bundl
         content=json.dumps(sentences,ensure_ascii=False,indent=2)+'\n'
         raw=remap(load(root/direction_record['raw_return']['path']))
         dr=copy.deepcopy(direction_record)
-        dr.update(checker_session_id='SYNTHETIC-'+label,invocation_id='SYNTHETIC-'+label+'-call',input_prepared_at=now(),started_at=now(),completed_at=now(),inputs=[dict(role='direction-sentences',file=text(label+'-sentences.json',content)),*inputs[1:]],request=text(label+'-request.txt',(v.direction_request_v11 if manifest['direction_contract']=='print-direction-v11' else v.direction_request_v10)(content,references,feedback)),raw_return=save(label+'-raw.json',raw),result=raw)
+        dr.update(checker_session_id='SYNTHETIC-'+label,invocation_id='SYNTHETIC-'+label+'-call',input_prepared_at=now(),started_at=now(),completed_at=now(),inputs=[dict(role='direction-sentences',file=text(label+'-sentences.json',content)),*inputs[1:]],request=text(label+'-request.txt',getattr(v,'direction_request_v12' if manifest['direction_contract']=='print-direction-v12' else 'direction_request_v11' if manifest['direction_contract']=='print-direction-v11' else 'direction_request_v10')(content,references,feedback,*([(root/inputs[3]['file']['path']).read_text(encoding='utf-8')] if manifest['direction_contract']=='print-direction-v12' else []))),raw_return=save(label+'-raw.json',raw),result=raw)
         bundle=load(root/bundle_ref['path']);bundle['rounds'].append(save(label+'-record.json',dr));bundle['recorded_at']=now()
         origins=remap(copy.deepcopy(seed['origins']))
         bundle['origins'] += [x for x in origins if not retain or x['direction_id']!=original['direction_id']]
         newbundle=save(label+'-bundle.json',bundle)
         rows=v.direction_choice_rows_v7(sentences,raw)
-        visible='\n'.join('## '+x['direction_id']+'\n'+x['statement']+'\n'+x['basis']+'\n'+v.direction_choice_judgment_text_v6(x)+'\n'+x['checker_comment']+'\n'+v.direction_choice_causal_text_v8(x['causal_check']) for x in rows)
-        choice=save(label+'-choice.json',dict(presented_at=now(),rows=rows,causal_advisories=v.direction_choice_advisory_rows_v7(sentences,raw),product_meaning_advisories=raw['product_meaning_hints'],user_facing_copy=text(label+'-choice.md',visible)))
+        visible='\n'.join('## '+x['direction_id']+'\n'+x['statement']+'\n'+x['basis']+'\n'+v.direction_choice_judgment_text_v6(x)+'\n'+x['checker_comment']+'\n'+v.direction_choice_causal_text_v8(x['causal_check'])+('\n'+direction_purpose_text(next(p for p in raw['purpose_check'] if p['direction_id']==x['direction_id'])) if 'purpose_check' in raw else '') for x in rows)
+        choice=save(label+'-choice.json',dict(presented_at=now(),rows=rows,causal_advisories=v.direction_choice_advisory_rows_v7(sentences,raw),product_meaning_advisories=raw['product_meaning_hints'],**({'purpose_advisories':raw['purpose_check']} if 'purpose_check' in raw else {}),user_facing_copy=text(label+'-choice.md',visible)))
         ident=sentences[0]['direction_id'];statement='SYNTHETIC select '+ident
         selection=save(label+'-selection.json',dict(kind='user-choice',actor='user',direction_id=ident,decided_at=now(),statement=statement,source=text(label+'-selection.txt',statement)))
         adopted=now();lock=save(label+'-lock.json',dict(direction_id=ident,statement=sentences[0]['statement'],statement_sha256=v.claim_digest(sentences[0]['statement']),adopted_at=adopted,blind_review=newbundle))
@@ -236,7 +238,7 @@ def run_pipeline(root):
     seed=load(SKILL/'references/validation/print-product-pipeline-fixture.json')
     gates=load(SKILL/'references/tracks/print-ad/quality-gates.json')
     current=gates['definition_set_id']=='print-ad.0.22.0'
-    dc='print-direction-v11' if current else 'print-direction-v10'
+    dc='print-direction-v12' if current else 'print-direction-v10'
     cc='print-core-product-v8' if current else 'print-core-product-v7'
     stages=[]
     def ref(name):return dict(path=name,sha256=digest(root/name))
@@ -273,15 +275,27 @@ def run_pipeline(root):
     references=json.dumps(dict(cases=[],empty_reason=load(root/'case-references.json')['empty_reason']),ensure_ascii=False,indent=2)+'\n'
     feedback=(SKILL/'references/feedback/direction-counterexamples.json').read_text(encoding='utf-8')
     inputs=[dict(role=role,file=text(name,val)) for role,name,val in [('direction-sentences','sentences.json',content),('reference-mechanisms','references.json',references),('feedback-counterexamples','feedback.json',feedback)]]
+    purpose_source=text('purpose-source.txt','SYNTHETIC official purpose: support normal activity and remember product care.\n')
+    purpose_content=json.dumps(dict(source=purpose_source,excerpts=[dict(line_start=1,line_end=1,quote='SYNTHETIC official purpose: support normal activity and remember product care.')]),ensure_ascii=False,indent=2)+'\n'
+    if current:inputs.append(dict(role='proposition-purpose',file=text('purpose.json',purpose_content)))
     raw=copy.deepcopy(seed['direction_result'])
+    if current:
+        raw['purpose_check']=[dict(direction_id=x['direction_id'],audience_takeaway='SYNTHETIC audience shifts to avoiding activity' if i==0 else 'SYNTHETIC product care',judgment='drift' if i==0 else 'aligned',purpose_quote='support normal activity',observation='SYNTHETIC independent purpose observation',opposite_relation=None) for i,x in enumerate(sentences)]
+        validate_purpose_check(raw,sentences,purpose_content)
+        baseline=copy.deepcopy(raw);baseline['purpose_check'][0]['judgment']='aligned'
+        assert v.direction_choice_rows_v6(sentences,raw)==v.direction_choice_rows_v6(sentences,baseline)
+        stages.append(dict(stage='purpose-drift-hint-preserves-ranking-and-adoption',passed=True))
+        note=text('product-role-group-selfcheck.md','SYNTHETIC author self-check: '+', '.join(x['direction_id']+'=display-object' for x in sentences)+'\nAll display: brief requirement or convenience? SYNTHETIC justified common packaging comparison; no role quota or gate.\n')
+        assert len(raw['ranking'])==len(sentences) and all(x['drawable'] for x in raw['drawability'])
+        stages.append(dict(stage='product-role-group-hint-no-quota-or-guard',passed=True,note=note))
     raw['causal_check']=[dict(direction_id=x['direction_id'],effect_source='人的动作',reason='SYNTHETIC autonomous action',attributed_to_product=False,product_participates=False,reminder=False) for x in sentences]
     raw['product_meaning_hints']=[dict(direction_id=x['direction_id'],audience_meaning='SYNTHETIC visible product meaning',weak=False,observation='SYNTHETIC fixture judgment') for x in sentences]
     for item in raw['reference_assessment']:item.update(reaches_reference=None,reason='SYNTHETIC no applicable references in active pack')
-    dr=meta(dc,'direction');dr.update(input_prepared_at=now(),started_at=now(),completed_at=now(),inputs=inputs,case_references=cases,request=text('direction-request.txt',getattr(v,'direction_request_v11' if current else 'direction_request_v10')(content,references,feedback)),raw_return=save('direction-raw.json',raw),result=raw)
+    dr=meta(dc,'direction');dr.update(input_prepared_at=now(),started_at=now(),completed_at=now(),inputs=inputs,case_references=cases,request=text('direction-request.txt',getattr(v,'direction_request_v12' if current else 'direction_request_v10')(content,references,feedback,*([purpose_content] if current else []))),raw_return=save('direction-raw.json',raw),result=raw)
     bundle=save('direction-bundle.json',dict(run_id='SYNTHETIC-pipeline',recorded_at=now(),rounds=[save('direction-record.json',dr)],origins=seed['origins'],superseded_rounds=[]))
     rows=v.direction_choice_rows_v7(sentences,raw);advice=v.direction_choice_advisory_rows_v7(sentences,raw)
-    visible='\n'.join('## '+x['direction_id']+'\n'+x['statement']+'\n'+x['basis']+'\n'+v.direction_choice_judgment_text_v6(x)+'\n'+x['checker_comment']+'\n'+v.direction_choice_causal_text_v8(x['causal_check']) for x in rows)
-    choice=save('choice.json',dict(presented_at=now(),rows=rows,causal_advisories=advice,product_meaning_advisories=raw['product_meaning_hints'],user_facing_copy=text('choice.md',visible)))
+    visible='\n'.join('## '+x['direction_id']+'\n'+x['statement']+'\n'+x['basis']+'\n'+v.direction_choice_judgment_text_v6(x)+'\n'+x['checker_comment']+'\n'+v.direction_choice_causal_text_v8(x['causal_check'])+('\n'+direction_purpose_text(next(p for p in raw['purpose_check'] if p['direction_id']==x['direction_id'])) if 'purpose_check' in raw else '') for x in rows)
+    choice=save('choice.json',dict(presented_at=now(),rows=rows,causal_advisories=advice,product_meaning_advisories=raw['product_meaning_hints'],**({'purpose_advisories':raw['purpose_check']} if 'purpose_check' in raw else {}),user_facing_copy=text('choice.md',visible)))
     selected=save('selection.json',dict(kind='user-choice',actor='user',direction_id=ident,decided_at=now(),statement='SYNTHETIC select '+ident,source=text('user-choice.txt','SYNTHETIC select '+ident)))
     adopted=now();lock=save('claim-lock.json',dict(direction_id=ident,statement=claim,statement_sha256=v.claim_digest(claim),adopted_at=adopted,blind_review=bundle))
     manifest=dict(schema_version='0.4.0',run_id='SYNTHETIC-pipeline',competition='academy-award',category='print-ad',brief_id='SYNTHETIC-brief',selected_direction=ident,series_mode='single',run_scope='production-candidate',aigc_used='no',method_validation_status='not-claimed',creative_contract='print-core-v4',direction_contract=dc,product_contract='print-product-v3',core_review_contract=cc,secondary_copy_contract='print-secondary-copy-v2',direction_provenance_contract='print-direction-provenance-v1',execution_profile='bound-production-v1',execution_control='control.json',review_contract='review.json',artifacts={'quality_gate_results':'gates.json','production_manifest':'production-before.json'})

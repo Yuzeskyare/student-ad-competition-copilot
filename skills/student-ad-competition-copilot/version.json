@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.21",
+  "skill_version": "0.2.22",
   "status": "stable-release",
-  "built_at": "2026-10-13",
-  "stable_release": "0.2.21",
+  "built_at": "2026-10-16",
+  "stable_release": "0.2.22",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -159,8 +159,8 @@
     },
     {
       "path": "references/schemas/print-ad-run-manifest.schema.json",
-      "bytes": 988083,
-      "sha256": "1f287d7c481de62946bb52bb55747bdc52b618390e0e0975ca4345450c55df86"
+      "bytes": 1008545,
+      "sha256": "c07f2b482fc143a3c876fcabd7c5312da0d58dc4aadad1b9c87a1d4399c901d3"
     },
     {
       "path": "references/schemas/production-request.schema.json",
@@ -294,8 +294,8 @@
     },
     {
       "path": "references/tracks/print-ad/playbook.md",
-      "bytes": 76217,
-      "sha256": "f37d104e36f5368ea69ddb5ae4e9399ec188454d1bda8d48188803738e88613c"
+      "bytes": 79643,
+      "sha256": "f0739d42487baef0edc7419a8b65155e18a78aa03072b243ad116af704016914"
     },
     {
       "path": "references/tracks/print-ad/quality-gates-v0.1.0.json",
@@ -543,6 +543,11 @@
       "sha256": "bb806b2c8b20bd5975cbf2d4d8c8d2f7f2855a9648d3401e3e0b3cb85e2a2157"
     },
     {
+      "path": "references/validation/v0.2.22-release-acceptance.json",
+      "bytes": 1569,
+      "sha256": "fd7c436721d9fed632d6297f4b55c90761482feb85261ab226406fe83669fe3d"
+    },
+    {
       "path": "references/validation/v0.2.3-acceptance.json",
       "bytes": 2357,
       "sha256": "12659f68a64c24c05f4a53b8993332511994ff792c65a27477a2771d163aeeb1"
@@ -729,8 +734,8 @@
     },
     {
       "path": "references/workflow/visual-style-direction.md",
-      "bytes": 13655,
-      "sha256": "2a8a95024b50867540e8519c18171cd3df4e3e9d598453a3dc54c967a91483ad"
+      "bytes": 14228,
+      "sha256": "f0a6ed17e13be6f81d6873910f327b0597b84b64914379b20a9dd3182114735a"
     },
     {
       "path": "scripts/creative_iteration_contract.py",
@@ -743,14 +748,19 @@
       "sha256": "c6497d9a8276d896a74a6f6cb360aa1a804d08c30837270ade823ba4de738364"
     },
     {
+      "path": "scripts/direction_purpose_contract.py",
+      "bytes": 5665,
+      "sha256": "2a6b8beaf67252c359f6fe9fe9d14bf47a09a8c316d8ede06641fed161efd2d4"
+    },
+    {
       "path": "scripts/edit_svg_text.py",
       "bytes": 4030,
       "sha256": "f7196af43208e755edd26db011993718d13502457bbb44c8cbc1935baf8e29df"
     },
     {
       "path": "scripts/execution_contract.py",
-      "bytes": 22098,
-      "sha256": "85ed6cbd6372fe8962c28a2ea5023f290a977444cb1e867a6d1233e1be59c327"
+      "bytes": 22190,
+      "sha256": "705364bcec4c2c9486ffa011e6b86d5e5638c55792e1b60f50be112dc7522276"
     },
     {
       "path": "scripts/export_current_artwork.py",
@@ -809,8 +819,8 @@
     },
     {
       "path": "scripts/test_print_product_pipeline.py",
-      "bytes": 56854,
-      "sha256": "7106555929cd614039c3a2f3cf154e7f39441897594a8c1fca0b1efe3e40d47c"
+      "bytes": 59423,
+      "sha256": "117bc80036fcc1c2bdd9c678b539f7d780a72b0fbd49405a0377eba3b125bb7a"
     },
     {
       "path": "scripts/validate_ad_copy.py",
@@ -839,8 +849,8 @@
     },
     {
       "path": "scripts/validate_print_ad_run.py",
-      "bytes": 211730,
-      "sha256": "4f69240df66b40f42150f627ce25c293c384b07365b7f031dd50e7e0f60359d4"
+      "bytes": 214247,
+      "sha256": "24c22c185b6557b3f714bd9e2681003112b1a573cea849b47ad8aa643d11c90a"
     },
     {
       "path": "scripts/validate_run.py",
@@ -869,8 +879,8 @@
     },
     {
       "path": "SKILL.md",
-      "bytes": 38880,
-      "sha256": "ea17c85275d633badb9e93ae837cfff1abf84cc0a844061e5ffb542ffc133eae"
+      "bytes": 39337,
+      "sha256": "39ccbc405ad5ae5df94a6258bbbee0818ce2d666b02cf81e9f76907b428b6b46"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -878,14 +888,14 @@
       "sha256": "613bf434dc250f39d0fee8ebeffc8f8db6b3a2c58c791e6d52bb0e968992fbc9"
     }
   ],
-  "base_version": "0.2.20.2",
+  "base_version": "0.2.21",
   "internal_verification": {
-    "path": "references/validation/v0.2.21-release-acceptance.json",
-    "bytes": 2215,
-    "sha256": "bb806b2c8b20bd5975cbf2d4d8c8d2f7f2855a9648d3401e3e0b3cb85e2a2157"
+    "path": "references/validation/v0.2.22-release-acceptance.json",
+    "bytes": 1569,
+    "sha256": "fd7c436721d9fed632d6297f4b55c90761482feb85261ab226406fe83669fe3d"
   },
-  "rollback_release": "0.2.20.2",
-  "version": "0.2.21-rc.6",
-  "milestone": "in-image-copy-diverse-visual-methods-product-posture-a4-paths-carryover",
-  "promoted_candidate_manifest_sha256": "f48c2dbe5ab69ce746c1c339afd7f7f4e0a3d84de3ae1837932abed20d4018ff"
+  "rollback_release": "0.2.21",
+  "version": "0.2.22-rc.1",
+  "milestone": "direction-purpose-check-and-product-role-set-review",
+  "promoted_candidate_manifest_sha256": "bf94930a2ffd44c50c7aca7e0c896b7222b7d5b4038c68b237683a2f7bcbcf26"
 }
