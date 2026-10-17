@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.24.1",
+  "status": "release-qualified",
+  "change_id": "user-direction-changes-redivergence-and-review-recovery",
+  "promoted_candidate": "0.2.24.1-rc.4",
+  "candidate_manifest_sha256": "7085c891b8d6b5f434c09403400f50ecab83e541d20c60f35540539bc0a9890b",
+  "runtime_scripts_changed_since_candidate": false,
+  "changes": [
+    "Explicit user requests to re-diverge, switch or rewrite the locked direction are honoured in the same run (recorded with original words); the new sentence is independently checked and locked after user confirmation",
+    "Model-initiated re-divergence limit raised from 1 to 3; each round must record a substantive change of approach; stops for the user after 3",
+    "Concept-only handoff no longer crashes on a missing production manifest (KeyError fixed); production without a manifest still fails",
+    "Method cards that only supported the reasoning can be recorded as supporting with real candidate IDs; primary origin stays unique",
+    "Self-contradictory or contract-violating independent core returns can be registered invalid and replaced by a fresh blind review (original kept, max 2 per artwork, unfavourable verdicts cannot be voided)",
+    "Blind direction request states drawability covers retained directions only; extra rows for de-duplicated items are kept and ignored",
+    "Independent core return consistency: redundant fields are derived or spelled out with examples in the fixed request; a separate local-detail hint keeps a true answer; real contradictions stay invalid",
+    "A draft the user has finally rejected (bound to its SHA256) no longer needs a valid core return before the next draft; it can never pass or be delivered",
+    "Mid-run package upgrades are registered as an upgrade chain; bound earlier receipts are accepted as history and pixel/record checks are re-run under the new package; forged or off-chain receipts are rejected",
+    "Core review must compare product text with official assets for mirroring, inversion, typos and pseudo-characters as a hard check"
+  ],
+  "candidate_tests": {
+    "suites": 64,
+    "executions": 3639,
+    "pipeline_stages": 209,
+    "image_generation_calls": 0
+  },
+  "legacy_regressions": "Historical schema definitions preserved; 64 suites (3639 runs) and 209-stage pipeline pass",
+  "distribution_cleanup": {
+    "removed_process_records": [
+      "references/validation/v0.2.24.1-candidate.json"
+    ],
+    "edited_documents": [],
+    "rule_content_changed": false
+  },
+  "image_generation_calls": 0,
+  "project_submission_ready": false,
+  "limits": [
+    "Upgrading mid-run requires registering the upgrade chain; checks are re-run under the new version before delivery",
+    "Automatic checks are model judgments, not human approval"
+  ],
+  "promotion_basis": "Verified candidate runtime with documented distribution cleanup; publication only after explicit user authorization."
+}

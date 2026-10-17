@@ -378,7 +378,8 @@ def validate_visual_review(root, manifest):
             if (manifest['category'] == 'print-ad' and manifest['run_scope'] == 'production-candidate'
                     and manifest.get('creative_contract') == 'print-core-v4'):
                 from execution_contract import verify_artwork_release
-                review = manifest.get('core_creative_review', {})
+                from core_return_contract import review_state
+                review = review_state(root,manifest)
                 current = review.get('current_assessment_ids')
                 require(isinstance(current, list) and current and all(isinstance(x, str) and x for x in current)
                         and len(set(current)) == len(current), 'Register explicit unique current complete artwork assessment IDs')
@@ -631,6 +632,7 @@ def validate_product_dispatch_v2(root,manifest,request):
 def validate_product_scene_comparison_v2(root,row,raw):
     """Bind every independent scene answer to deterministic official/generated/final triptychs."""
     from PIL import ImageChops
+    validate_product_scene_return(row,raw)
     triples=row.get('product_triptychs')
     require(isinstance(triples,list),'Every complete draft must register product triptychs')
     require(len({p['element_id'] for p in triples})==len(triples),'Duplicate scene review product')
@@ -648,6 +650,36 @@ def validate_product_scene_comparison_v2(root,row,raw):
         require(expected.size==actual.size and ImageChops.difference(expected,actual).getbbox() is None,'Product scene triptych pixels do not match sources')
         if p['role']=='scene-object': passed=passed and answer['answer']
         else: require(answer['answer'] is True,'Display object must explicitly record scene question as inapplicable/pass')
+    seventh=row['answers'].get('product_in_scene')
+    require(isinstance(seventh,dict) and type(seventh.get('answer')) is bool and seventh['answer']==passed
+            and 'product_scene' in seventh.get('comparison_evidence',[]),
+            'Scene integration is a core question; individual failure cannot be offset')
+    return passed
+
+
+def validate_product_scene_scope(row):
+    """Validate the declared input scope before examining a returned verdict."""
+    triples=row.get('product_triptychs')
+    require(isinstance(triples,list),'Every complete draft must register product triptychs')
+    require(len({p['element_id'] for p in triples})==len(triples),'Duplicate scene review product')
+    for p in triples:
+        require(set(p)=={'element_id','role','triptych'} and p['role'] in {'scene-object','display-object'},'Invalid scene review triptych declaration')
+    return triples
+
+
+def validate_product_scene_return(row,raw):
+    """Response agreement only; physical input failures cannot invalidate a return."""
+    triples=validate_product_scene_scope(row)
+    returned=raw['comparison'].get('product_scene')
+    require(isinstance(returned,list) and len(returned)==len(triples),'Missing independent product-in-scene question')
+    passed=True
+    for p,answer in zip(triples,returned):
+        require(set(p)=={'element_id','role','triptych'} and p['role'] in {'scene-object','display-object'},'Invalid scene review triptych declaration')
+        require(isinstance(answer,dict) and set(answer)=={'element_id','role','triptych','answer','observation'}
+                and all(answer[k]==p[k] for k in p) and type(answer['answer']) is bool and nonempty(answer['observation']),
+                'Independent scene answer must preserve role, triptych and pixel observation')
+        if p['role']=='scene-object':passed=passed and answer['answer']
+        else:require(answer['answer'] is True,'Display object must explicitly record scene question as inapplicable/pass')
     seventh=row['answers'].get('product_in_scene')
     require(isinstance(seventh,dict) and type(seventh.get('answer')) is bool and seventh['answer']==passed
             and 'product_scene' in seventh.get('comparison_evidence',[]),
@@ -1081,7 +1113,14 @@ def direction_image_total(root, record, direction_id):
 
 def image_budget_message(root, manifest):
     if manifest.get('core_review_contract') not in {'print-core-product-v4','print-core-product-v5','print-core-product-v6','print-core-product-v7','print-core-product-v8'}:return None
-    record=load(inside(root,manifest['artifacts']['production_manifest']))
+    production=manifest.get('artifacts',{}).get('production_manifest')
+    if not production:
+        require(manifest.get('run_scope')=='concept-only', 'Production has started or is in scope: missing production_manifest; cannot report zero image usage')
+        contract,_=read_contract(root,manifest)
+        require(not any(contract[k] for k in ('production_requests','production_receipts','final_artifacts')),
+                'Production records exist: missing production_manifest; cannot report zero image usage')
+        return '本方向尚未生产，生图额度未消耗（累计已生成 0 次）'
+    record=load(inside(root,production))
     total=direction_image_total(root,record,manifest['selected_direction'])
     return '本方向累计已生成 '+str(total)+' 次'
 
@@ -1164,7 +1203,8 @@ def measure_local_text_contrast(root, image_ref, text_mask_ref, background_mask_
 
 def delivery_advisories(root, manifest):
     if manifest.get('core_review_contract') not in {'print-core-product-v4','print-core-product-v5','print-core-product-v6','print-core-product-v7','print-core-product-v8'}:return []
-    review=manifest.get('core_creative_review',{})
+    from core_return_contract import review_state
+    review=review_state(root,manifest)
     notices=[]
     for row in review.get('assessments',[]):
         if row['id'] not in review.get('current_assessment_ids',[]):continue

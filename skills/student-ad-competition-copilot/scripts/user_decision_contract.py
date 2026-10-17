@@ -14,6 +14,25 @@ def require(value, message):
         raise ValueError(message)
 
 
+def terminal_rejections(root, manifest):
+    """A retained final/reject is terminal for these exact pixels, never a pass."""
+    from review_contract import read_contract, coverage
+    contract, rows = read_contract(root, manifest)
+    rejected = {}
+    for decision in rows.values():
+        if decision['stage'] != 'final' or decision['decision'] != 'reject':
+            continue
+        for ref in decision['reviewed_artifacts']:
+            artifact(root, ref)
+            key = (ref['path'], ref['sha256'])
+            rejected[key] = dict(decision_id=decision['id'], source=decision['source'],
+                                 quote=decision['quote'], decided_at=decision['checked_at'], artwork=ref)
+    if manifest.get('run_scope') == 'delivery-candidate':
+        require(not any(r['sha256'] in {k[1] for k in rejected} for r in contract.get('final_artifacts',[])),
+                'Terminally user-rejected artwork cannot pass or be delivered')
+    return rejected
+
+
 def subjective_doubt(raw, question, observation):
     if raw.get('meaning_check', {}).get('reversed') or raw.get('compliance_check', {}).get('violated'):
         return False
@@ -107,7 +126,8 @@ def delivery_decisions(root, manifest):
         effective_series_plan(root, manifest)
         result.append(dict(kind='partial-series-delivery', record=manifest['delivery_scope_selection'],
                            original=load(bound_file(root, manifest['delivery_scope_selection']))))
-    review = manifest.get('core_creative_review', {})
+    from core_return_contract import review_state
+    review = review_state(root,manifest)
     for row in review.get('assessments', []):
         if row['id'] in review.get('current_assessment_ids', []):
             result.extend(assessment_confirmations(root, row).values())

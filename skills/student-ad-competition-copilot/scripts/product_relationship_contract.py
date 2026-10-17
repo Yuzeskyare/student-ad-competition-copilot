@@ -65,7 +65,7 @@ def validate_issues(raw, answers):
         if issue['severity']=='hard':
             require((q in HARD_QUESTIONS and code==HARD_QUESTIONS[q] and answers[q]['answer'] is False and issue['observation']==answers[q]['observation']) or (q=='claimed_relation_depicted' and code=='main-relation-reversed' and raw['meaning_check']['reversed'] and issue['observation']==raw['meaning_check']['pixel_observation']) or (q=='compliance' and code=='compliance' and raw['compliance_check']['violated'] and issue['observation']==raw['compliance_check']['pixel_observation']), 'Subjective quality cannot become a hard block; preserve concrete failure evidence')
         else:
-            require((q in HINT_CODES and code in {HINT_CODES[q]} | PRODUCTION_CODES and answers[q]['answer'] is False and issue['observation']==answers[q]['observation']) or (q=='layout-style' and code=='layout-style') or (q=='brand-asset' and code=='brand-asset-pasted'), 'Creative hints must preserve the independent question and reason')
+            require((q in HINT_CODES and code in {HINT_CODES[q]} | PRODUCTION_CODES and answers[q]['answer'] is False and issue['observation']==answers[q]['observation']) or (q=='layout-style' and code=='layout-style') or (q=='brand-asset' and code=='brand-asset-pasted') or (q=='local-detail' and code=='local-detail'), 'Creative hints must preserve the independent question and reason')
     for q,code in HARD_QUESTIONS.items():
         require(answers[q]['answer'] or ('hard',q,code) in signatures, 'Cannot omit a verified text or scene failure')
     for q,code in HINT_CODES.items():

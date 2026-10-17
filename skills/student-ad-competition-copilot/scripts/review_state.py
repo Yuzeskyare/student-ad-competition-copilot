@@ -147,7 +147,10 @@ def snapshot(root, manifest, action, payload, destination):
         data=encoded(value);path=target/name
         staged[path]=data
         return dict(path=path.relative_to(root).as_posix(),sha256=hashlib.sha256(data).hexdigest())
-    if action=='request':
+    if action in {'invalidate-core-return','replace-core-return'}:
+        from core_return_contract import update_review
+        result_manifest['core_creative_review'] = update_review(root,manifest,action,payload)
+    elif action=='request':
         request=prepare_request(root,contract,payload,target)
         contract['production_requests'].append(add('production-request.json',request))
     elif action=='event':
@@ -244,7 +247,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--run-dir',required=True,type=Path)
     p.add_argument('--manifest',required=True,help='Run-relative manifest')
-    p.add_argument('--action',required=True,choices=['inspect','project','event','decision','request'])
+    p.add_argument('--action',required=True,choices=['inspect','project','event','decision','request','invalidate-core-return','replace-core-return'])
     p.add_argument('--payload',help='Run-relative JSON; request: {request,input_paths,decision}; event: {request_id,evidence}; decision: existing-contract row; project: optional {final_artifacts,series_plan}')
     p.add_argument('--destination',help='New run-relative snapshot directory; manifest.json is the commit marker')
     args=p.parse_args()

@@ -87,3 +87,6 @@ guard_production 的 status:authorized 仅表示授权前检；production_state 
 ## 连续版本迁移的选择承接
 
 连续升级每次都从最初真实kind=user-choice记录直接承接到当前Skill版本，不把kind=user-choice-carryover当作original_selection。可只读沿旧carryover.original_selection找到最初记录，但校验入口不接受链式来源。original_selection、original_source_event、original_sentences以及old_version_manifest均引用最初选择时的材料；new_version_manifest、新盲评与new_judgment引用本次当前版本。保留所有中间承接和旧返回原字节，用户原话、实际decided_at与方向原句逐字不变。新判断仍须按原覆盖规则核对，不能借连续升级扩大用户认可。遇到original actual user choice或successor不是当前版本的报错，按上述路径新建记录重查；不改旧承接的new_version或原哈希。这条直接路径避免递归链、循环及中间授权的含义，不放松现有来源/原句/新判断校验。
+
+
+终局拒绝稿、旧包回执与新对照请求按[审稿恢复与运行升级](review-recovery.md)处理；原返回及独立判断不改写。

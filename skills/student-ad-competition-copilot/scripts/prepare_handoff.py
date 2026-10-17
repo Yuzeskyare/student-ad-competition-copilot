@@ -53,6 +53,9 @@ def main():
     from user_decision_contract import delivery_decisions
     decisions=delivery_decisions(root,manifest)
     if decisions:handoff['user_decisions']=decisions
+    from core_return_contract import review_state
+    invalid=review_state(root,manifest).get('invalid_return_audit',[])
+    if invalid:handoff['invalid_core_returns']=invalid
     output=dest/'handoff.json';output.write_text(json.dumps(handoff,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     response={'handoff':output.relative_to(root).as_posix(),'submission_ready':False,'human_approval_created':False}
     if message:response['direction_generation_summary']=message

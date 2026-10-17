@@ -8,6 +8,10 @@ metadata:
 
 # 学生广告赛事创作助手
 
+新成稿对照使用[审稿恢复与运行升级](references/workflow/review-recovery.md)中的程序生成固定请求；独立核对产品文字方向及字形，真实登记局部提示。用户终局拒绝的原稿可保留无效返回继续下一稿，但不能交付；升级后保留来源版本并原生重查原像素与记录。
+
+完整稿独立返回自身违反返回约定时，按[审稿状态工具](references/workflow/review-state-tools.md#完整稿无效返回与替代)登记校验器真实报错和原返回 SHA256，保留原件，再用同一成稿的新空上下文盲读与对照替代；每张成稿最多 2 次。不利但有效的结论不能作废，用户拒绝与修改决定继续有效。该异常恢复入口不增加常规审稿步骤。
+
 当前成稿的主观存疑若已有用户看图确认、用户明确只交付系列中的部分作品，或额度用尽后需做零生图的本地修正，按 [用户决定与修正记录](references/workflow/user-decisions.md) 登记并执行检查；保留独立审稿原结论及真实来源。
 
 作者：[Edward Z](https://github.com/Yuzeskyare) · [项目主页](https://github.com/Yuzeskyare/student-ad-competition-copilot)
@@ -83,7 +87,7 @@ metadata:
 
 ## 平面范围与修改继承
 
-平面方向选择前必须先实际运行 `scripts/query_case_library.py --kind method`，保存原始结果及 `02-direction/method-retrieval.json`，再读取方法步骤形成取舍，最后记录方向采用时间。检索记录必须已存在且严格早于采用，包含实际命令、活动包、原问题与回退词、返回 id、逐项采用/拒绝理由及具体改变的关系或制作输入；空结果原样保留。新运行使用 `creative_contract: print-core-v4` 、direction_contract: print-direction-v11、product_contract: print-product-v3 、core_review_contract: print-core-product-v8 和 print-ad.0.22.0，成图独立核心检查必须先只看成图盲读并保存，再给声明与官方产品图对照，七问引用两步证据；主关系歧义保留提示，明确读反与可见接触穿帮按[产品关系与审稿分级](references/workflow/product-relationship.md)硬拦，不能用声明补读。缺记录或事后补检索校验失败；细节与字段见 Playbook 方向段。方向采用前仍分别判断产品联系与具体创意贡献。收到创意关系、艺术表达或系列增量失败反馈后，下一次制作前按[反馈进入创作](references/workflow/feedback-to-creation.md)重入适用方法步骤，复用方向笔记说明本轮真正改变的关系与画面。多轮记录/范围同步使用[当前集合与事件工具](references/workflow/review-state-tools.md)，不手写第二套“当前”名单，不把方法名、结构检查或内部高分当创意通过。
+平面方向选择前必须先实际运行 `scripts/query_case_library.py --kind method`，保存原始结果及 `02-direction/method-retrieval.json`，再读取方法步骤形成取舍，最后记录方向采用时间。检索记录必须已存在且严格早于采用，包含实际命令、活动包、原问题与回退词、返回 id、逐项采用/辅助参与/拒绝理由及具体改变的关系或制作输入；空结果原样保留。仅辅助参与的方法登记 `supporting`，用 `supporting_candidate_direction_ids` 列出盲审返回中仍保留的真实候选，并在原 `relation_or_input_change` 中简述参与；`candidate_direction_ids` 只记与 `origins` 唯一主来源一致的候选。新运行使用 `creative_contract: print-core-v4` 、direction_contract: print-direction-v11、product_contract: print-product-v3 、core_review_contract: print-core-product-v8 和 print-ad.0.22.0，成图独立核心检查必须先只看成图盲读并保存，再给声明与官方产品图对照，七问引用两步证据；主关系歧义保留提示，明确读反与可见接触穿帮按[产品关系与审稿分级](references/workflow/product-relationship.md)硬拦，不能用声明补读。缺记录或事后补检索校验失败；细节与字段见 Playbook 方向段。方向采用前仍分别判断产品联系与具体创意贡献。收到创意关系、艺术表达或系列增量失败反馈后，下一次制作前按[反馈进入创作](references/workflow/feedback-to-creation.md)重入适用方法步骤，复用方向笔记说明本轮真正改变的关系与画面。多轮记录/范围同步使用[当前集合与事件工具](references/workflow/review-state-tools.md)，不手写第二套“当前”名单，不把方法名、结构检查或内部高分当创意通过。
 
 平面方向阶段主动判断单幅或系列，说明形态、计划成员、共享机制、变量与每幅增量；新正式运行在`series_plan`保存该范围。数量服从命题与用户约束，不默认单幅，也不强凑三幅。代表稿只验证机制和风格；通过后持续完成已授权范围，多个先后方向分别判断，不能把代表稿批准收窄为单幅最终交付。用户明确要求系列时不得单幅豁免。
 
@@ -109,7 +113,7 @@ metadata:
 
 检查点必须说明“现在看什么、为什么现在看、建议什么、用户最少如何回答”。概念方向默认不超过3个；同屏比较默认不超过5项。用户可以只回复“通过”“选B”或指出一个可观察问题；模型负责把自然反馈映射为检查项、影响、返工阶段和证据记录。大型系列或整本策划先用联系表、代表页或五页样稿降低判断成本，最终`content_pass`仍只覆盖评审者实际看过并明确确认的版本与范围，不能把抽样通过外推为未审内容全部通过。
 
-平面方向门先用空上下文独立检查者只看方向一句话清单和匿名合格案例机制，结合[真人反馈反例库](references/feedback/direction-counterexamples.json)逐条做套路筛；方向句固定为“画面动作 + 产品关系 + 创意依据”，逐条用basis_type和非空basis登记句中同文依据；依据必须明确属于人的时刻或洞察、产品真相或利益、视角翻转或文化意味，三类都可，不能只写画面结构或限定为消费者时刻；缺失依据不能交盲评。检查者可以依据句中依据判断转折，但依据只是作者主张，须核对它是否真的在动作与产品关系中成立，不接收其他作者理由；新转折可来自这三类依据，参照强度只供排序，再剔除近似方案、强制排序并判单幅可画性；作者自判不能替代。后台每轮至少6个去重后方向，逐条登记消费者真实时刻、产品利益/事实、反常识或视角翻转三类起点；方法卡可作手段但不能是唯一来源。第一名无新转折的套路才触发全部偏弱；附3–5张学院奖同赛道资格案例的匿名机制，无可用案例如实记录空结果。未委托时把去重清单交用户，逐项如实标出套路判断、反例命中及理由、排序和可画性；用户可以选择清单中任何可画项，包括被筛判拦截项。选择记录保存用户原话；所选项被判套路或命中反例时，须记录user_override=true并引用该项原始判断，锁定原句。all_weak=true时仍交清单，由用户选择某项（override）或要求重新发散。不可画项不能出图。明确委托才自动采用合格（非无转折套路、未命中反例）且可画的第一名；委托模式下全部偏弱与改声明共享最多重新发散1次，第二轮仍弱停在方向阶段交排序理由给用户/总控，不自动出图。未委托的重新发散仍遵守同一额度，不由模型擅自启动。宿主路径沿用原生空上下文子代理 → 只读新 `codex exec` → 停下交用户/总控，详见[方向门](references/tracks/print-ad/playbook.md#方向门)。不使用竞品替换作为门槛或打分。
+平面方向门先用空上下文独立检查者只看方向一句话清单和匿名合格案例机制，结合[真人反馈反例库](references/feedback/direction-counterexamples.json)逐条做套路筛；方向句固定为“画面动作 + 产品关系 + 创意依据”，逐条用basis_type和非空basis登记句中同文依据；依据必须明确属于人的时刻或洞察、产品真相或利益、视角翻转或文化意味，三类都可，不能只写画面结构或限定为消费者时刻；缺失依据不能交盲评。检查者可以依据句中依据判断转折，但依据只是作者主张，须核对它是否真的在动作与产品关系中成立，不接收其他作者理由；新转折可来自这三类依据，参照强度只供排序，再剔除近似方案、强制排序并判单幅可画性；作者自判不能替代。模型发散每轮至少6个去重后方向，逐条登记消费者真实时刻、产品利益/事实、反常识或视角翻转三类起点；方法卡可作手段但不能是唯一来源。第一名无新转折的套路才触发全部偏弱；附3–5张学院奖同赛道资格案例的匿名机制，无可用案例如实记录空结果。未委托时把去重清单交用户，逐项如实标出套路判断、反例命中及理由、排序和可画性；用户可以选择清单中任何可画项，包括被筛判拦截项。选择记录保存用户原话；所选项被判套路或命中反例时，须记录user_override=true并引用该项原始判断，锁定原句。all_weak=true时仍交清单，由用户选择某项（override）或要求重新发散。不可画项不能出图。明确委托才自动采用合格（非无转折套路、未命中反例）且可画的第一名；委托模式下模型自行发起的全部偏弱与改声明共享最多重新发散3次，三次重新发散后仍弱停在方向阶段交排序理由给用户/总控，不自动出图。该额度仅限制模型自行发起；用户明确要求重新发散、换方向或改句时按[用户改向记录](references/workflow/user-direction-changes.md)继续，用户给出/修改的单个方向不凑六项，检查结果只作提示，确认后锁新句；模型不得擅自借换方向清空额度。宿主路径沿用原生空上下文子代理 → 只读新 `codex exec` → 停下交用户/总控，详见[方向门](references/tracks/print-ad/playbook.md#方向门)。不使用竞品替换作为门槛或打分。
 
 若用户把选择委托给模型，模型可以按合格且可画的第一名方向继续可逆工作，但在没有真实人工确认或已有合格评审记录时，`content_pass`保持`pending`，不得伪造评审者。执行人工门时读取[低负担人工审核协议](references/workflow/user-review-checkpoints.md)。
 
@@ -185,7 +189,9 @@ metadata:
 
 场景内产品（scene-object）必须作为场景的一部分生成或编辑进入画面，不得只把官方产品图或标签以贴片形式放进画面；独立展示物和版式 Logo 可用官方原件，但生产前计划必须声明为 display-object 并写 display_reason。
 
-新平面合同 print-core-v4 / print-direction-v11 / print-product-v3 / print-ad.0.22.0 使用核心审稿 print-core-product-v8，在方向采用时锁定用户选定方向原句（明确委托时为第一名）及UTF-8声明hash，所有完整稿都用原声明对照。改声明视为换方向，回方向重新发散和盲评，累计最多重新发散1次。盲读保留说明手段及去掉后的观察，按[产品关系与审稿分级](references/workflow/product-relationship.md)判断观众得到的意义；不能强迫画动作、接触或本职结果，也不能因说明手段存在自动否定场景创意。八问各自保留像素理由，主观质量仅提示；详细合同见[平面Playbook](references/tracks/print-ad/playbook.md#独立核心检查与宿主路径)。
+新平面采用 `direction_redivergence_contract=print-model-redivergence-v1`：模型自行发起的全部偏弱再发散及改声明合计最多3次；每轮登记相对上一轮的实质变化，并核对独立机制比较；重复机制轮次拒绝，三次后仍弱交回全部排序和理由，不自动出图，详见[自动发散三次与换思路检查](references/workflow/model-redivergence.md)。
+
+新平面合同 print-core-v4 / print-direction-v11 / print-product-v3 / print-ad.0.22.0 使用核心审稿 print-core-product-v8，在方向采用时锁定用户选定方向原句（明确委托时为第一名）及UTF-8声明hash，所有完整稿都用原声明对照。改声明须重新独立检查并锁定；累计最多重新发散3次仅限制模型自行发起。用户明确要求重新发散、换方向或改方向句时，按[用户改向记录](references/workflow/user-direction-changes.md)登记原话、时间和来源，在同一运行内继续，不受该次数限制；检查提示原样交用户，确认后才锁新句，旧方向、声明、稿件和审稿全部保留。盲读保留说明手段及去掉后的观察，按[产品关系与审稿分级](references/workflow/product-relationship.md)判断观众得到的意义；不能强迫画动作、接触或本职结果，也不能因说明手段存在自动否定场景创意。八问各自保留像素理由，主观质量仅提示；详细合同见[平面Playbook](references/tracks/print-ad/playbook.md#独立核心检查与宿主路径)。
 
 ### 方向与主画面边界
 

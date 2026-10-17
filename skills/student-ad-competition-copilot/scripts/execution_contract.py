@@ -54,7 +54,7 @@ def verify_artwork_release(root, manifest, artifact_ref, receipt_ref=None):
     """A preflight-only or foreign-checker receipt cannot release complete artwork."""
     from review_contract import bound_file, read_contract, load, fingerprint
     artifact_path = bound_file(root, artifact_ref)
-    contract, _ = read_contract(root, manifest)
+    contract, rows = read_contract(root, manifest)
     receipts = [load(bound_file(root, receipt_ref))] if receipt_ref else [load(bound_file(root, r)) for r in contract.get('production_receipts', [])]
     expected = package_checker_hashes()
     requests = {r['sha256']: load(bound_file(root, r)) for r in contract['production_requests']}
@@ -65,9 +65,15 @@ def verify_artwork_release(root, manifest, artifact_ref, receipt_ref=None):
         provenance = receipt.get('guard_identity', {})
         if (receipt.get('run_id') != manifest['run_id'] or receipt.get('status') != 'authorized'
             or receipt.get('dispatch_checked') is not True or receipt.get('production_state') != 'completed'
-            or receipt.get('executed') is not True or receipt.get('command_returncode') != 0
-            or provenance != dict(profile='package-guard-v1',entrypoint='scripts/guard_production.py',checker_sha256=expected)):
+            or receipt.get('executed') is not True or receipt.get('command_returncode') != 0):
             continue
+        from package_upgrade_contract import validate_historical_guard
+        request_ref=next(r for r in contract['production_requests'] if r['sha256']==receipt['request_sha256'])
+        if provenance == dict(profile='package-guard-v1',entrypoint='scripts/guard_production.py',checker_sha256=expected):
+            from package_upgrade_contract import guard_source
+            source=guard_source(root,manifest,receipt)
+        else:
+            source=validate_historical_guard(root,manifest,receipt,request,request_ref,rows)
         outputs=receipt.get('outputs', [])
         if {r.get('path') for r in outputs} != set(request.get('output_files', [])):
             continue
@@ -75,7 +81,7 @@ def verify_artwork_release(root, manifest, artifact_ref, receipt_ref=None):
             bound_file(root, output)
         if any(bound_file(root, r)==artifact_path and r['sha256']==artifact_ref['sha256'] for r in outputs):
             return dict(request_id=receipt['request_id'], request_sha256=receipt['request_sha256'],
-                        artifact_sha256=artifact_ref['sha256'], guard_identity=provenance)
+                         artifact_sha256=artifact_ref['sha256'], guard_identity=provenance, source_package=source)
     raise ValueError('Complete artwork has no valid package guard release: missing receipt, changed output or foreign/wrapped checker. Stop and report; do not bypass or backfill history.')
 
 
@@ -133,6 +139,18 @@ def dispatch_inputs(root, manifest, contract, request):
     from visual_review_contract import validate_brand_placement_plan
     if manifest.get('core_review_contract') in {'print-core-product-v4','print-core-product-v5','print-core-product-v6','print-core-product-v7','print-core-product-v8'}:
         validate_brand_placement_plan(root,manifest,request)
+    # Re-evaluate historical bindings before dispatch, without executing old commands.
+    if manifest.get('package_upgrades') or release_required(root,manifest):
+        verify_complete_artworks(root,manifest,contract)
+        from package_upgrade_contract import validate_historical_guard
+        from review_contract import decisions
+        rows=decisions(root,contract)
+        requests={r['sha256']:(r,load(bound_file(root,r))) for r in contract['production_requests']}
+        for ref in contract.get('production_receipts',[]):
+            receipt=load(bound_file(root,ref))
+            require(receipt.get('request_sha256') in requests, 'Historical receipt refers to an unregistered production request')
+            request_ref,original=requests[receipt['request_sha256']]
+            validate_historical_guard(root,manifest,receipt,original,request_ref,rows)
     require(request.get('execution_profile') == PROFILE,
             'New dispatch requires bound-production-v1; preserve legacy requests and create a bound successor')
     require('input_files' in request and isinstance(request['input_files'], list), 'Declare actual input_files')

@@ -20,7 +20,7 @@
 
 ## 平面核心创意逐项检查
 
-print-core-v4 在采用方向时保存 direction_adoption.claim_lock（$defs.core_claim_lock），statement 原样等于已采用方向的盲评一句话，statement_sha256=claim_digest(statement)。锁绑定 direction_id、adopted_at、blind_review。改声明必须回方向重新发散和盲评，previous_adoptions 最多1项；新bundle保存原首轮引用再追加新轮，与全部偏弱共用最多1次重新发散额度。旧失败稿引用旧锁，当前稿引用新采用锁，不能事后修改旧声明。方向锁须在渲染前形成。
+print-core-v4 在采用方向时保存 direction_adoption.claim_lock（$defs.core_claim_lock），statement 原样等于已采用方向的盲评一句话，statement_sha256=claim_digest(statement)。锁绑定 direction_id、adopted_at、blind_review。改声明必须重新独立检查；模型自行发起时与全部偏弱共用最多3次重新发散额度。用户明确要求改向或改句时按[用户改向记录](user-direction-changes.md)保留完整 previous_adoptions 和旧快照，不受该次数限制；新bundle独立保存，用户确认后锁新句。旧失败稿引用旧锁，当前稿引用新采用锁，不能事后修改旧声明。方向锁须在渲染前形成。
 
 
 
@@ -134,7 +134,7 @@ critical_review 每页有三项：
 
 ## 产品合成与局部像素合同
 
-新运行使用 print-ad.0.22.0、product_contract=print-product-v3；保留 print-core-v4 的锁定声明与原盲读，第二步对照使用现行模块常量 INDEPENDENT_COMPARE_RUBRIC_PRODUCT_V8（PRODUCT_V3—V7仅供对应历史合同解释），增加第6问：“产品上的品牌/品类文字是否与官方一致、正向可读（不倒置、不镜像、无伪字）？”通过标准为品牌与产品文字可识别、无错字/镜像/伪字，不要求整张标签正对镜头，也不要求所有包装细字缩略可读。answers.product_label_consistent_readable 引用 comparison.product_label，逐稿保留原始返回；为否则核心失败，当前稿不得交付，回生产修正文字/合成并重新独立检查。动作、因果与意义偏弱按[产品关系与审稿分级](product-relationship.md)提示；明确读反和合规冲突仍硬拦。不得把作者检查填成独立确认。
+新运行使用 print-ad.0.22.0、product_contract=print-product-v3；保留 print-core-v4 的锁定声明与原盲读，第二步对照使用现行模块常量 `comparison_request(row, blind_ref, locked_claim)` 生成包含一致性规则与产品字检查的完整固定请求（基础常量 INDEPENDENT_COMPARE_RUBRIC_PRODUCT_V8，PRODUCT_V3—V7仅供对应历史合同解释），增加第6问：“产品上的品牌/品类文字是否与官方一致、正向可读（不倒置、不镜像、无伪字）？”通过标准为品牌与产品文字可识别、无错字/镜像/伪字，不要求整张标签正对镜头，也不要求所有包装细字缩略可读。answers.product_label_consistent_readable 引用 comparison.product_label，逐稿保留原始返回；为否则核心失败，当前稿不得交付，回生产修正文字/合成并重新独立检查。动作、因果与意义偏弱按[产品关系与审稿分级](product-relationship.md)提示；明确读反和合规冲突仍硬拦。不得把作者检查填成独立确认。
 
 visual-review 使用2.6.0，沿用2.1.0单位字段，增加 product_present、product_presence_observation 和 product_integration（所有可见产品逐一登记；无产品时明确观察并给空数组）。记录结构由 visual-review.schema.json 的 $defs.product_integration_v3 定义，运行时由 visual_review_contract.inspect_product_record 核验：
 
@@ -184,6 +184,12 @@ visual-review 使用2.6.0，沿用2.1.0单位字段，增加 product_present、p
 
 三种选择均保存resolution.choice、source与quote，绑定交回后的真实用户原话；旧两稿、共同理由与历史采用不可改写。选择不等于新稿通过或最终内容批准，继续前仍运行生产守卫，新稿仍需本方向要求的独立盲读、比较、像素检查和统一检查。额度继续机械累计，不以新锁、采用记录、请求或run名重置。
 
-- 换方向：采用不同direction_id，保存有效方向采用与新声明锁、原采用和独立方向检查；沿用最多一次重新发散的共享额度。
-- 改动作后继续：保留direction_id，在production_manifest.action_revision_plan绑定实际动作修改记录，结构使用Schema的action_revision_plan与main_visual_production_product_v5，历史生产定义保留。记录含recorded_at、source、quote、changed_scope、baseline（第二失败稿）、original_direction_adoption、original_statement（原句文件引用）与image_budget（修改前额度快照）。source须与A4 resolution相同，quote须包含resolution.quote，changed_scope写具体修改；同一额度修订不扩大limit或减少used，新修订必须保留原快照并按已有额度授权规则核对。原句字节未变则沿用原锁和原采用；不能仅重登记采用或重签锁冒充修改。若原句需变，在revised_statement写新原句，必须新锁，并重新完成该方向要求的独立方向检查；direction_adoption.previous_adoptions保留原采用，bundle保留原首轮再追加一轮，与全部偏弱共用最多一次重新发散额度。仅该保留方向可在第二轮复用direction_id，其余候选ID仍须唯一。旧稿绑定旧锁，新稿绑定新锁与新的独立审稿。
+- 换方向：采用不同direction_id，保存有效方向采用与新声明锁、原采用和独立方向检查；模型自行换向仍受三次上限约束；用户明确选择换方向时按[用户改向记录](user-direction-changes.md)继续，不受该次数限制。
+- 改动作后继续：保留direction_id，在production_manifest.action_revision_plan绑定实际动作修改记录，结构使用Schema的action_revision_plan与main_visual_production_product_v5，历史生产定义保留。记录含recorded_at、source、quote、changed_scope、baseline（第二失败稿）、original_direction_adoption、original_statement（原句文件引用）与image_budget（修改前额度快照）。source须与A4 resolution相同，quote须包含resolution.quote，changed_scope写具体修改；同一额度修订不扩大limit或减少used，新修订必须保留原快照并按已有额度授权规则核对。原句字节未变则沿用原锁和原采用；不能仅重登记采用或重签锁冒充修改。若原句需变，在revised_statement写新原句，必须新锁，并重新完成该方向要求的独立方向检查；direction_adoption.previous_adoptions保留原采用，模型自行改句时bundle保留原首轮再追加一轮，与全部偏弱共用最多三次重新发散额度；明确用户改句按[用户改向记录](user-direction-changes.md)使用独立新bundle并保留完整旧快照，不受该次数限制。仅该保留方向可在第二轮复用direction_id，其余候选ID仍须唯一。旧稿绑定旧锁，新稿绑定新锁与新的独立审稿。
 - 照原样继续：保留方向及原句声明锁，绑定实际继续选择；不能借此清除失败、跳过独立审稿或扩大额度。
+
+
+自动发散与改声明使用[三次上限和换思路检查](model-redivergence.md)，每次必须保存相对上一轮的变化及独立核验；整轮机制重复拒绝，三次后仍弱交回各轮排序与理由，不自动出图。用户明确改向仍不受此限。
+
+
+终局拒绝稿、旧包回执与新对照请求按[审稿恢复与运行升级](review-recovery.md)处理；原返回及独立判断不改写。

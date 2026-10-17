@@ -40,8 +40,22 @@ started/running只恢复宿主返回的同一调用；returned仅表示返回，
 
 ## 可见文字、视图及导出
 
+### 完整稿无效返回与替代
+
+仅用于当前完整稿核心独立返回自身违反返回约定的异常恢复；不改变八问、hint 真值一致性、独立原结论或常规审稿流程。输入声明重复、源图/诊断图像素不对应等输入失败不能作为作废理由。登记用真实返回协议校验报错；生产与统一检查仍按各自原有边界校验输入和像素，新替代另须完整输入/像素校验，不能借恢复入口新增历史稿通过要求。
+
+1. 用 `review_state.py --action invalidate-core-return --payload <登记.json> --destination <新快照>`（仍带 `--run-dir`、`--manifest`）。输入 `{"assessment_id":"原审稿ID","validator_error":"校验器实际报错的原字符串"}`。工具先核验原输入、声明锁、独立身份、时间、固定 rubric 与原文件哈希，再真实执行返回校验，自动保存原 raw_return 路径/SHA256 和登记时间。有效但不利的结论、伪造报错及重复登记均拒绝。原 assessments 和原文件保持。
+2. 新开空上下文独立会话，对同一成稿 SHA256 重新先盲读、冻结后对照，保存新的原返回和独立元数据。用同一工具 `--action replace-core-return`，输入 `{"assessment_id":"已登记无效ID","replacement":{新的完整assessment}}`，输出新的快照。必须能观察到新的会话/调用 ID，输入不得含旧结论；新盲读准备时间严格晚于无效登记。同稿原输入、render、锁定句均一致，不继承旧返回的用户确认。新返回若仍违规，保留该尝试并按其真实报错登记，期间守卫仍阻断，不能隐藏尝试。
+
+每个成稿 SHA256 最多登记 2 条无效返回并各启动一次替代，第三次拒绝并停止，交用户决定。没有有效替代时不能继续派发。守卫、核心检查、统一检查及交付仅消费最新有效返回，无效原件与原因在 `invalid_returns`、原生检查的 `invalid_core_returns`、交接的同名字段可见。这里核验的是证据一致性，程序不能认证宿主声称的隔离身份或视觉判断。
+
+用户对原稿的 reject/要求修改继续生效，不需先把该稿审成通过才能派发下一稿；后续派发仍须额度、A4、产品计划、实际输入、既有生产授权和 active 执行控制等全部原有守卫放行。包升级不会让旧检查器哈希自动变成新版回执；历史回执按原约定核验，不能补写或冒充当时放行。
+
 [edit_svg_text.py](../../scripts/edit_svg_text.py)接受`--spec`：`{"source":{"path":"原.svg","sha256":"原hash"},"changes":[{"id":"准确text或tspan的ID","before":"原可见文字","after":"新文字"}]}`，以及新的`--output`。优先定位唯一ID的叶文字节点；若现有源仅有group ID，须另给零起始text_index和expected_text_nodes，精确定位组内叶文字并核对数量及原文，不能整组字符串替换。拒绝metadata、重复ID和预期文字不符；复杂文本/CSS/路径字使用原生编辑工具。结果为source-edited-render-required，必须从新源回渲染并看图，再更新当前集合。不能将源写入成功等同于画面完成。
 
 [prepare_visual_views.py](../../scripts/prepare_visual_views.py)的`--source`指源文件，`--native`指已存在的PNG/JPEG等实际栅格渲染。`--crop LEFT,TOP,RIGHT,BOTTOM`是边界坐标；宽高数据使用显式`--crop-xywh LEFT,TOP,WIDTH,HEIGHT`，不自动猜测转换。stdout返回实际文件引用，细节路径从files/render_record读取，不猜detail-01。读取SVG或宿主大JSON时只投影ID、尺寸、hash、路径和需要的文字，不打印base64；截断部分继续定点读取，不能当已读。
 
 [export_current_artwork.py](../../scripts/export_current_artwork.py)默认`--package-kind evidence`保留递归关联证据。面向作品交付可选`--package-kind current-files`，仅收当前图片、SVG、预览、主图与扫描到的本地依赖；输出明确不含完整审计证据，原运行仍保留。轻量模式只支持依赖已检查的SVG；不把它当可重验完整审核链的证据包。字体许可、重建脚本等非直接渲染依赖按实际交付需求另外收录，不能宣称扫描自动发现所有许可材料。任何模式均需复制后检查目标软件打开/回渲染及依赖，保留源PPI和位图文字编辑边界。
+
+
+终局拒绝稿、旧包回执与新对照请求按[审稿恢复与运行升级](review-recovery.md)处理；原返回及独立判断不改写。
