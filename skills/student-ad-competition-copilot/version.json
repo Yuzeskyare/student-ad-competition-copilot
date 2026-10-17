@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.22",
+  "skill_version": "0.2.23",
   "status": "stable-release",
-  "built_at": "2026-10-16",
-  "stable_release": "0.2.22",
+  "built_at": "2026-10-17",
+  "stable_release": "0.2.23",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -548,6 +548,11 @@
       "sha256": "fd7c436721d9fed632d6297f4b55c90761482feb85261ab226406fe83669fe3d"
     },
     {
+      "path": "references/validation/v0.2.23-release-acceptance.json",
+      "bytes": 1436,
+      "sha256": "0466149d2f268f60ab6fd4b3556e08230916337a32afbc15229831472327a3d0"
+    },
+    {
       "path": "references/validation/v0.2.3-acceptance.json",
       "bytes": 2357,
       "sha256": "12659f68a64c24c05f4a53b8993332511994ff792c65a27477a2771d163aeeb1"
@@ -879,8 +884,8 @@
     },
     {
       "path": "SKILL.md",
-      "bytes": 39337,
-      "sha256": "39ccbc405ad5ae5df94a6258bbbee0818ce2d666b02cf81e9f76907b428b6b46"
+      "bytes": 40480,
+      "sha256": "2ebd927d3f4659ed53b94bc1db2c1dbd111fc44bd27190eeaad8b7f96bd702a2"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -888,14 +893,14 @@
       "sha256": "613bf434dc250f39d0fee8ebeffc8f8db6b3a2c58c791e6d52bb0e968992fbc9"
     }
   ],
-  "base_version": "0.2.21",
+  "base_version": "0.2.22",
   "internal_verification": {
-    "path": "references/validation/v0.2.22-release-acceptance.json",
-    "bytes": 1569,
-    "sha256": "fd7c436721d9fed632d6297f4b55c90761482feb85261ab226406fe83669fe3d"
+    "path": "references/validation/v0.2.23-release-acceptance.json",
+    "bytes": 1436,
+    "sha256": "0466149d2f268f60ab6fd4b3556e08230916337a32afbc15229831472327a3d0"
   },
-  "rollback_release": "0.2.21",
-  "version": "0.2.22-rc.1",
-  "milestone": "direction-purpose-check-and-product-role-set-review",
-  "promoted_candidate_manifest_sha256": "bf94930a2ffd44c50c7aca7e0c896b7222b7d5b4038c68b237683a2f7bcbcf26"
+  "rollback_release": "0.2.22",
+  "version": "0.2.23-rc.1",
+  "milestone": "post-install-star-invitation",
+  "promoted_candidate_manifest_sha256": "a8c0d108c579e79152c9a4c02c375f026218847b26eb033a1a0ba1de2f98d63c"
 }

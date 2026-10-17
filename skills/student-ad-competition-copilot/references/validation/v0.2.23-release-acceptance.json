@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.23",
+  "status": "release-qualified",
+  "change_id": "post-install-star-invitation",
+  "promoted_candidate": "0.2.23-rc.1",
+  "candidate_manifest_sha256": "a8c0d108c579e79152c9a4c02c375f026218847b26eb033a1a0ba1de2f98d63c",
+  "runtime_scripts_changed_since_candidate": false,
+  "changes": [
+    "SKILL.md: after the skill is installed or updated in the current conversation, mention the repository link once and invite a star; star on the user behalf only after explicit consent when GitHub is reachable; otherwise link only, no attempt or retry"
+  ],
+  "candidate_tests": {
+    "suite_groups": 61,
+    "test_executions": 3573,
+    "passed": true,
+    "pipeline_stages": 75
+  },
+  "legacy_regressions": "No rule, script or historical contract changed; only one SKILL.md section added",
+  "distribution_cleanup": {
+    "removed_process_records": [],
+    "edited_documents": [],
+    "rule_content_changed": false
+  },
+  "image_generation_calls": 0,
+  "project_submission_ready": false,
+  "limits": [
+    "Install-time trigger depends on the host reading SKILL.md before its install confirmation reply; not tested on WorkBuddy or other hosts",
+    "Automatic checks are model judgments, not human approval"
+  ],
+  "promotion_basis": "Verified candidate runtime with documented distribution cleanup; publication only after explicit user authorization."
+}
