@@ -18,6 +18,192 @@ from current_artwork_contract import validate_current
 
 def now(): return datetime.now(timezone.utc).isoformat()
 
+
+def regression_decisions(root, manifest, contract, unit, product, row, plan, q, prod, save, text, stages, cli):
+    """Real entrypoints, synthetic evidence: four fixes and their fail-closed cases."""
+    from user_decision_contract import effective_series_plan, assessment_confirmations
+    from validate_run import validate as unified
+    def check_manifest(label, m, accepted, failure=None):
+        path=save('decisions/'+label+'.json',m)
+        result=unified(root,root/path['path'])
+        assert (not result['repair_checks']) == accepted,(label,result['repair_checks'])
+        if failure:assert failure in result['repair_checks'],(label,result)
+        save('decisions/'+label+'-result.json',result)
+        stages.append(dict(stage=label,expected_accept=accepted,actual_accept=not result['repair_checks']))
+    # Whole-image reference generation has no fictional edit masks/layer.
+    assert 'edit_mask' not in plan and 'edit_mask' not in product
+    visual.inspect_product_record(root,product,product['final'])
+    stages.append(dict(stage='whole-image-without-edit-mask',passed=True))
+    local=dict(plan,generation_method='reference-edit-label-remap',label_defect='wrong-text',
+               correction_reason='SYNTHETIC actual typo',correction_bounds=[200,200,500,400])
+    try:visual.validate_scene_product_plan(root,local);rejected=False
+    except ValueError:rejected=True
+    assert rejected,'Local edit still requires masks'
+    stages.append(dict(stage='local-edit-missing-mask-rejected',expected_accept=False,actual_accept=False))
+
+    original_pixels=load(root/'visual.json')
+    doubt=dict(load(root/'product-raw.json'),label_consistent_readable=False,
+               label_observation='SYNTHETIC cannot confirm the complete final stroke')
+    independent=load(root/'product-independent.json')
+    independent.update(raw_return=save('decisions/product-doubt-raw.json',doubt),result=doubt)
+    p=dict(product,independent_confirmation=save('decisions/product-doubt-independent.json',independent))
+    changed=copy.deepcopy(original_pixels);changed['units'][0]['product_integration']=[p]
+    save('visual.json',changed)
+    check_manifest('subjective-label-without-user-rejected',manifest,False,'final-pixel-evidence')
+    source=save('decisions/human.json',dict(actor_type='human',kind='human-review',event_id='SYNTHETIC-exact-confirmation',
+        occurred_at=now(),text='SYNTHETIC confirm current artwork after viewing',reviewed_artifact=unit['artifact']))
+    decision=dict(kind='exact-artwork-confirmation',decision='confirm',question='label_consistent_readable',
+        independent_raw=independent['raw_return'],observation=doubt['label_observation'],reviewed_artifact=unit['artifact'],
+        source=source,quote='SYNTHETIC confirm current artwork after viewing',decided_at=load(root/source['path'])['occurred_at'])
+    p['user_confirmations']=[save('decisions/product-confirmed.json',decision)]
+    save('visual.json',changed)
+    check_manifest('subjective-label-user-confirmed',manifest,True)
+    assert load(root/independent['raw_return']['path'])==doubt
+    # Hard errors, even with an otherwise valid user decision, stay blocked.
+    for label,observation in [('wrong-brand','SYNTHETIC brand misspelled as ANOTHER'),
+                              ('missing-text','SYNTHETIC missing mandatory word'),
+                              ('mirrored','SYNTHETIC mirrored label'),
+                              ('uncertain-but-wrong','SYNTHETIC uncertain quality; brand misspelled as ANOTHER'),
+                              ('uncertain-but-omitted','SYNTHETIC uncertain final stroke; mandatory word omitted'),
+                              ('uncertain-but-omitted-glyph','SYNTHETIC 字形存疑，功能文字缺“所致”')]:
+        hard=dict(doubt,label_observation=observation)
+        independent.update(raw_return=save('decisions/'+label+'-raw.json',hard),result=hard)
+        p['independent_confirmation']=save('decisions/'+label+'-independent.json',independent)
+        d=dict(decision,independent_raw=independent['raw_return'],observation=observation)
+        p['user_confirmations']=[save('decisions/'+label+'-decision.json',d)]
+        save('visual.json',changed)
+        check_manifest(label+'-user-cannot-override',manifest,False,'final-pixel-evidence')
+    independent=load(root/'decisions/product-doubt-independent.json')
+    p['independent_confirmation']=save('decisions/product-doubt-independent.json',independent)
+    stale=copy.deepcopy(decision);stale['reviewed_artifact']['sha256']='0'*64
+    p['user_confirmations']=[save('decisions/stale-decision.json',stale)];save('visual.json',changed)
+    check_manifest('stale-confirmation-rejected',manifest,False,'final-pixel-evidence')
+    save('visual.json',original_pixels)
+
+    # The same routing applies to a false independent core readability answer.
+    record=load(root/row['independent_check']['path']);raw=load(root/record['raw_return']['path'])
+    core=copy.deepcopy(raw);core['answers']['product_label_consistent_readable'].update(answer=False,observation=doubt['label_observation'])
+    core['comparison']['product_label']['observation']=doubt['label_observation']
+    core['review_issues'].append(dict(severity='hard',question='product_label_consistent_readable',reason_code='label',observation=doubt['label_observation'],priority=1))
+    rec=dict(record,raw_return=save('decisions/core-doubt-raw.json',core))
+    r=dict(row,answers=core['answers'],independent_check=save('decisions/core-doubt-record.json',rec))
+    m=copy.deepcopy(manifest);m['core_creative_review']['assessments']=[r]
+    check_manifest('core-subjective-without-user-rejected',m,False,'core-creative-pixel-review')
+    d=dict(decision,question='product_label_consistent_readable',independent_raw=rec['raw_return'])
+    r['user_confirmations']=[save('decisions/core-confirmed.json',d)]
+    check_manifest('core-subjective-user-confirmed',m,True)
+    for flag in ['compliance_check','meaning_check']:
+        hard=copy.deepcopy(raw);hard[flag]['violated' if flag=='compliance_check' else 'reversed']=True
+        hard[flag]['pixel_observation']='SYNTHETIC verified prohibited claim or reversed relation'
+        if flag=='meaning_check':hard['answers']['claimed_relation_depicted']['answer']=False
+        question='compliance' if flag=='compliance_check' else 'claimed_relation_depicted'
+        code='compliance' if flag=='compliance_check' else 'main-relation-reversed'
+        hard['review_issues'].append(dict(severity='hard',question=question,reason_code=code,observation=hard[flag]['pixel_observation'],priority=1))
+        rec=dict(record,raw_return=save('decisions/'+flag+'-raw.json',hard))
+        r=dict(row,answers=hard['answers'],independent_check=save('decisions/'+flag+'-record.json',rec))
+        assert v.assessment_hard_failure(root,r)
+        invalid=dict(decision,question=question,independent_raw=rec['raw_return'])
+        r['user_confirmations']=[save('decisions/'+flag+'-invalid-confirmation.json',invalid)]
+        try:assessment_confirmations(root,r);rejected=False
+        except ValueError:rejected=True
+        assert rejected
+        stages.append(dict(stage=flag+'-user-cannot-override',expected_accept=False,actual_accept=False))
+
+    # Dispatch the actual local producer at exhausted budget; preserve the
+    # stopped failure handoff and generate no model call or budget increment.
+    from PIL import Image, ImageDraw
+    failed_image=Image.open(root/'art.png').convert('RGB')
+    ImageDraw.Draw(failed_image).rectangle((240,240,280,255),fill='black')
+    failed_image.save(root/'decisions/failed-label.png')
+    failed_ref=dict(path='decisions/failed-label.png',sha256=digest(root/'decisions/failed-label.png'))
+    allowed=Image.new('L',failed_image.size,0);ImageDraw.Draw(allowed).rectangle((200,200,499,399),fill=255)
+    allowed.save(root/'decisions/local-mask.png')
+    maskref=dict(path='decisions/local-mask.png',sha256=digest(root/'decisions/local-mask.png'))
+    repairplan=dict(local,edit_mask=maskref,container_contact_mask=maskref)
+    planref=save('decisions/local-plan.json',repairplan)
+    repair=copy.deepcopy(prod);repair['image_budget'].update(limit=2,used=2)
+    repair['product_scene_plans']=[repairplan]
+    failed_art=dict(failed_ref,version='SYNTHETIC-failed-label',units=['1'])
+    repair['main_visuals'][0].update(artifact=failed_art,core_check='failed',role='representative')
+    reason='SYNTHETIC label needs local repair'
+    repair['exhausted_failure_handoff']=dict(state='stopped',decision_request='additional-budget-or-change-direction',
+        reason=reason,failed_artifacts=[failed_art],user_facing_copy=text('decisions/exhausted.md',reason+'\n'+failed_art['path']+'\n追加额度 / 换方向'))
+    # Cumulative count must reflect this exhausted fixture, not the base record.
+    repairref=save('decisions/repair-production.json',repair)
+    m=copy.deepcopy(manifest);m['artifacts']['production_manifest']=repairref['path'];m['run_scope']='production-candidate'
+    m.pop('core_creative_review',None)
+    message=visual.image_budget_message(root,m)
+    repair['exhausted_failure_handoff']['user_facing_copy']=text('decisions/exhausted.md',reason+'\n'+failed_art['path']+'\n追加额度 / 换方向\n'+message)
+    repairref=save('decisions/repair-production.json',repair)
+    command=text('decisions/repair.py',"from PIL import Image\na=Image.open('decisions/failed-label.png').convert('RGB')\na.paste(Image.open('official.png').convert('RGB'),(200,200))\na.save('decisions/repaired.png')\n")
+    request=dict(q,id='SYNTHETIC-exhausted-local',prepared_at=now(),main_visual_action='local-composite',
+        product_operation='edit',product_plan_record=repairref,input_files=[command,failed_ref,maskref,plan['official']],
+        output_files=['decisions/repaired.png'],command=[sys.executable,'-B','decisions/repair.py'])
+    # A distinct request and authorization keep all original history immutable.
+    requestref=save('decisions/repair-request.json',request)
+    auth=save('decisions/repair-auth.json',dict(actor_type='human',kind='user-message',event_id='SYNTHETIC-repair-auth',occurred_at=now(),text='SYNTHETIC authorize deterministic repair'))
+    decision2=dict(contract['decisions'][0],id='SYNTHETIC-exhausted-auth',production_request_sha256=requestref['sha256'],source=auth,
+        quote='SYNTHETIC authorize deterministic repair',checked_at=load(root/auth['path'])['occurred_at'])
+    c=dict(contract,content_status='pending',production_requests=[requestref],production_receipts=[],decisions=[decision2],final_artifacts=[])
+    save('decisions/repair-contract.json',c);m['review_contract']='decisions/repair-contract.json'
+    save('decisions/repair-manifest.json',m)
+    cli('exhausted-local-guard','guard_production.py',['--run-dir',root,'--manifest','decisions/repair-manifest.json','--request-id',request['id'],'--output','decisions/repair-guard.json','--execute'])
+    receipt=load(root/'decisions/repair-guard.json');assert receipt['executed'] and receipt['production_state']=='completed'
+    assert load(root/repairref['path'])['image_budget']==repair['image_budget']
+    assert digest(root/'decisions/repaired.png')==digest(root/'art.png')
+    stages.append(dict(stage='exhausted-deterministic-guard-executed',passed=True,image_generation_calls=0))
+    repaired_ref=dict(path='decisions/repaired.png',sha256=digest(root/'decisions/repaired.png'))
+    repaired_art=dict(repaired_ref,version='SYNTHETIC-repaired-label',units=['1'])
+    c['production_receipts']=[dict(path='decisions/repair-guard.json',sha256=digest(root/'decisions/repair-guard.json'))]
+    save('decisions/repair-contract.json',c)
+    from execution_contract import verify_artwork_release
+    verify_artwork_release(root,m,repaired_art)
+    trip=copy.deepcopy(load(root/product['triptych']['path']))
+    trip['panels']['generated']['source']=failed_ref;trip['panels']['final']['source']=repaired_ref
+    visual.product_triptych(root,trip).save(root/'decisions/repair-triptych.png')
+    trip['image']=dict(path='decisions/repair-triptych.png',sha256=digest(root/'decisions/repair-triptych.png'))
+    tripref=save('decisions/repair-triptych.json',trip)
+    independent=load(root/'product-independent.json')
+    independent.update(invocation_id='SYNTHETIC-repaired-product-call',started_at=now(),completed_at=now(),
+                       final=repaired_ref,triptych=tripref)
+    independent['raw_return']=save('decisions/repair-independent-raw.json',independent['result'])
+    repaired_image=Image.open(root/'decisions/repaired.png').convert('RGB')
+    repaired_image.convert('RGBA').save(root/'decisions/repair-layer.png')
+    proof=dict(before=failed_ref,after=repaired_ref,allowed_mask=maskref,**visual.exact_pixel_diff(failed_image,repaired_image,allowed))
+    assert proof['changed_pixels']>0 and proof['outside_changed_pixels']==0
+    corrected=dict(product,method='reference-edit-label-remap',choice_reason=repairplan['choice_reason'],
+        preproduction_plan=planref,before=failed_ref,generated=failed_ref,final=repaired_ref,triptych=tripref,
+        label_defect=repairplan['label_defect'],correction_reason=repairplan['correction_reason'],correction_bounds=repairplan['correction_bounds'],
+        geometry=dict(rotation_degrees=0,flip_horizontal=False,flip_vertical=False,perspective_matrix=[1,0,0,0,1,0,0,0,1],
+                      official_reading_vector=[1,0],label_sample_points=[[0,0]],mapping_record=text('decisions/identity-map.txt','SYNTHETIC identity mapping')),
+        glyphs_changed=False,colors_changed=False,pixel_proof=proof,edit_mask=maskref,container_contact_mask=maskref,opening_mask=maskref,
+        replacement_layer=dict(path='decisions/repair-layer.png',sha256=digest(root/'decisions/repair-layer.png')),
+        edit_execution=c['production_receipts'][0],boundary_on_natural_edge=True,
+        independent_confirmation=save('decisions/repair-independent.json',independent))
+    save('decisions/repaired-product.json',corrected)
+    result=visual.inspect_product_record(root,corrected,repaired_ref)
+    assert result['pixel_difference']['outside_changed_pixels']==0
+    stages.append(dict(stage='exhausted-repair-independent-pixel-review',passed=True,pixel_proof=proof,image_generation_calls=0))
+    for label,changes in [('exhausted-model',dict(operation='external',command=None)),
+                           ('exhausted-model-with-local-action',dict(operation='imagegen',main_visual_action='local-composite',command=None)),
+                           ('exhausted-create',dict(operation='local',main_visual_action='create'))]:
+        bad=dict(request,**changes)
+        try:v.validate_main_visual_dispatch_v6(root,m,bad);rejected=False
+        except ValueError as exc:rejected='Exhausted' in str(exc)
+        assert rejected,label
+        badref=save('decisions/'+label+'-request.json',bad)
+        badcontract=dict(c,production_requests=[badref],decisions=[dict(decision2,production_request_sha256=badref['sha256'])])
+        save('decisions/'+label+'-contract.json',badcontract)
+        badmanifest=dict(m,review_contract='decisions/'+label+'-contract.json')
+        save('decisions/'+label+'-manifest.json',badmanifest)
+        result=cli(label+'-actual-guard','guard_production.py',['--run-dir',root,'--manifest','decisions/'+label+'-manifest.json','--request-id',bad['id'],'--output','decisions/'+label+'-guard.json','--execute'],accepted_codes=(1,))
+        assert 'Exhausted' in result.stdout+result.stderr
+        stages.append(dict(stage=label+'-blocked',expected_accept=False,actual_accept=False))
+    # Leave a genuine synthetic uncertainty + confirmation in the final fixture
+    # so export/handoff/unified delivery exercise this path end to end.
+    p['user_confirmations']=[save('decisions/product-confirmed.json',decision)]
+    save('visual.json',changed)
+
 def regression_carryover(root, manifest, dr, bundle_ref, save, text, stages):
     """Two version upgrades use the original choice, never a carried choice."""
     original = load(root/manifest['direction_adoption']['selection_record']['path'])
@@ -320,7 +506,7 @@ def run_pipeline(root):
     supplied=image('supplied.png',native);official=image('official.png',native.crop((200,200,500,400)))
     baseline=image('before.png',Image.new('RGB',native.size,'white'))
     mask=Image.new('L',native.size,255);maskref=image('mask.png',mask)
-    plan=dict(contract='print-product-plan-v4',element_id='cell',registered_at=now(),official=official,role='scene-object',generation_method='reference-generate-label',choice_reason='SYNTHETIC direct label generation contract simulation',container_contact_structure='SYNTHETIC housing and contact',canvas_size=list(native.size),edit_mask=maskref,container_contact_mask=maskref,missing_structure_assets=[],posture_and_perspective=dict(action_and_support='SYNTHETIC supported in housing with visible contact',camera_relation='SYNTHETIC oblique view of housing and product face',perspective_and_occlusion='SYNTHETIC far end foreshortened, contact edges occlude the product'))
+    plan=dict(contract='print-product-plan-v4',element_id='cell',registered_at=now(),official=official,role='scene-object',generation_method='reference-generate-label',choice_reason='SYNTHETIC direct label generation contract simulation',container_contact_structure='SYNTHETIC housing and contact',canvas_size=list(native.size),missing_structure_assets=[],posture_and_perspective=dict(action_and_support='SYNTHETIC supported in housing with visible contact',camera_relation='SYNTHETIC oblique view of housing and product face',perspective_and_occlusion='SYNTHETIC far end foreshortened, contact edges occlude the product'))
     planref=save('product-plan.json',plan)
     prod=dict(main_visual_contract='main-visual-v1',main_visuals=[],image_budget=dict(direction_id=ident,revision_id='SYNTHETIC',revision_index=1,prior_revisions=[],limit=2,used=0),product_scene_plans=[plan],mandatory_brand_asset_placements=[])
     prodref=save('production-before.json',prod)
@@ -349,7 +535,7 @@ def run_pipeline(root):
     # Test the actual production guard, before any producer runs.
     from jsonschema import Draft202012Validator
     schema=load(SKILL/'references/schemas/print-ad-run-manifest.schema.json')
-    validator=Draft202012Validator({'$ref':'#/$defs/main_visual_production_product_v6','$defs':schema['$defs']})
+    validator=Draft202012Validator({'$ref':'#/$defs/main_visual_production_product_v6_whole_image','$defs':schema['$defs']})
     validator.validate(prod)
     for label,mutate in [
         ('product-plan-missing-pose',lambda p:p.pop('posture_and_perspective')),
@@ -379,7 +565,7 @@ def run_pipeline(root):
     trip['image']=image('triptych.png',visual.product_triptych(root,trip));tripref=save('triptych.json',trip)
     confirmation=dict(label_consistent_readable=True,label_observation='SYNTHETIC identical readable label',residue_absent=True,residue_observation='SYNTHETIC no old product',scene_integration=True,scene_observation='SYNTHETIC contact geometry')
     independent=dict(checker_context='fresh-isolated',author_session_id='SYNTHETIC-author',checker_session_id='SYNTHETIC-product',invocation_id='SYNTHETIC-product-call',started_at=now(),completed_at=now(),official=official,final=final,triptych=tripref,raw_return=save('product-raw.json',confirmation),result=confirmation)
-    product=dict(contract='print-product-v3',element_id='cell',role='scene-object',method='reference-generate-label',choice_reason=plan['choice_reason'],preproduction_plan=planref,official=official,before=baseline,final=final,generated=final,generation_reference=official,edit_execution=ref('guard.json'),edit_mask=maskref,container_contact_mask=maskref,opening_mask=maskref,replacement_layer=layerref,boundary_on_natural_edge=True,occlusion_observation='SYNTHETIC no occlusion',triptych=tripref,independent_confirmation=save('product-independent.json',independent),pixel_proof=dict(before=baseline,after=final,allowed_mask=maskref,**visual.exact_pixel_diff(Image.open(root/'before.png'),native,mask)))
+    product=dict(contract='print-product-v3',element_id='cell',role='scene-object',method='reference-generate-label',choice_reason=plan['choice_reason'],preproduction_plan=planref,official=official,before=baseline,final=final,generated=final,generation_reference=official,edit_execution=ref('guard.json'),occlusion_observation='SYNTHETIC no occlusion',triptych=tripref,independent_confirmation=save('product-independent.json',independent),pixel_proof=dict(before=baseline,after=final,allowed_mask=maskref,**visual.exact_pixel_diff(Image.open(root/'before.png'),native,mask)))
     tripbinding=dict(element_id='cell',role='scene-object',triptych=tripref)
     row=dict(id='SYNTHETIC-core',artifact=art,render_record=renderref,observed_image=final,official_product_asset=official,core_action=claim,core_claim_sha256=v.claim_digest(claim),direction_id=ident,assessment_method='independent-review',product_contract='print-product-v3',core_review_contract=cc,product_triptychs=[tripbinding],required_brand_assets=[],proposition_message=ref('brief.txt'))
     blind=meta('print-core-blind-v6' if current else 'print-core-blind-v5','blind')
@@ -413,12 +599,12 @@ def run_pipeline(root):
     assert hard_failure(conflict,conflict['answers'])
     stages.append(dict(stage='product-visible-conflict-still-hard',passed=True))
     unit=dict(artifact=art,render_record=renderref,checks=[dict(check=k,status='pass',views=['native'],observation='SYNTHETIC pixel observation',assessment_method='author-inspection') for k in visual.BASE_CHECKS|{'visual-only-meaning','communication-clarity','visible-element-delete-test'}],critical_review=[dict(kind=k,status='pass' if k=='brand-product' else 'not-applicable',views=['native'],detail_required=False,observation='SYNTHETIC inspection',evidence=[official] if k=='brand-product' else []) for k in ['key-text','brand-product','data-citations']],issues=[],product_present=True,product_presence_observation='SYNTHETIC one visible product',product_integration=[product],text_elements=[dict(element_id='title',role='headline',text='SYNTHETIC TITLE',bounds=[20,20,170,40]),dict(element_id='mark',role='brand-product-mark',text='BRAND CATEGORY MARK',bounds=[240,240,400,270])],secondary_copy=dict(contract='print-secondary-copy-v2',used=False,reason='SYNTHETIC picture and title are sufficient; no secondary copy',element_ids=[],title_element_ids=['title'],checks={k:'not-applicable' for k in ['hierarchy','thumbnail_legibility','series_consistency','copy_semantics']}))
-    manifest['artifacts']['visual_review']='visual.json';save('visual.json',dict(schema_version='2.6.0',run_id=manifest['run_id'],run_scope='production-candidate',units=[unit]))
+    manifest['artifacts']['visual_review']='visual.json';save('visual.json',dict(schema_version='2.7.0',run_id=manifest['run_id'],run_scope='production-candidate',units=[unit]))
     prod['main_visuals']=[dict(artifact=art,source='user-asset',role='passed',core_check='passed',sources=[supplied],evidence=[ref('guard.json')])]
     save('production-after.json',prod);manifest['artifacts']['production_manifest']='production-after.json'
     manifest['proposition_message']=row['proposition_message']
     manifest['core_creative_review']=dict(assessments=[row],current_assessment_ids=[row['id']],completed_draft_render_records=[renderref])
-    for result in visual.validate_visual_review(root,manifest):require_result('production-visual-evidence-2.6.0',result)
+    for result in visual.validate_visual_review(root,manifest):require_result('production-visual-evidence-2.7.0',result)
     # Series first-member production review, before any final approval/delivery.
     for key in ['brief_evidence','direction_cards','concept_gate','official_asset_manifest','human_visual_review']:
         manifest['artifacts'][key]=key+'.json';save(key+'.json',dict(boundary='SYNTHETIC fixture evidence',evidence=[]))
@@ -470,7 +656,7 @@ def run_pipeline(root):
         result=visual.validate_visual_review(root,production_manifest)
         assert any(not x['passed'] for x in result),(label,result)
         stages.append(dict(stage=label,expected_accept=False,result=result))
-        save('visual.json',dict(schema_version='2.6.0',run_id=manifest['run_id'],run_scope='production-candidate',units=[unit]))
+        save('visual.json',dict(schema_version='2.7.0',run_id=manifest['run_id'],run_scope='production-candidate',units=[unit]))
     # A request authorized for two units must not be represented by one current page.
     multi=copy.deepcopy(q);multi.update(id='SYNTHETIC-two-units',output_scope=['1','2'])
     multiref=save('two-unit-request.json',multi);multi_receipt=copy.deepcopy(receipt)
@@ -480,15 +666,15 @@ def run_pipeline(root):
     contract=copy.deepcopy(original_contract);save('review.json',contract)
     regression_a4(root,manifest,prod,row,seed,dr,bundle,inputs,feedback,references,save,text,image,stages)
     manifest['run_scope']='delivery-candidate';contract['final_artifacts']=[art];save('review.json',contract)
-    save('visual.json',dict(schema_version='2.6.0',run_id=manifest['run_id'],run_scope='delivery-candidate',units=[unit]))
-    for result in visual.validate_visual_review(root,manifest):require_result('delivery-visual-evidence-2.6.0',result)
+    save('visual.json',dict(schema_version='2.7.0',run_id=manifest['run_id'],run_scope='delivery-candidate',units=[unit]))
+    for result in visual.validate_visual_review(root,manifest):require_result('delivery-visual-evidence-2.7.0',result)
     bundle_current=dict(native=final,preview=thumb,purpose='creative-master',render_record=save('current-render.json',dict(source=final,execution_evidence=ref('guard.json'),render=final,compared_artifact=art,correspondence='matched',observation='SYNTHETIC raster bytes identical')),process_review=dict(render=final,status='clear',observation='SYNTHETIC no process labels'),no_scene_reason='SYNTHETIC raster is native source',native_inspection=dict(observation='SYNTHETIC raster reopened',evidence=ref('guard.json')))
     member=dict(art,current_source=bundle_current)
     contract['final_artifacts']=[member]
     finalsource=save('final-human.json',dict(actor_type='human',kind='user-message',event_id='SYNTHETIC-final',occurred_at=now(),text='SYNTHETIC approve fixture final'))
     finaldecision=dict(id='SYNTHETIC-final',checked_at=load(root/'final-human.json')['occurred_at'],stage='final',decision='pass',source=finalsource,quote='SYNTHETIC approve fixture final',reviewed_artifacts=[art])
     contract['decisions'].append(finaldecision);contract['content_status']='pass';save('review.json',contract)
-    manifest['run_scope']='delivery-candidate';save('visual.json',dict(schema_version='2.6.0',run_id=manifest['run_id'],run_scope='delivery-candidate',units=[unit]))
+    manifest['run_scope']='delivery-candidate';save('visual.json',dict(schema_version='2.7.0',run_id=manifest['run_id'],run_scope='delivery-candidate',units=[unit]))
     for key in ['brief_evidence','direction_cards','concept_gate','official_asset_manifest','human_visual_review']:manifest['artifacts'][key]=key+'.json';save(key+'.json',dict(boundary='SYNTHETIC fixture evidence',evidence=[]))
     manifest['artifacts'].update(run_status='status.json',technical_validation='technical.json',delivery_manifest='delivery.json')
     save('status.json',dict(content_review_status='pass',review_decision_ids=[finaldecision['id']],method_run_complete=True))
@@ -498,6 +684,7 @@ def run_pipeline(root):
     supplyreview=save('external-review.json',dict(status='pass',scope='delivery-candidate',assets=[supplied],observation='SYNTHETIC supplied bitmap decoded'))
     manifest['visual_generation_capability']=dict(status='unavailable',provider=None,operations=[],checked_at=now(),evidence='SYNTHETIC local supplied pixels; no generation invoked',user_decision='use-external-assets',impact_acknowledged=True,external_supply=dict(kind='provided-assets',status='ready',scope='delivery-candidate',evidence='SYNTHETIC supplied fixture bitmap',assets=[supplied],review=supplyreview))
     save('manifest.json',manifest)
+    regression_decisions(root,manifest,contract,unit,product,row,plan,q,prod,save,text,stages,cli)
     cli('unified-check','validate_run.py',['--run-dir',root,'--manifest','manifest.json','--output','unified.json'])
     check=load(root/'unified.json');assert check['technical_pass'] and check['content_pass'] and not check['delivery_complete'],check
     incomplete_series=dict(manifest,series_mode='series',series_plan=production_manifest['series_plan'])
@@ -505,6 +692,21 @@ def run_pipeline(root):
     except ValueError as exc:rejected='Current members differ from the effective series plan' in str(exc)
     assert rejected, 'Delivery candidate must still require all three series members'
     stages.append(dict(stage='delivery-series-first-only-rejected',expected_accept=False,actual_accept=False))
+    fullplan=save('decisions/full-series-plan.json',production_manifest['series_plan'])
+    scope_source=save('decisions/scope-source.json',dict(actor_type='human',kind='user-message',event_id='SYNTHETIC-partial-series',
+        occurred_at=now(),text='SYNTHETIC deliver series member 1 only'))
+    selection=dict(kind='partial-series-delivery',series_plan=fullplan,units=['1'],source=scope_source,
+        quote='SYNTHETIC deliver series member 1 only',decided_at=load(root/scope_source['path'])['occurred_at'])
+    manifest.update(series_mode='series',series_plan=production_manifest['series_plan'],delivery_scope_selection=save('decisions/scope-selection.json',selection))
+    validate_current(root,manifest,contract)
+    assert v.validate(root,root/save('decisions/partial-series-manifest.json',manifest)['path'])['status']=='passed'
+    stages.append(dict(stage='explicit-partial-series-delivery',passed=True,planned_units=['1','2','3'],current_units=['1']))
+    unauthorized=copy.deepcopy(manifest);unauthorized.pop('delivery_scope_selection')
+    try:validate_current(root,unauthorized,contract);rejected=False
+    except ValueError:rejected=True
+    assert rejected
+    stages.append(dict(stage='partial-series-without-user-rejected',expected_accept=False,actual_accept=False))
+    save('manifest.json',manifest)
     validate_current(root,manifest,contract);stages.append(dict(stage='current-artwork',passed=True))
     cli('export','export_current_artwork.py',['--run-dir',root,'--manifest','manifest.json','--destination','export'])
     readiness=load(SKILL/'references/templates/submission-readiness.template.json');readiness.update(run_id=manifest['run_id'],track='print-ad',competition='academy-award',method_scope='artwork-delivery')
@@ -514,7 +716,9 @@ def run_pipeline(root):
     cli('prepare-delivery','prepare_handoff.py',['--run-dir',root,'--manifest','manifest.json','--output-dir','handoff','--readiness-input','readiness-input.json'])
     cli('unified-delivery','validate_run.py',['--run-dir',root,'--manifest','manifest.json','--handoff','handoff/handoff.json','--output','delivery-check.json'])
     check=load(root/'delivery-check.json');assert check['delivery_complete'] and check['content_pass'] and check['technical_pass'] and not check['submission_ready'],check
-    report=dict(status='passed',boundary=seed['boundary'],contracts=dict(direction=dc,core=cc,product='print-product-v3',visual='2.6.0',gates=gates['definition_set_id']),stages=stages,delivery_complete=True,image_generation_calls=0,real_approval_created=False)
+    handoff=load(root/'handoff/handoff.json')
+    assert len(handoff['user_decisions'])==2 and any(d.get('independent_answer') is False for d in handoff['user_decisions'])
+    report=dict(status='passed',boundary=seed['boundary'],contracts=dict(direction=dc,core=cc,product='print-product-v3',visual='2.7.0',gates=gates['definition_set_id']),stages=stages,delivery_complete=True,image_generation_calls=0,real_approval_created=False)
     save('pipeline-result.json',report);print(json.dumps({k:report[k] for k in ['status','contracts','delivery_complete','image_generation_calls']},ensure_ascii=False));return report
 
 def main():

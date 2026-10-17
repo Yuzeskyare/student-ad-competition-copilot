@@ -8,6 +8,8 @@ metadata:
 
 # 学生广告赛事创作助手
 
+当前成稿的主观存疑若已有用户看图确认、用户明确只交付系列中的部分作品，或额度用尽后需做零生图的本地修正，按 [用户决定与修正记录](references/workflow/user-decisions.md) 登记并执行检查；保留独立审稿原结论及真实来源。
+
 作者：[Edward Z](https://github.com/Yuzeskyare) · [项目主页](https://github.com/Yuzeskyare/student-ad-competition-copilot)
 
 先确认赛事、届次或赛季、官方类别、具体命题和用户要求，再按本页路由读取必要引用。不要一次加载其他赛道的方法，也不要把历史运行、研发文档或固定磁盘路径当作运行时依据。

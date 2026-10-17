@@ -50,6 +50,9 @@ def main():
     from visual_review_contract import delivery_advisories
     notices=delivery_advisories(root,manifest)
     if notices:handoff['visual_advisories']=notices
+    from user_decision_contract import delivery_decisions
+    decisions=delivery_decisions(root,manifest)
+    if decisions:handoff['user_decisions']=decisions
     output=dest/'handoff.json';output.write_text(json.dumps(handoff,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     response={'handoff':output.relative_to(root).as_posix(),'submission_ready':False,'human_approval_created':False}
     if message:response['direction_generation_summary']=message

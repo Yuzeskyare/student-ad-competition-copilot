@@ -327,8 +327,8 @@ def inspect_proportional(root, unit, views, pending=None):
 
 def validate_pack_identity(pack, manifest):
     require(isinstance(pack, dict), 'Visual evidence must be an object')
-    require(pack.get('schema_version') in ('1.0.0', '2.0.0', '2.1.0', '2.2.0','2.3.0','2.4.0','2.5.0','2.6.0'),
-            'Visual evidence identity/scope mismatch: schema_version unsupported or missing; expected 1.0.0/2.0.0/2.1.0/2.2.0/2.3.0/2.4.0/2.5.0/2.6.0')
+    require(pack.get('schema_version') in ('1.0.0', '2.0.0', '2.1.0', '2.2.0','2.3.0','2.4.0','2.5.0','2.6.0','2.7.0'),
+            'Visual evidence identity/scope mismatch: schema_version unsupported or missing; expected 1.0.0/2.0.0/2.1.0/2.2.0/2.3.0/2.4.0/2.5.0/2.6.0/2.7.0')
     for key in ('run_id', 'run_scope'):
         require(pack.get(key) == manifest[key],
                 f'Visual evidence {key} mismatch: expected {manifest[key]!r}, actual {pack.get(key)!r}')
@@ -352,9 +352,9 @@ def validate_visual_review(root, manifest):
             gates = load(inside(root, manifest['artifacts']['quality_gate_results']))
             require(gates.get('definition_set_id') not in {'print-ad.0.16.0','print-ad.0.17.0'} or scoped_secondary,
                     'Current print-ad.0.16.0 requires scoped secondary_copy_contract print-secondary-copy-v2; no silent omission')
-        secondary_version = '2.6.0' if manifest.get('product_contract')=='print-product-v3' else '2.5.0' if scoped_secondary else '2.4.0'
+        secondary_version = ('2.7.0' if pack['schema_version']=='2.7.0' else '2.6.0') if manifest.get('product_contract')=='print-product-v3' else '2.5.0' if scoped_secondary else '2.4.0'
         require(not secondary or pack['schema_version'] == secondary_version, 'Secondary copy requires visual evidence '+secondary_version)
-        require(pack['schema_version'] not in {'2.4.0','2.5.0','2.6.0'} or secondary, 'Visual evidence requires secondary_copy_contract')
+        require(pack['schema_version'] not in {'2.4.0','2.5.0','2.6.0','2.7.0'} or secondary, 'Visual evidence requires secondary_copy_contract')
         if manifest.get('product_contract') in {'print-product-v1','print-product-v2','print-product-v3'}:
             required_version = secondary_version if secondary else ('2.3.0' if manifest['product_contract']=='print-product-v2' else '2.2.0')
             require(pack['schema_version'] == required_version, 'Product/secondary visual evidence version mismatch')
@@ -407,7 +407,7 @@ def validate_visual_review(root, manifest):
         for unit in pack['units']:
             unit_pending = []
             keys = inspect_unit(root, unit, rows, manifest['category'], pack['schema_version'] != '1.0.0', unit_pending,
-                                qualitative=pack['schema_version'] in {'2.1.0', '2.2.0','2.3.0','2.4.0','2.5.0','2.6.0'})
+                                qualitative=pack['schema_version'] in {'2.1.0', '2.2.0','2.3.0','2.4.0','2.5.0','2.6.0','2.7.0'})
             if manifest.get('product_contract') in {'print-product-v1','print-product-v2','print-product-v3'}:
                 inspect_product_unit(root, unit)
                 require(all(p['contract']==manifest['product_contract'] for p in unit['product_integration']),'Product evidence cannot downgrade current contract')
@@ -561,11 +561,11 @@ def validate_scene_product_plan_v3(root, plan):
         size=plan['canvas_size']
         require(isinstance(size,list) and len(size)==2 and all(type(v) is int and v>0 for v in size),'Product plan needs canvas dimensions')
         masks=[]
-        for key in ['edit_mask','container_contact_mask']:
-            with Image.open(bound_file(root,plan[key])) as im: masks.append(im.convert('L'))
+        for key in ['edit_mask','container_contact_mask'] if method=='reference-edit-label-remap' or any(k in plan for k in ['edit_mask','container_contact_mask']) else []:
+            with Image.open(bound_file(root,plan.get(key))) as im: masks.append(im.convert('L'))
             require(list(masks[-1].size)==size and set(masks[-1].getdata())<={0,255} and masks[-1].getbbox() is not None,
                     'Product plan mask must be nonempty binary at planned canvas size')
-        require(ImageChops.subtract(masks[1],masks[0]).getbbox() is None,'Preproduction mask must cover container/contact structure')
+        if masks: require(ImageChops.subtract(masks[1],masks[0]).getbbox() is None,'Preproduction mask must cover container/contact structure')
     require(plan.get('missing_structure_assets') == [], 'Missing necessary product structure assets: stop and request official material; never invent structure')
     for ref in plan.get('structure_assets', []): image_file(root, ref)
     if method=='reference-edit-label-remap':
@@ -625,7 +625,7 @@ def validate_product_dispatch_v2(root,manifest,request):
         require(len(matches)==1,'Missing preproduction plan for product '+target['element_id'])
         p=validate_scene_product_plan(root,matches[0])
         require(p['role']==target['role'] and timestamp(p['registered_at'])<=prepared,'Product plan role/time differs from request')
-        required=[p['official']]+([p['edit_mask'],p['container_contact_mask']] if p['role']=='scene-object' else [])
+        required=[p['official']]+([p['edit_mask'],p['container_contact_mask']] if p['generation_method']=='reference-edit-label-remap' else [])
         require(all(bound_file(root,r) in inputs for r in required),'Bind official reference and planned masks as actual request inputs')
 
 def validate_product_scene_comparison_v2(root,row,raw):
@@ -752,8 +752,8 @@ def inspect_product_record_v3(root, product, current_ref):
     if product.get('contract')=='print-product-v3':
         plan=validate_scene_product_plan(root,load(bound_file(root,product['preproduction_plan'])))
         require(plan['element_id']==product['element_id'] and plan['official']==product['official'] and plan['role']==product['role'] and plan['generation_method']==product['method'],'Production differs from preproduction product plan')
-        if plan['role']=='scene-object':
-            require(plan['edit_mask']==product['edit_mask'] and plan['container_contact_mask']==product['container_contact_mask'],
+        if plan['generation_method']=='reference-edit-label-remap':
+            require(plan.get('edit_mask')==product.get('edit_mask') and plan.get('container_contact_mask')==product.get('container_contact_mask'),
                     'Scene production masks differ from the registered preproduction plan')
     require(product['final']==current_ref,'Product review must bind current native pixels')
     official=image_file(root,product['official']); final=image_file(root,product['final'])
@@ -804,7 +804,9 @@ def inspect_product_record_v3(root, product, current_ref):
     require(independent['official']==product['official'] and independent['final']==product['final']
             and independent['triptych']==product['triptych'],'Independent confirmation uses stale product pixels')
     raw=load(bound_file(root,independent['raw_return']))
-    require(raw==independent['result'] and raw['label_consistent_readable'] is True and nonempty(raw.get('label_observation')),
+    from user_decision_contract import confirmations
+    confirmed=confirmations(root,product,independent['raw_return'],raw,current_ref,independent['completed_at'])
+    require(raw==independent['result'] and (raw['label_consistent_readable'] is True or 'label_consistent_readable' in confirmed) and nonempty(raw.get('label_observation')),
             'Independent product label check failed')
     require(timestamp(independent['started_at'])<=timestamp(independent['completed_at'])<=datetime.now(timezone.utc), 'Invalid independent product check time')
     if risk['mirrored'] or risk['inverted']:
@@ -828,6 +830,9 @@ def inspect_product_record_v3(root, product, current_ref):
         image_file(root,product['generated'])
         require(product['generation_reference']==product['official'],'Scene edit must reference the official product asset')
         bound_file(root,product['edit_execution'])
+        require(raw.get('scene_integration') is True and nonempty(raw.get('scene_observation')), 'Perspective/contact/light/occlusion does not fit the scene')
+        require(raw.get('residue_absent') is True and nonempty(raw.get('residue_observation')), 'Old product residue remains')
+    if method=='reference-edit-label-remap':
         def mask(ref):
             with Image.open(bound_file(root,ref)) as im: result=im.convert('L')
             require(result.size==final.size and set(result.getdata())<={0,255},'Scene masks must be binary at final size')
@@ -847,7 +852,7 @@ def inspect_product_record_v3(root, product, current_ref):
         require(raw.get('residue_absent') is True and nonempty(raw.get('residue_observation')),'Old product residue remains')
         require(raw.get('scene_integration') is True and nonempty(raw.get('scene_observation')),'Perspective/contact/light/occlusion does not fit the scene')
         require(product.get('boundary_on_natural_edge') is True,'Composite boundary must follow natural container edges')
-    return {'geometry':risk,'pixel_difference':measured,'visual_judgment':'recorded independent observation; not machine certified'}
+    return {'geometry':risk,'pixel_difference':measured,'visual_judgment':'recorded independent observation; not machine certified','user_confirmations':list(confirmed.values())}
 
 
 def inspect_product_record(root, product, current_ref):

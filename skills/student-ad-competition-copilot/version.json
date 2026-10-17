@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.23",
+  "skill_version": "0.2.24",
   "status": "stable-release",
   "built_at": "2026-10-17",
-  "stable_release": "0.2.23",
+  "stable_release": "0.2.24",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -159,8 +159,8 @@
     },
     {
       "path": "references/schemas/print-ad-run-manifest.schema.json",
-      "bytes": 1008545,
-      "sha256": "c07f2b482fc143a3c876fcabd7c5312da0d58dc4aadad1b9c87a1d4399c901d3"
+      "bytes": 1070574,
+      "sha256": "44c80bd06b578f5bd0b3d63393d93301db0ff18dc2d983f563e95e45689a8859"
     },
     {
       "path": "references/schemas/production-request.schema.json",
@@ -189,8 +189,8 @@
     },
     {
       "path": "references/schemas/visual-review.schema.json",
-      "bytes": 103519,
-      "sha256": "1fcd058285caa7066bb21fe7437745b1c560938583c0b068f99a00d9b57b2c22"
+      "bytes": 121594,
+      "sha256": "40afd329151bd621e75dca278b3d6ef6de12562e4c76a0e1b053d259ea6799c1"
     },
     {
       "path": "references/templates/ad-copy-direction-card.template.md",
@@ -553,6 +553,11 @@
       "sha256": "0466149d2f268f60ab6fd4b3556e08230916337a32afbc15229831472327a3d0"
     },
     {
+      "path": "references/validation/v0.2.24-release-acceptance.json",
+      "bytes": 1851,
+      "sha256": "7845310494d76378b6b8cef1f0e811e83dd10b714cece8ab6f179e32299cc560"
+    },
+    {
       "path": "references/validation/v0.2.3-acceptance.json",
       "bytes": 2357,
       "sha256": "12659f68a64c24c05f4a53b8993332511994ff792c65a27477a2771d163aeeb1"
@@ -718,6 +723,11 @@
       "sha256": "ab1cde36afa940b23280f545e0081f0febef0db09b5d819c6f2cf8d5011d5b87"
     },
     {
+      "path": "references/workflow/user-decisions.md",
+      "bytes": 4161,
+      "sha256": "14df8795a9984e664bf5a53cea5123646ca116dfb0f0087a02b2974c127ca990"
+    },
+    {
       "path": "references/workflow/user-review-checkpoints.md",
       "bytes": 3410,
       "sha256": "546ecbbfbc277e16ef142c13da2b35ad5d7bbe84a414c7c23adb4e95c572e235"
@@ -749,8 +759,8 @@
     },
     {
       "path": "scripts/current_artwork_contract.py",
-      "bytes": 8136,
-      "sha256": "c6497d9a8276d896a74a6f6cb360aa1a804d08c30837270ade823ba4de738364"
+      "bytes": 8203,
+      "sha256": "f40f209296adc28d9bfa5d0f23166a1b6976529d5008290b0c21923205df2d06"
     },
     {
       "path": "scripts/direction_purpose_contract.py",
@@ -789,8 +799,8 @@
     },
     {
       "path": "scripts/prepare_handoff.py",
-      "bytes": 4132,
-      "sha256": "de1187d108a2cebdd16a4660cc9910ed4e40606b68c610d2c9f5b92aa695067e"
+      "bytes": 4294,
+      "sha256": "78970f3cc51a8c084ddd677993473d5865ab38d44352e112488b7b23336a14f1"
     },
     {
       "path": "scripts/prepare_visual_views.py",
@@ -824,8 +834,13 @@
     },
     {
       "path": "scripts/test_print_product_pipeline.py",
-      "bytes": 59423,
-      "sha256": "117bc80036fcc1c2bdd9c678b539f7d780a72b0fbd49405a0377eba3b125bb7a"
+      "bytes": 76900,
+      "sha256": "98c22d1512ad3fc34591df8a51aea86655679bbd4f3bedeee20decabaf834d9b"
+    },
+    {
+      "path": "scripts/user_decision_contract.py",
+      "bytes": 7682,
+      "sha256": "77feb9be724ba419f25ea8d5fd07bd94224e1a79aee64aabd0ecfb47d968b1dd"
     },
     {
       "path": "scripts/validate_ad_copy.py",
@@ -854,8 +869,8 @@
     },
     {
       "path": "scripts/validate_print_ad_run.py",
-      "bytes": 214247,
-      "sha256": "24c22c185b6557b3f714bd9e2681003112b1a573cea849b47ad8aa643d11c90a"
+      "bytes": 216183,
+      "sha256": "61ab96e95fbc30d62d23d41871c77c669829a541ec42ead7ce03d5a3dcb1eb4e"
     },
     {
       "path": "scripts/validate_run.py",
@@ -879,13 +894,13 @@
     },
     {
       "path": "scripts/visual_review_contract.py",
-      "bytes": 94071,
-      "sha256": "f56dc4f9ed4b0e5062a22cfd2952b68c74eefbdb678878c21ccf441921744ceb"
+      "bytes": 94942,
+      "sha256": "f2282067fd22d277fc8e0ac1707f42d5e3eb350a703ca4d8d74e7fadbdbe2140"
     },
     {
       "path": "SKILL.md",
-      "bytes": 40480,
-      "sha256": "2ebd927d3f4659ed53b94bc1db2c1dbd111fc44bd27190eeaad8b7f96bd702a2"
+      "bytes": 40782,
+      "sha256": "1d12fc71f8995fa8ed34e098983b1a90e9c9f57cd4bd38b90c6116cee4d9de80"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -893,14 +908,14 @@
       "sha256": "613bf434dc250f39d0fee8ebeffc8f8db6b3a2c58c791e6d52bb0e968992fbc9"
     }
   ],
-  "base_version": "0.2.22",
+  "base_version": "0.2.23",
   "internal_verification": {
-    "path": "references/validation/v0.2.23-release-acceptance.json",
-    "bytes": 1436,
-    "sha256": "0466149d2f268f60ab6fd4b3556e08230916337a32afbc15229831472327a3d0"
+    "path": "references/validation/v0.2.24-release-acceptance.json",
+    "bytes": 1851,
+    "sha256": "7845310494d76378b6b8cef1f0e811e83dd10b714cece8ab6f179e32299cc560"
   },
-  "rollback_release": "0.2.22",
-  "version": "0.2.23-rc.1",
-  "milestone": "post-install-star-invitation",
-  "promoted_candidate_manifest_sha256": "a8c0d108c579e79152c9a4c02c375f026218847b26eb033a1a0ba1de2f98d63c"
+  "rollback_release": "0.2.23",
+  "version": "0.2.24-rc.1",
+  "milestone": "user-decisions-partial-series-whole-image-and-local-fix",
+  "promoted_candidate_manifest_sha256": "3868d91ae1f1b2805528e3bd5d4b080c25babecff85e4f54bb9d1cd415571b93"
 }

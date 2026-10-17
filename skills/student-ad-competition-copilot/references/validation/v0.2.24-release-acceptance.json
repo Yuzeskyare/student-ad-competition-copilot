@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.24",
+  "status": "release-qualified",
+  "change_id": "user-decisions-partial-series-whole-image-and-local-fix",
+  "promoted_candidate": "0.2.24-rc.1",
+  "candidate_manifest_sha256": "3868d91ae1f1b2805528e3bd5d4b080c25babecff85e4f54bb9d1cd415571b93",
+  "runtime_scripts_changed_since_candidate": false,
+  "changes": [
+    "User confirmation of the exact current artwork can clear subjective independent doubts (original review kept); hard errors cannot be overridden",
+    "Explicit user choice to deliver part of a planned series is checked against that subset; full plan preserved",
+    "Whole-image reference-generate-label no longer requires a local edit mask (KeyError fixed); local edits still strict",
+    "Deterministic local fixes (official pixels, text layers) run through the guard without generation budget after budget exhaustion; model requests still stop"
+  ],
+  "candidate_tests": {
+    "suite_groups": 60,
+    "test_executions": 3553,
+    "passed": true,
+    "pipeline_stages": 101
+  },
+  "legacy_regressions": "Historical schema definitions preserved; 60 suites and 101-stage pipeline pass",
+  "distribution_cleanup": {
+    "removed_process_records": [
+      "references/validation/v0.2.24-rc1-acceptance.json"
+    ],
+    "edited_documents": [],
+    "rule_content_changed": false
+  },
+  "image_generation_calls": 0,
+  "project_submission_ready": false,
+  "limits": [
+    "Artworks completed under an earlier version still need re-review after upgrading (guard receipts are version-bound); Edward chose not to change this in 0.2.24",
+    "Automatic checks are model judgments, not human approval"
+  ],
+  "promotion_basis": "Verified candidate runtime with documented distribution cleanup; publication only after explicit user authorization."
+}

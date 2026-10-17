@@ -645,7 +645,7 @@ def validate_action_revision(root, manifest, production, trigger, resolution, as
         raise ValueError('Every revised draft must bind the current action statement and independent review')
 
 
-def validate_main_visual_record_v6(root, record, *, current_refs=(), core_failed=False, control=None):
+def validate_main_visual_record_v6(root, record, *, current_refs=(), core_failed=False, control=None, deterministic_repair=False):
     """Bind complete drafts to actual subject assets and stop an exhausted failed run."""
     from review_contract import bound_file, load
     def require(value, reason):
@@ -696,11 +696,11 @@ def validate_main_visual_record_v6(root, record, *, current_refs=(), core_failed
         copy = bound_file(root, handoff['user_facing_copy']).read_text(encoding='utf-8')
         require(handoff['reason'] in copy and all(x['path'] in copy for x in handoff['failed_artifacts'])
                 and '追加额度' in copy and '换方向' in copy, 'Failure handoff must expose draft paths, reason and both user decisions')
-        require(control is not None and load(control).get('state') == 'stopped', 'Exhausted failed main visual requires stopped execution control')
+        require(control is not None and load(control).get('state') in ({'active', 'stopped'} if deterministic_repair else {'stopped'}), 'Exhausted failed main visual requires stopped execution control')
     return {'exhausted_failure': exhausted, 'drafts': len(rows)}
 
 
-def validate_main_visual_provenance_v6(root, manifest):
+def validate_main_visual_provenance_v6(root, manifest, *, deterministic_repair=False):
     from review_contract import inside
     try:
         validate_repeated_failure_handoff(root,manifest)
@@ -726,7 +726,7 @@ def validate_main_visual_provenance_v6(root, manifest):
             if assessment_hard_failure(root,assessment) and row['core_check'] != 'failed':
                 raise ValueError('Main visual source record cannot overwrite an independent core failure')
         result = validate_main_visual_record_v6(root, record, current_refs=current, core_failed=failed,
-                                               control=inside(root, manifest['execution_control']))
+                                               control=inside(root, manifest['execution_control']), deterministic_repair=deterministic_repair)
         if result['exhausted_failure'] and manifest['run_scope'] == 'delivery-candidate':
             raise ValueError('Exhausted failure handoff is stopped, not a passed delivery candidate')
         return check('main-visual-provenance', True, result)
@@ -738,6 +738,10 @@ def validate_main_visual_dispatch_v6(root, manifest, request):
     from review_contract import inside, load
     source = request.get('main_visual_source')
     action = request.get('main_visual_action')
+    # Local repair preserves the subject and executes the registered command;
+    # operation=external/model never inherits this exception from its action.
+    deterministic = (request.get('operation') == 'local' and action in {'layout-only', 'local-composite'}
+                     and isinstance(request.get('command'), list) and bool(request['command']))
     if action not in {'create', 'replace', 'layout-only', 'local-composite'}:
         raise ValueError('Production request must declare main_visual_action')
     if source not in {'generated', 'edited', 'user-asset'}:
@@ -745,14 +749,17 @@ def validate_main_visual_dispatch_v6(root, manifest, request):
     path = manifest.get('artifacts', {}).get('production_manifest')
     if path and inside(root, path).is_file():
         record = load(inside(root, path))
+        budget = record.get('image_budget', {})
+        if request.get('operation') != 'local' and budget.get('used', 0) >= budget.get('limit', 0):
+            raise ValueError('Exhausted failed main visual is stopped; user must decide additional budget or direction')
         if manifest.get('core_creative_review', {}).get('assessments'):
-            current = validate_main_visual_provenance_v6(root, dict(manifest, run_scope='production-candidate'))
+            current = validate_main_visual_provenance_v6(root, dict(manifest, run_scope='production-candidate'), deterministic_repair=deterministic)
             if not current['passed']:
                 raise ValueError('Main visual dispatch blocked: ' + str(current['evidence']))
-            if current['evidence']['exhausted_failure']:
+            if current['evidence']['exhausted_failure'] and not deterministic:
                 raise ValueError('Exhausted failed main visual is stopped; user must decide additional budget or direction')
-        verdict = validate_main_visual_record_v6(root, record, control=inside(root, manifest['execution_control']))
-        if verdict['exhausted_failure']:
+        verdict = validate_main_visual_record_v6(root, record, control=inside(root, manifest['execution_control']), deterministic_repair=deterministic)
+        if verdict['exhausted_failure'] and not deterministic:
             raise ValueError('Exhausted failed main visual is stopped; user must decide additional budget or direction')
         if action in {'layout-only', 'local-composite'}:
             subjects = [x for x in record['main_visuals'] if x['source'] == source and x['source'] != 'native-drawn']
@@ -855,7 +862,11 @@ def assessment_hard_failure(root,row):
     from product_relationship_contract import hard_failure
     record=load_json(bound_file(root,row['independent_check']));raw=load_json(bound_file(root,record['raw_return']))
     if raw['answers']!=row['answers']:raise ValueError('Preserve independent answers before severity routing')
-    return hard_failure(raw,row['answers'])
+    from user_decision_contract import assessment_confirmations
+    from product_relationship_contract import validate_issues
+    hard_failure(raw,row['answers'])  # Validate the unchanged independent severity contract first.
+    confirmed=assessment_confirmations(root,row,record,raw)
+    return any(i['severity']=='hard' and i['question'] not in confirmed for i in validate_issues(raw,row['answers']))
 
 def direction_request_v9(content,references,counterexamples):
     return direction_request_v8(content,references,counterexamples) + '\n' + HISTORICAL_PRODUCT_RELATIONSHIP_DEFINITION + '\n方向阶段仅增加product_meaning_hints数组，每个输入direction_id写audience_meaning、weak布尔、observation。只提示，不改变原排序、可画、all_weak、采用、承接或守卫。'
@@ -1913,6 +1924,8 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
                     'Core checks must cover the same current render as final pixel review')
         for ident in current:
             row, keys = by_id[ident]
+            from user_decision_contract import assessment_confirmations
+            confirmed=assessment_confirmations(root,row)
             require(not locked_claims or (row['direction_id'] == adoption['direction_id']
                     and row['core_claim_sha256'] == load_claim_lock(root, adoption)['statement_sha256']),
                     'Current draft must use current adopted direction lock and statement hash')
@@ -1923,9 +1936,9 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
                 expected_trip=[dict(element_id=p['element_id'],role=p['role'],triptych=p['triptych']) for p in unit['product_integration']]
                 require(row.get('product_triptychs')==expected_trip,'Seventh question must cover every current scene/display product')
                 require(row['answers']['product_in_scene']['answer'],'Current core failure: product is not in scene; local product repair and new independent check required')
-            if product_check and not row['answers']['product_label_consistent_readable']['answer']:
+            if product_check and not row['answers']['product_label_consistent_readable']['answer'] and 'product_label_consistent_readable' not in confirmed:
                 require(False, 'Current core failure: product label inconsistent, inverted, mirrored or pseudo-text; repair production and recheck independently')
-            require(not current_core or row['answers']['layout_readable']['answer'],'Current layout readability failure: repair text at production and recheck independently')
+            require(not current_core or row['answers']['layout_readable']['answer'] or 'layout_readable' in confirmed,'Current layout readability failure: repair text at production and recheck independently')
             require(not assessment_hard_failure(root,row), 'Current core failure: rebuild the main relation, not local edits')
             require(not any(keys == other_keys and time(other['checked_at']) > time(row['checked_at']) for other, other_keys in by_id.values()),
                     'A later core assessment cannot be hidden by selecting an older pass')
@@ -2020,15 +2033,21 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
     checks.append(check("identity-fields", all(isinstance(manifest.get(key), str) and manifest[key] for key in ("run_id", "competition", "brief_id", "selected_direction", "series_mode")), {key: manifest.get(key) for key in ("run_id", "competition", "brief_id", "selected_direction")}))
     checks.append(check('series-mode-valid', manifest.get('series_mode') in {'single', 'series'}, manifest.get('series_mode')))
     plan = manifest.get('series_plan')
+    try:
+        from user_decision_contract import effective_series_plan
+        effective_plan = effective_series_plan(run_dir, manifest)
+        scope_error = None
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        effective_plan, scope_error = {}, str(exc)
     valid = False
     if plan is not None:
         valid = isinstance(plan, dict) and plan.get('mode') == manifest.get('series_mode') and isinstance(plan.get('reason'), str) and bool(plan['reason'].strip())
         units = plan.get('units') if isinstance(plan, dict) else None
         valid = valid and isinstance(units, list) and all(isinstance(u, str) and u for u in units) and len(units) == len(set(units))
-        valid = valid and (len(units) >= 2 if manifest.get('series_mode') == 'series' else len(units) == 1)
+        valid = valid and scope_error is None and (len(units) >= (1 if manifest.get('delivery_scope_selection') else 2) if manifest.get('series_mode') == 'series' else len(units) == 1)
         valid = valid and type(plan.get('user_requested_series')) is bool and (not plan.get('user_requested_series') or plan['mode'] == 'series')
         if valid and plan['mode'] == 'series':valid = isinstance(plan.get('shared_mechanism'), str) and bool(plan['shared_mechanism'].strip())
-        checks.append(check('series-plan-scope', valid, plan))
+        checks.append(check('series-plan-scope', valid, scope_error or dict(planned=plan, current_delivery=effective_plan)))
     method_status = manifest.get("method_validation_status", "not-claimed")
     checks.append(check("method-validation-status", method_status in {"not-claimed", "method-validated"}, method_status))
 
@@ -2087,7 +2106,7 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
         if plan is not None and run_scope == 'delivery-candidate' and 'delivery_manifest' in resolved:
             delivery = load_json(resolved['delivery_manifest'])
             actual_units = [u for a in delivery.get('final_artifacts', []) for u in a.get('units', [])]
-            checks.append(check('series-delivery-coverage', valid and all(isinstance(u, str) for u in actual_units) and len(actual_units) == len(set(actual_units)) and set(actual_units) == set(plan['units']), actual_units))
+            checks.append(check('series-delivery-coverage', valid and all(isinstance(u, str) for u in actual_units) and len(actual_units) == len(set(actual_units)) and set(actual_units) == set(effective_plan.get('units', [])), actual_units))
     review_checks = validate_review_contract(run_dir, manifest)
     # Historical validation stays reproducible, but is never new-contract acceptance.
     if manifest.get("schema_version") == "0.4.0":

@@ -113,7 +113,8 @@ def validate_current(root, manifest, contract):
                             host_lifecycle_certified=False,
                             scope='structural-and-source-binding', visual_quality_certified=False))
     require(len(set(members)) == len(members), 'Duplicate current member; format copies are not new members')
-    plan = manifest.get('series_plan', {})
+    from user_decision_contract import effective_series_plan
+    plan = effective_series_plan(root, manifest)
     require(set(members) == set(plan.get('units', [])), 'Current members differ from the effective series plan')
     roles = plan.get('member_roles', [])
     require(len(roles) == len(members) and {r.get('unit') for r in roles} == set(members),
