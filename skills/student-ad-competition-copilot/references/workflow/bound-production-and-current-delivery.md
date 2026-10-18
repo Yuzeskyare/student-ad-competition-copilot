@@ -36,7 +36,7 @@ request准备不授予新权限，不替代前检或内容验收；正式来源�
 
 execution_contract.normalize_event仅按明确seconds/milliseconds/iso和message/turn/review-event转换时间，保留original_event/original_time；原ID缺失仍空。human_source继续检查真实来源条件，观察时间不能顶替发送时间，turn依据保留原turn_id和turn_started_at。
 
-宿主未暴露调用ID或完整事件时，不建立虚假的started/returned/saved事件链。源绑定可使用下方tool-output-observation-v1保存实际工具参数、原始返回和输出文件依据；它只支持可观测来源绑定，不能让完整外部生命周期检查自动通过。正式合同需要而无法取得的事件仍如实未核验，不改写历史失败。
+宿主未暴露调用ID或完整事件时，不建立虚假的started/returned/saved事件链。先按[Codex 桌面版原始事件](codex-desktop-host-evidence.md)检查原生 rollout 的完成项是否已同时保存调用、开始/完成时间及图像负载；符合该形态时可直接绑定原日志，程序派生完成状态。确实缺少这些事件时，源绑定可使用下方tool-output-observation-v1保存实际工具参数、原始返回和输出文件依据；它只支持可观测来源绑定，不能让完整外部生命周期检查自动通过。正式合同需要而无法取得的事件仍如实未核验，不改写历史失败。
 
 ## 当前平面集合
 

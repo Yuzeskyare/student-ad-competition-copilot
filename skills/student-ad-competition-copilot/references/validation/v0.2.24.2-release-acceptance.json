@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.24.2",
+  "status": "release-qualified",
+  "change_id": "exact-source-ppi-and-codex-desktop-host-evidence",
+  "promoted_candidate": "0.2.24.2-rc.1",
+  "candidate_manifest_sha256": "ac1ebd63eae0c1d3dc42f6c8486cdc7613ec879d2bbe30acc52d816fdcbc569b",
+  "runtime_scripts_changed_since_candidate": false,
+  "changes": [
+    "Source PPI is compared with exact rational arithmetic (zero tolerance); 1491px over 315.595mm is exactly 120ppi, real shortfalls still fail",
+    "Codex Desktop built-in image generation is bound directly from the raw rollout item_completed event (call id, timestamps, saved path, payload hash); missing or author-supplied timelines are rejected"
+  ],
+  "candidate_tests": {
+    "suites": 64,
+    "executions": 3639,
+    "pipeline_stages": 236,
+    "image_generation_calls": 0
+  },
+  "legacy_regressions": "Historical schema definitions preserved; 64 suites (3639 runs) and 236-stage pipeline pass",
+  "distribution_cleanup": {
+    "removed_process_records": [
+      "references/validation/v0.2.24.2-rc.1-acceptance.json"
+    ],
+    "edited_documents": [],
+    "rule_content_changed": false
+  },
+  "image_generation_calls": 0,
+  "project_submission_ready": false,
+  "limits": [
+    "Upgrading mid-run requires registering the upgrade chain; checks are re-run under the new version before delivery",
+    "Automatic checks are model judgments, not human approval"
+  ],
+  "promotion_basis": "Verified candidate runtime with documented distribution cleanup; publication only after explicit user authorization."
+}

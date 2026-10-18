@@ -255,6 +255,11 @@ def validate_events(root, contract, pending=None):
         key = event.get('request_sha256')
         require(key in requests and event.get('request_id') == requests[key]['id'], 'Lifecycle request mismatch')
         require(isinstance(event.get('call_id'), str) and event['call_id'].strip(), 'Use actual host call ID')
+        if event.get('profile') == 'codex-desktop-imagegen-v1':
+            require(key not in previous, 'Duplicate or mixed desktop lifecycle evidence')
+            from desktop_host_evidence import completed_image_event
+            previous[key] = (completed_image_event(root, event, requests[key]), ref)
+            continue
         at = timestamp(event.get('occurred_at'))
         require(at <= datetime.now(timezone.utc), 'Future lifecycle event')
         evidence = load(bound_file(root, event.get('evidence')))

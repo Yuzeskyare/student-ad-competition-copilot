@@ -1217,6 +1217,8 @@ def run_pipeline(root):
     regression_drawability(root,manifest,save,text,stages)
     from rc4_regressions import run as regression_rc4
     regression_rc4(root,manifest,save,text,stages,cli,SKILL)
+    from hotfix_02242_regressions import run as regression_02242
+    regression_02242(root,save,text,stages,cli)
     delivered=load(root/manifest['artifacts']['delivery_manifest']);delivered['delivered_at']=now()
     save(manifest['artifacts']['delivery_manifest'],delivered)
     save('manifest.json',manifest)

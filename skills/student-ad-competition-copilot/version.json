@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.24.1",
+  "skill_version": "0.2.24.2",
   "status": "stable-release",
-  "built_at": "2026-10-17",
-  "stable_release": "0.2.24.1",
+  "built_at": "2026-10-18",
+  "stable_release": "0.2.24.2",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -119,8 +119,8 @@
     },
     {
       "path": "references/deliverables/print-ad.md",
-      "bytes": 7169,
-      "sha256": "567ef182fcfa6f54b33bdcca53acca553efdba4c1c7c79b071f474a8c13d995e"
+      "bytes": 7534,
+      "sha256": "cb957386d780a00c6c01dee33ac2f1ef3c0ab29da69adbeb3b1e465cfe7400f0"
     },
     {
       "path": "references/feedback/direction-counterexamples.json",
@@ -563,6 +563,11 @@
       "sha256": "bea99d3f49e934a55ae66c38a7cef7a9919e8a4116aacb070264268f5ecd4839"
     },
     {
+      "path": "references/validation/v0.2.24.2-release-acceptance.json",
+      "bytes": 1617,
+      "sha256": "330e612275c9e92cd039eb0dfd6a75c598a7a62d5f449ea68352d888745adeb4"
+    },
+    {
       "path": "references/validation/v0.2.3-acceptance.json",
       "bytes": 2357,
       "sha256": "12659f68a64c24c05f4a53b8993332511994ff792c65a27477a2771d163aeeb1"
@@ -644,13 +649,18 @@
     },
     {
       "path": "references/workflow/bound-production-and-current-delivery.md",
-      "bytes": 11343,
-      "sha256": "6ecf17c32c6d6ec40630e9ee8927d363250b94f32db5367dda5480ceb969e87b"
+      "bytes": 11613,
+      "sha256": "cc4ed46d0da10091985366b71f235e5eeb4d13f29fed27e8483f5ca180392f73"
     },
     {
       "path": "references/workflow/case-proposition-evidence-gate.md",
       "bytes": 3714,
       "sha256": "8fa2b01accfd479ef3a3df608c315a27ad1c81b41434b8b4e184b15a8983a9c4"
+    },
+    {
+      "path": "references/workflow/codex-desktop-host-evidence.md",
+      "bytes": 2446,
+      "sha256": "08b738ea19cc2766dd58774b84bf3acec928394ba6445a3366007bf61bba4e4f"
     },
     {
       "path": "references/workflow/common-competition-kernel.md",
@@ -788,6 +798,11 @@
       "sha256": "f40f209296adc28d9bfa5d0f23166a1b6976529d5008290b0c21923205df2d06"
     },
     {
+      "path": "scripts/desktop_host_evidence.py",
+      "bytes": 4434,
+      "sha256": "cd528cc4a94c3301beb89a882b6bdb2e3acb0f7d6da0520b06412bfcdf87308b"
+    },
+    {
       "path": "scripts/direction_change_contract.py",
       "bytes": 8318,
       "sha256": "5c4258303cfa75d29b115a82ce23ccd3ceed43c410895f40982235587c60159e"
@@ -809,8 +824,8 @@
     },
     {
       "path": "scripts/execution_contract.py",
-      "bytes": 23506,
-      "sha256": "fca6ea232807502832399d13d8156ade09ccbd3c582df9d07c63f9481cbb943b"
+      "bytes": 23839,
+      "sha256": "8f8d9bbbc4e832a80791d3f0039ca3d878f2e29013599d936916f67734077e7b"
     },
     {
       "path": "scripts/export_current_artwork.py",
@@ -821,6 +836,11 @@
       "path": "scripts/guard_production.py",
       "bytes": 5026,
       "sha256": "a36e4399e88bacd73cd6b2f5f87de5e9ca2bb8bfdd8a46e4b1d4c185c21e7443"
+    },
+    {
+      "path": "scripts/hotfix_02242_regressions.py",
+      "bytes": 6900,
+      "sha256": "8f26acf87c70aa7bb44e458f287566534544c6c8b136b5c14fb192b92358b432"
     },
     {
       "path": "scripts/inspect_svg_source.py",
@@ -889,8 +909,8 @@
     },
     {
       "path": "scripts/test_print_product_pipeline.py",
-      "bytes": 129348,
-      "sha256": "1511dc1cb26762c44fe6634eb1cba0b4c240df86a58e821595a521562dbca3d7"
+      "bytes": 129463,
+      "sha256": "901406f429e291f12504744b749416c45fe045d1a753323cbd95b8894949fa96"
     },
     {
       "path": "scripts/user_decision_contract.py",
@@ -934,8 +954,8 @@
     },
     {
       "path": "scripts/validate_submission.py",
-      "bytes": 18398,
-      "sha256": "8d40119552c5f833624739134867236d9728ae2e9de7d7af5c53d417afd4ad48"
+      "bytes": 18714,
+      "sha256": "11c7c069eb577360b708c4c6aec858fc9fd3f2cca20393bddc66a2dc5b1a1f48"
     },
     {
       "path": "scripts/validate_submission_readiness.py",
@@ -963,14 +983,14 @@
       "sha256": "613bf434dc250f39d0fee8ebeffc8f8db6b3a2c58c791e6d52bb0e968992fbc9"
     }
   ],
-  "base_version": "0.2.24",
+  "base_version": "0.2.24.1",
   "internal_verification": {
-    "path": "references/validation/v0.2.24.1-release-acceptance.json",
-    "bytes": 2986,
-    "sha256": "bea99d3f49e934a55ae66c38a7cef7a9919e8a4116aacb070264268f5ecd4839"
+    "path": "references/validation/v0.2.24.2-release-acceptance.json",
+    "bytes": 1617,
+    "sha256": "330e612275c9e92cd039eb0dfd6a75c598a7a62d5f449ea68352d888745adeb4"
   },
-  "rollback_release": "0.2.24",
-  "version": "0.2.24.1",
-  "milestone": "user-direction-changes-redivergence-and-review-recovery",
-  "promoted_candidate_manifest_sha256": "7085c891b8d6b5f434c09403400f50ecab83e541d20c60f35540539bc0a9890b"
+  "rollback_release": "0.2.24.1",
+  "version": "0.2.24.2",
+  "milestone": "exact-source-ppi-and-codex-desktop-host-evidence",
+  "promoted_candidate_manifest_sha256": "ac1ebd63eae0c1d3dc42f6c8486cdc7613ec879d2bbe30acc52d816fdcbc569b"
 }

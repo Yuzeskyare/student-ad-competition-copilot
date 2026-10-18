@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import sys
+from fractions import Fraction
 from pathlib import Path
 
 sys.dont_write_bytecode = True
@@ -217,14 +218,17 @@ def source_resolution_report(manifest_path, Image):
             size = layer.get('placed_mm')
             if not isinstance(size, list) or len(size) != 2 or not all(type(v) in (int,float) and math.isfinite(v) and v > 0 for v in size):
                 raise ValueError('Raster sources need their actual placed width and height in mm')
-            ppi = [(crop[i+2]-crop[i]) / (size[i]/25.4) for i in (0,1)]
+            # JSON decimal dimensions and 25.4 mm/in are exact rationals. Compare
+            # before converting to floats for reporting; no threshold tolerance.
+            exact_ppi = [Fraction(crop[i+2]-crop[i]) * Fraction(127, 5) / Fraction(str(size[i])) for i in (0,1)]
+            ppi = [float(value) for value in exact_ppi]
             report.update(source_pixels=pixels, used_pixel_bounds=crop, placed_mm=size, effective_ppi=ppi)
             minimum = layer.get('minimum_ppi')
             if minimum is not None:
                 if (type(minimum) not in (int,float) or not math.isfinite(minimum) or minimum <= 0
                         or not isinstance(layer.get('requirement_basis'), str) or not layer['requirement_basis'].strip()):
                     raise ValueError('A minimum source PPI needs a positive value and a task-specific requirement basis')
-                report.update(minimum_ppi=minimum, requirement_basis=layer['requirement_basis'], meets_requirement=min(ppi) >= minimum)
+                report.update(minimum_ppi=minimum, requirement_basis=layer['requirement_basis'], meets_requirement=min(exact_ppi) >= Fraction(str(minimum)))
         reports.append(report)
     return reports
 
