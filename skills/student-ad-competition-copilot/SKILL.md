@@ -229,3 +229,5 @@ metadata:
 新运行同时采用 `print-direction-provenance-v1`，被替代独立检查的真实候选与去重记录按[来源登记合同](references/workflow/direction-provenance.md)保留；历史合同按原解释继续验证。
 
 新平面方向运行使用 print-direction-v12：生成前摘录可追溯的命题传播目的原文，并逐方向写受众行为、感受和产品记忆；独立检查固定加入该原文摘录，保留目的提示，不改变排序与采用规则。交清单前的整组自查同时列出产品角色。具体输入、返回及旧合同边界见[平面方向检查](references/tracks/print-ad/playbook.md#当前方向检查的传播目的输入)。
+
+新稿审稿、系列整组确认、进度与计时、当前入口及小交付包，使用[原生编排流程](references/workflow/native-review-workflow.md)。先批量完成所有成员方向检查，一次展示、一次真实整组确认、逐成员锁句；只有实质改向或新硬风险才重开受影响项。新对照只读审稿投影，不读作者自查；必需品牌资产空集合明确返回 brand_asset_review=[]。进度只写 run-status，不改不可变计划。推荐并列说明清晰度、目的契合、新颖度与制作风险，保留用户方向来源。

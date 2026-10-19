@@ -1256,6 +1256,8 @@ def run_pipeline(root):
     handoff=load(root/'handoff/handoff.json')
     assert handoff['invalid_core_returns'][0]['validator_error']=='Creative hints must preserve the independent question and reason'
     assert len(handoff['user_decisions'])==2 and any(d.get('independent_answer') is False for d in handoff['user_decisions'])
+    from rc25_regressions import run as regression_rc25
+    regression_rc25(root,manifest,save,text,stages,cli,SKILL)
     report=dict(status='passed',boundary=seed['boundary'],contracts=dict(direction=dc,core=cc,product='print-product-v3',visual='2.7.0',gates=gates['definition_set_id']),stages=stages,delivery_complete=True,image_generation_calls=0,real_approval_created=False)
     save('pipeline-result.json',report);print(json.dumps({k:report[k] for k in ['status','contracts','delivery_complete','image_generation_calls']},ensure_ascii=False));return report
 

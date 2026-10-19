@@ -15,6 +15,19 @@ def supplement(row):
     bindings=[dict(element_id=p['element_id'],role=p['role'],triptych=p['triptych']) for p in row.get('product_triptychs',[])]
     return SUPPLEMENT+'三联JSON绑定表：'+json.dumps(bindings,ensure_ascii=False,sort_keys=True,separators=(',',':'))
 
+
+def asset_scope(row):
+    assets=row.get('required_brand_assets')
+    if not isinstance(assets,list):
+        raise ValueError('field=required_brand_assets current='+repr(assets)+'; legal source=current manifest official brief, including []')
+    ids=[a['element_id'] for a in assets]
+    if len(ids)!=len(set(ids)):
+        raise ValueError('Duplicate required brand asset element_id')
+    return ('\n【本稿必需品牌资产精确集合 v1】element_ids='+json.dumps(ids,ensure_ascii=False,separators=(',',':'))
+            +'。brand_asset_review 必须且仅覆盖此集合；不把 product_scene 或 product_label 的产品ID加入品牌资产列表。'
+            +('本稿无必需品牌资产，必须返回 brand_asset_review=[]。' if not ids else '每项保持实际像素观察，即使资产缺失也如实记录。')
+            +'固定路径和哈希由接入层绑定，不改任何判断、理由或原始返回。')
+
 def validate_product_text(raw, row):
     from product_relationship_contract import require, nonempty
     checks=raw.get('comparison',{}).get('product_label',{}).get('checks')

@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.24.2",
+  "skill_version": "0.2.25",
   "status": "stable-release",
-  "built_at": "2026-10-18",
-  "stable_release": "0.2.24.2",
+  "built_at": "2026-10-19",
+  "stable_release": "0.2.25",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -568,6 +568,11 @@
       "sha256": "330e612275c9e92cd039eb0dfd6a75c598a7a62d5f449ea68352d888745adeb4"
     },
     {
+      "path": "references/validation/v0.2.25-release-acceptance.json",
+      "bytes": 2356,
+      "sha256": "5eae6dc80d66010022b589583cd7d5ac42feccf9ad70a297e3c0eef7ead7f03c"
+    },
+    {
       "path": "references/validation/v0.2.3-acceptance.json",
       "bytes": 2357,
       "sha256": "12659f68a64c24c05f4a53b8993332511994ff792c65a27477a2771d163aeeb1"
@@ -713,6 +718,11 @@
       "sha256": "7fef29d3ec8357e201eaf98396cd70f69f89942b2ad4da3a8732ba89350f8f95"
     },
     {
+      "path": "references/workflow/native-review-workflow.md",
+      "bytes": 7259,
+      "sha256": "c3844a1f02f6d2d03e1cbcc9ff3429c16875db80698fafb69bce50a95e47c43c"
+    },
+    {
       "path": "references/workflow/product-relationship-v1.md",
       "bytes": 3216,
       "sha256": "af749f22c1efdef915d329b0d1f490638ad09c7dd2cda9beb94d68c00abc88cd"
@@ -829,8 +839,13 @@
     },
     {
       "path": "scripts/export_current_artwork.py",
-      "bytes": 7959,
-      "sha256": "c87635891293b37c9481ec6ab4fef439e8ed2b61f6d3e2005c51788779e1a5ba"
+      "bytes": 10505,
+      "sha256": "edee1aa478b25bf61934b343c8e2a1a8a9b30832cbbada67139b4c5555b2fb31"
+    },
+    {
+      "path": "scripts/freeze_shared_evidence.py",
+      "bytes": 2109,
+      "sha256": "c447f654beec8be86ebce1b99272332b49b65a841a2c9e7ca92f62696ab1f283"
     },
     {
       "path": "scripts/guard_production.py",
@@ -864,8 +879,8 @@
     },
     {
       "path": "scripts/prepare_visual_views.py",
-      "bytes": 7847,
-      "sha256": "3333a1922f27f01b3342f7b6f47141de94395206b4d2f3ae70b8e08429ffefe4"
+      "bytes": 8263,
+      "sha256": "99f503a397257e816f4696710a897f303f58c0abcae7ea77618c58b903105a49"
     },
     {
       "path": "scripts/product_relationship_contract.py",
@@ -883,6 +898,11 @@
       "sha256": "23e2115f2739db743a4205db72b3434f11f75ca5c3604a19b4c5e2c699cdc2ed"
     },
     {
+      "path": "scripts/rc25_regressions.py",
+      "bytes": 12539,
+      "sha256": "1401a01468a1785d2534c6ec771b527024fe5eeb4cb7fc98bfdd4c766aa50dc7"
+    },
+    {
       "path": "scripts/rc4_regressions.py",
       "bytes": 14650,
       "sha256": "6eb5e3f210532437c78f6f736fb8723fa1dc63d9ac5beb7c0e3c265bb081d0b3"
@@ -894,8 +914,8 @@
     },
     {
       "path": "scripts/review_consistency_contract.py",
-      "bytes": 3858,
-      "sha256": "2e068468b66a5b21636e041529b2f0bcbd48ec126a972c2886fac8956685b0ce"
+      "bytes": 4799,
+      "sha256": "be75c8b3c9d2427c49bf772a5ddf9e6e1acc80aff4b1b5361084cb483c136fd6"
     },
     {
       "path": "scripts/review_contract.py",
@@ -903,19 +923,34 @@
       "sha256": "4e0ba4d774acaad7a2e8b025d042e270a030eb94455e223d58841a867786c015"
     },
     {
+      "path": "scripts/review_projection.py",
+      "bytes": 3810,
+      "sha256": "7fc0be01ba301672a8168fd82d1ea188e2d0ad43171ad8f9a7cbc47276fe80d3"
+    },
+    {
       "path": "scripts/review_state.py",
       "bytes": 16814,
       "sha256": "ae90950fecfc28cf03001583d6124171150aa26e4533ab1c191ba448a2c6dd79"
     },
     {
+      "path": "scripts/review_workflow.py",
+      "bytes": 10733,
+      "sha256": "03facb5dd8b48410d3a7261b0edd742f24653d700005abfda047acdedfa94ce5"
+    },
+    {
+      "path": "scripts/series_workflow.py",
+      "bytes": 7277,
+      "sha256": "8d2c15c079537765f217c46c1825aeb7aaf7595827066f057eb76d17108bb3fb"
+    },
+    {
       "path": "scripts/test_print_product_pipeline.py",
-      "bytes": 129463,
-      "sha256": "901406f429e291f12504744b749416c45fe045d1a753323cbd95b8894949fa96"
+      "bytes": 129583,
+      "sha256": "4e27f3ade0154c02bf6be9191f4b6f256d51413e83f7476d49b77b2727358a21"
     },
     {
       "path": "scripts/user_decision_contract.py",
-      "bytes": 8696,
-      "sha256": "bc70cc37e342f1f6e64c6d5408da0d6136fc401918b1cb643d5f9b284d3307e9"
+      "bytes": 8783,
+      "sha256": "a9b97e54f9e40523b4591d566e7c8a910bd82b5f2b128495fddeca007cd35ed4"
     },
     {
       "path": "scripts/validate_ad_copy.py",
@@ -944,8 +979,8 @@
     },
     {
       "path": "scripts/validate_print_ad_run.py",
-      "bytes": 224561,
-      "sha256": "a663f38dc82e834747d0b559b20cdb5bc515af3b416ea7103eabfdb5c1f9c58b"
+      "bytes": 228384,
+      "sha256": "8b23bff8b0500868f28dacb23436a1f07bb530be264d4d2b05d0f4fba546730a"
     },
     {
       "path": "scripts/validate_run.py",
@@ -969,13 +1004,18 @@
     },
     {
       "path": "scripts/visual_review_contract.py",
-      "bytes": 97665,
-      "sha256": "9815860c47f2e6cff4d1f45b5175712ab819666b9cae9b5054e3bef4f2a68ee8"
+      "bytes": 97755,
+      "sha256": "fe3efd8bd30985eb99a1f4dcb389ed284ebc15df6ec7ee81e87499caaa28e582"
+    },
+    {
+      "path": "scripts/workflow_runtime.py",
+      "bytes": 5497,
+      "sha256": "dff1e19660e44f06a4942f90e7230297d2b4b189210768eca58fe6bc4cd14db3"
     },
     {
       "path": "SKILL.md",
-      "bytes": 42863,
-      "sha256": "f517c00e2043de0a7c45f05e1e9c7aa1161de2dfbf5edb4c8277bf928ae61c15"
+      "bytes": 43449,
+      "sha256": "17729aa1f8e6606fc932df9e8f47b43cce2827aec783bfa5a836b8e52bf6d30a"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -983,14 +1023,14 @@
       "sha256": "613bf434dc250f39d0fee8ebeffc8f8db6b3a2c58c791e6d52bb0e968992fbc9"
     }
   ],
-  "base_version": "0.2.24.1",
+  "base_version": "0.2.24.2",
   "internal_verification": {
-    "path": "references/validation/v0.2.24.2-release-acceptance.json",
-    "bytes": 1617,
-    "sha256": "330e612275c9e92cd039eb0dfd6a75c598a7a62d5f449ea68352d888745adeb4"
+    "path": "references/validation/v0.2.25-release-acceptance.json",
+    "bytes": 2356,
+    "sha256": "5eae6dc80d66010022b589583cd7d5ac42feccf9ad70a297e3c0eef7ead7f03c"
   },
-  "rollback_release": "0.2.24.1",
-  "version": "0.2.24.2",
-  "milestone": "exact-source-ppi-and-codex-desktop-host-evidence",
-  "promoted_candidate_manifest_sha256": "ac1ebd63eae0c1d3dc42f6c8486cdc7613ec879d2bbe30acc52d816fdcbc569b"
+  "rollback_release": "0.2.24.2",
+  "version": "0.2.25",
+  "milestone": "review-request-integrity-series-batch-confirmation-and-light-delivery",
+  "promoted_candidate_manifest_sha256": "f9472d08078238368577884c4d474a58238503effab27992bfa83b7d2d3751c3"
 }

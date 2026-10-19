@@ -899,10 +899,18 @@ HISTORICAL_COMPARE_RUBRIC_PRODUCT_V8 = INDEPENDENT_COMPARE_RUBRIC_PRODUCT_V8
 from review_consistency_contract import SUPPLEMENT as CORE_RETURN_SUPPLEMENT
 
 def comparison_request(row, blind_ref, locked_claim):
-    from review_consistency_contract import supplement
-    return (HISTORICAL_COMPARE_RUBRIC_PRODUCT_V8 + supplement(row)
+    from review_consistency_contract import supplement, asset_scope
+    return (HISTORICAL_COMPARE_RUBRIC_PRODUCT_V8 + supplement(row) + asset_scope(row)
             + '\n核心动作/关系：' + row['core_action'] + '\n盲读记录SHA256：' + blind_ref['sha256']
             + '\n锁定声明SHA256：' + locked_claim['statement_sha256'])
+
+
+def current_comparison_request(root,row,blind_ref,locked_claim):
+    from review_projection import validate, PROFILE
+    for p in row.get('product_triptychs',[]):
+        if validate(root,p['triptych'],p['element_id']).get('contract')!=PROFILE:
+            raise ValueError('field=product_triptychs current='+repr(p['triptych'])+'; legal source=review_workflow blind-save sanitized review projection')
+    return comparison_request(row,blind_ref,locked_claim)+'\n【审稿投影 v1】仅可读取绑定的审稿投影JSON及图片；不得读取 _review-private 或作者记录。'
 
 
 def assessment_hard_failure(root,row):
@@ -1018,7 +1026,15 @@ def validate_blind_core(root, row, render, record, invocation_keys, locked_claim
         validate_product_scene_scope(row)
     trip_roles={'product-triptych:'+p['element_id'] for p in row.get('product_triptychs',[])} if product_scene else set()
     brand_roles={'mandatory-brand-asset:'+r['element_id'] for r in row.get('required_brand_assets',[])} if current_core else set()
-    refs = inputs(record['inputs'], {'artwork', 'official-product-asset', 'core-action'} | trip_roles | brand_roles | ({'thumbnail'} if current_core else set()) | ({'proposition-message'} if meaning_core else set()))
+    projected_request='【审稿投影 v1】' in bound_file(root,record['request']).read_text(encoding='utf-8')
+    projection_roles=({'blind-read'} | {'product-triptych-metadata:'+p['element_id'] for p in row.get('product_triptychs',[])}) if projected_request else set()
+    refs = inputs(record['inputs'], {'artwork', 'official-product-asset', 'core-action'} | trip_roles | brand_roles | projection_roles | ({'thumbnail'} if current_core else set()) | ({'proposition-message'} if meaning_core else set()))
+    if projected_request:
+        require(refs['blind-read']==blind['raw_return'],'Projected comparison must receive original frozen blind return')
+        from review_projection import validate as validate_projection, PROFILE as PROJECTION_PROFILE
+        for p in row.get('product_triptychs',[]):
+            require(refs['product-triptych-metadata:'+p['element_id']]==p['triptych'] and validate_projection(root,p['triptych'],p['element_id']).get('contract')==PROJECTION_PROFILE,
+                    'Projected comparison metadata must be sanitized and bound to original pixels')
     if meaning_core:
         require(refs['proposition-message']==row['proposition_message'],'Bind official proposition information in comparison')
     if current_core:
@@ -1044,11 +1060,28 @@ def validate_blind_core(root, row, render, record, invocation_keys, locked_claim
     if row.get('core_review_contract')=='print-core-product-v8':
         allowed_requests.add(expected_request.replace(INDEPENDENT_COMPARE_RUBRIC_PRODUCT_V8,HISTORICAL_COMPARE_RUBRIC_PRODUCT_V8,1))
         allowed_requests.add(comparison_request(row,blind_ref,locked_claim))
+        from review_consistency_contract import asset_scope
+        # Keep exact historical request editions for immutable pre-upgrade evidence.
+        allowed_requests.add(comparison_request(row,blind_ref,locked_claim).replace(asset_scope(row),'',1))
+        if '【审稿投影 v1】' in actual_request:
+            allowed_requests={current_comparison_request(root,row,blind_ref,locked_claim)}
     require(actual_request in allowed_requests,'Comparison request contains author explanation or lacks blind hash')
     text_checks_required=CORE_RETURN_SUPPLEMENT in actual_request
     if not validate_return:
         return
     raw = load_json(bound_file(root, record['raw_return']))
+    if projected_request:
+        binding_path=bound_file(root,record['raw_return']).parent/'return-binding.json'
+        binding=load_json(binding_path)
+        require(binding.get('bound')==record['raw_return'],'Trusted return binding must identify current normalized bytes')
+        original=load_json(bound_file(root,binding['original']))
+        host=load_json(bound_file(root,binding['host']))
+        require(host.get('raw_return')==binding['original'] and all(host.get(k)==record.get(k) for k in
+                ('checker_context','author_session_id','checker_session_id','invocation_id','started_at','completed_at')),
+                'Trusted return must preserve original host identity, time and raw reference')
+        from review_workflow import bind_return
+        require(raw==bind_return(root,binding['original'],row,blind_ref),
+                'Trusted binding changed independent judgments or observations')
     require(set(raw) - ({'scene_evidence'} if row.get('core_review_contract') in {'print-core-product-v7','print-core-product-v8'} else set()) - ({'product_meaning','meaning_check','compliance_check','review_issues','layout_review','brand_asset_review'} if meaning_core else {'product_participation','layout_review','brand_asset_review'} if current_core else set()) - ({'creative_failure_reasons','production_failure_reasons'} if row.get('product_contract')=='print-product-v3' and not meaning_core else set()) == ({'blind_read_sha256', 'comparison', 'answers', 'core_claim_sha256'} if locked else {'blind_read_sha256', 'comparison', 'answers'}) and raw['blind_read_sha256'] == blind_ref['sha256'],
             'Comparison must cite saved blind record hash')
     if locked:
@@ -1300,7 +1333,7 @@ def validate_method_decision(decision):
             'Rejected method cannot also claim supporting participation')
 
 
-def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
+def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selection=False) -> dict:
     """Check recorded isolation, ordering and choices, without certifying judgment."""
     def require(value, reason):
         if not value:
@@ -1639,12 +1672,24 @@ def validate_direction_blind_review(root: Path, manifest: dict) -> dict:
         require(all(x['method_id'] is None or x['method_id'] in returned for x in origins), 'Origin method must be in actual retrieval')
         require(not supplied or all(x['method_id'] is None for x in origins),
                 'User-supplied direction must not claim a model method-card origin')
+        if pending_selection:
+            (validate_direction_choice_list_v8 if v8 else validate_direction_choice_list_v7 if v7 else validate_direction_choice_list_v6)(root, adoption, {ident: input_by_id[ident] for ident in ids}, raw, previous_end, datetime.now(timezone.utc))
+            return check('independent-direction-blind-review',True,dict(winner=winner,rounds=len(rounds),
+                statement=input_by_id[winner]['statement'],completed_at=r['completed_at'],
+                raw_return=r['raw_return'],judgment=direction_judgment_v7(raw,winner,r['raw_return']),
+                selection_pending=True,approval_granted=False))
         selection = load_json(ref(adoption['selection_record']))
         selection_fields = {'kind', 'actor', 'direction_id', 'decided_at', 'statement', 'source'}
         require(selection_fields <= set(selection)
                 and set(selection) <= selection_fields | ({'user_override', 'override_judgment'} if v6 else set()) | ({'carryover'} if v7 else set())
                 and selection['actor'] == 'user' and nonempty(selection['statement']), 'Real user delegation/choice record is required')
-        require(selection['statement'] in ref(selection['source']).read_text(encoding='utf-8'), 'User statement must bind actual source bytes')
+        source_content=ref(selection['source']).read_text(encoding='utf-8')
+        try:
+            source_value=json.loads(source_content)
+        except json.JSONDecodeError:
+            source_value=None
+        source_text=source_value.get('text') if isinstance(source_value,dict) else source_content
+        require(isinstance(source_text,str) and selection['statement'] in source_text, 'User statement must bind actual source bytes')
         decided = time(selection['decided_at'])
         carry = v7 and selection.get('kind') == 'user-choice-carryover'
         if carry:

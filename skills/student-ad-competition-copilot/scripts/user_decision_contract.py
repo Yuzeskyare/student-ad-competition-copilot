@@ -113,7 +113,8 @@ def effective_series_plan(root, manifest):
     # The full plan stays active; only current delivery coverage is projected.
     # A historical already-projected plan is accepted if it exactly matches.
     projected = dict(original, units=units, member_roles=[r for r in original.get('member_roles', []) if r.get('unit') in units])
-    require(plan == original or plan == projected, 'Delivery selection cannot silently rewrite the retained series plan')
+    from workflow_runtime import semantics
+    require(semantics(plan) == semantics(original) or semantics(plan) == semantics(projected), 'Delivery selection cannot silently rewrite the retained series plan')
     source = load(bound_file(root, choice['source']))
     require(all(u in source['text'] for u in units) or ('第一幅' in choice['quote'] and units == original['units'][:1]),
             'Scope source must explicitly identify selected members or the first planned member')

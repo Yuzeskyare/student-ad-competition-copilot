@@ -644,7 +644,8 @@ def validate_product_scene_comparison_v2(root,row,raw):
         require(isinstance(answer,dict) and set(answer)=={'element_id','role','triptych','answer','observation'}
                 and all(answer[k]==p[k] for k in p) and type(answer['answer']) is bool and nonempty(answer['observation']),
                 'Independent scene answer must preserve role, triptych and pixel observation')
-        trip=load(bound_file(root,p['triptych']))
+        from review_projection import validate as validate_projection
+        trip=validate_projection(root,p['triptych'],p['element_id'])
         require(trip['panels']['final']['source']==row['observed_image'],'Product scene triptych is not current draft')
         expected=product_triptych(root,trip);actual=image_file(root,trip['image'])
         require(expected.size==actual.size and ImageChops.difference(expected,actual).getbbox() is None,'Product scene triptych pixels do not match sources')

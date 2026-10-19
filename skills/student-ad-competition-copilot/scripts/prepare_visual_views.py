@@ -17,6 +17,7 @@ def product_tools(argv):
     parser.add_argument('operation',choices=['product-triptych','pixel-proof'])
     parser.add_argument('--run-dir',required=True); parser.add_argument('--output-dir',required=True)
     parser.add_argument('--input'); parser.add_argument('--before'); parser.add_argument('--after'); parser.add_argument('--mask')
+    parser.add_argument('--element-id',default='product',help='Exact current product element_id for the sanitized checker projection')
     args=parser.parse_args(argv); root=Path(args.run_dir).resolve(); dest=inside(root,args.output_dir)
     if dest.exists(): parser.error('Use a new output directory')
     def ref(path): return {'path':path.relative_to(root).as_posix(),'sha256':digest(path)}
@@ -31,7 +32,12 @@ def product_tools(argv):
         with Image.open(before) as b,Image.open(after) as a,Image.open(mask) as m: record=exact_pixel_diff(b,a,m)
         record.update(before=ref(before),after=ref(after),allowed_mask=ref(mask)); name='pixel-proof.json'; dest.mkdir(parents=True)
     path=dest/name; path.write_text(json.dumps(record,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    print(json.dumps({'record':ref(path),'visual_quality_assessed':False},ensure_ascii=False))
+    result={'record':ref(path),'visual_quality_assessed':False}
+    if args.operation=='product-triptych':
+        from review_projection import project
+        result['author_record']=ref(path)
+        result['record']=project(root,ref(path),args.element_id,(dest/'review-projection.json').relative_to(root).as_posix())
+    print(json.dumps(result,ensure_ascii=False))
     return 1 if record.get('outside_changed_pixels',0) else 0
 
 

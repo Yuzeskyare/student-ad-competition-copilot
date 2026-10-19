@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.25",
+  "status": "release-qualified",
+  "change_id": "review-request-integrity-series-batch-confirmation-and-light-delivery",
+  "promoted_candidate": "0.2.25-rc.1",
+  "candidate_manifest_sha256": "f9472d08078238368577884c4d474a58238503effab27992bfa83b7d2d3751c3",
+  "runtime_scripts_changed_since_candidate": false,
+  "changes": [
+    "Fixed review request lists the exact required brand asset element ids (empty set stated explicitly), separate from product scene/label checks",
+    "Independent comparison input is a whitelisted review projection; author text checks stay out of the reviewer input",
+    "Series plans run all member direction checks up front and accept one user confirmation for the whole set; each member is locked to the same real message",
+    "Native review workflow assigns ids, paths and timestamps and reports field, value and legal source on errors",
+    "Immutable series plan no longer carries progress; progress lives in run-status via a whitelisted command",
+    "Recommendations show clarity, purpose fit, novelty and production risk side by side and keep user-proposed origins",
+    "Small user delivery package (finished artwork plus essentials) alongside the full audit archive; shared frozen rollout evidence stored once",
+    "Stage timing and failure-recovery records (record only)",
+    "Single CURRENT pointer kept consistent with the run README and receipts"
+  ],
+  "candidate_tests": {
+    "suites": 64,
+    "executions": 3639,
+    "pipeline_stages": 270,
+    "image_generation_calls": 0
+  },
+  "legacy_regressions": "Historical schema definitions preserved; 64 suites (3639 runs) and 270-stage pipeline pass",
+  "distribution_cleanup": {
+    "removed_process_records": [
+      "references/validation/v0.2.25-rc.1-acceptance.json"
+    ],
+    "edited_documents": [],
+    "rule_content_changed": false
+  },
+  "image_generation_calls": 0,
+  "project_submission_ready": false,
+  "limits": [
+    "Upgrading mid-run requires registering the upgrade chain; checks are re-run under the new version before delivery",
+    "Automatic checks are model judgments, not human approval"
+  ],
+  "promotion_basis": "Verified candidate runtime with documented distribution cleanup; publication only after explicit user authorization."
+}
