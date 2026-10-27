@@ -8,22 +8,30 @@ from review_workflow import allocate, write, error
 from workflow_runtime import now, semantics
 
 
-def prepare(root, members, plan):
+def checked_recommendation(root, manifest):
+    """Project only the manifest's validated, bound independent direction return."""
     from validate_print_ad_run import validate_direction_blind_review
+    current=load(bound_file(root,manifest))
+    check=validate_direction_blind_review(root,current,pending_selection=True)
+    if not check['passed']:error('manifest.direction_adoption',check['evidence'],'ordinary independent direction check before recommendation')
+    adoption=current['direction_adoption']
+    bundle=load(bound_file(root,adoption['blind_review']))
+    last=load(bound_file(root,bundle['rounds'][-1]))
+    candidates=json.loads(bound_file(root,last['inputs'][0]['file']).read_text(encoding='utf-8'))
+    choice=load(bound_file(root,adoption['choice_list']))
+    return dict(evidence=check['evidence'],all_weak=last['result']['all_weak'],choice_rows=choice['rows'],
+                recommendations=recommendation(candidates,last['result'],{x['direction_id']:x for x in bundle['origins']}))
+
+
+def prepare(root, members, plan):
     if plan!=semantics(plan):error('series_plan',plan,'immutable members/directions/copy/mechanism; move status to run-status')
     if not members or len({m['unit'] for m in members})!=len(members) or [m['unit'] for m in members]!=plan['units']:
         error('members',members,'one manifest per series_plan.units, in exact order')
     checked=[]
     for member in members:
-        manifest=load(bound_file(root,member['manifest']))
-        result=validate_direction_blind_review(root,manifest,pending_selection=True)
-        if not result['passed']:error('member.'+member['unit'],result['evidence'],'ordinary independent direction check')
-        evidence=result['evidence']
-        bundle=load(bound_file(root,manifest['direction_adoption']['blind_review']))
-        last=load(bound_file(root,bundle['rounds'][-1]))
-        candidates=json.loads(bound_file(root,last['inputs'][0]['file']).read_text(encoding='utf-8'))
-        explanation=recommendation(candidates,last['result'],{x['direction_id']:x for x in bundle['origins']})
-        checked.append(dict(unit=member['unit'],manifest=member['manifest'],direction_id=manifest['selected_direction'],recommendations=explanation,**evidence))
+        result=checked_recommendation(root,member['manifest'])
+        checked.append(dict(unit=member['unit'],manifest=member['manifest'],direction_id=result['evidence']['winner'],
+                            recommendations=result['recommendations'],all_weak=result['all_weak'],choice_rows=result['choice_rows'],**result['evidence']))
     path=allocate(root,'series-plan')
     text='整组方向检查；以下顺序和原句需由同一条真实用户消息一次确认。\n'
     for member in checked:
@@ -75,15 +83,16 @@ def confirm(root, batch_ref, source_ref, quote, overrides=None):
 def recommendation(candidates, result, provenance):
     """Four parallel explanations, never an eligibility score or ranking rewrite."""
     rows=[]
-    for candidate in candidates:
-        ident=candidate['direction_id']
-        rank=next(x for x in result['ranking'] if x['direction_id']==ident)
+    by_id={x['direction_id']:x for x in candidates}
+    for rank in result['ranking']:
+        ident=rank['direction_id'];candidate=by_id[ident]
         screen=next(x for x in result['trope_screen'] if x['direction_id']==ident)
         draw=next(x for x in result['drawability'] if x['direction_id']==ident)
         purpose=next((x for x in result.get('purpose_check',[]) if x['direction_id']==ident),None)
-        clarity=next((x for x in result.get('product_meaning_hints',[]) if x['direction_id']==ident),None)
-        rows.append(dict(direction_id=ident,statement=candidate['statement'],rank=rank,
-             communication_clarity=clarity or dict(observation='未另测清晰度；不能从新颖度推断清晰度'),
+        meaning=next((x for x in result.get('product_meaning_hints',[]) if x['direction_id']==ident),None)
+        rows.append(dict(direction_id=ident,statement=candidate['statement'],rank=rank,ranking_reason=rank['reason'],
+             communication_clarity=dict(observation='未另测传播清晰度；产品意义观察另列，不能从新颖度、题面匹配或可画性推断清晰度'),
+             product_meaning_hint=meaning,
              purpose_fit=purpose or dict(observation='未提供目的独立观察'),novelty=screen,production_risk=draw,
              source=provenance.get(ident),eligibility_unchanged=True))
     return rows
@@ -95,7 +104,7 @@ def main():
     p.add_argument('--payload',required=True);args=p.parse_args();root=args.run_dir.resolve()
     try:
         payload=load(inside(root,args.payload))
-        value=prepare(root,**payload) if args.action=='prepare' else confirm(root,**payload) if args.action=='confirm' else recommendation(**payload)
+        value=prepare(root,**payload) if args.action=='prepare' else confirm(root,**payload) if args.action=='confirm' else checked_recommendation(root,**payload)
         print(json.dumps(dict(status='ok',result=value),ensure_ascii=False));return 0
     except (ValueError,KeyError,TypeError,OSError) as exc:
         print(json.dumps(dict(status='failed',reason=str(exc)),ensure_ascii=False));return 1

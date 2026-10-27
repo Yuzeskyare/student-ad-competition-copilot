@@ -1243,6 +1243,7 @@ def direction_case_projection(root, reference, prepared_at, competition, *, qual
 def validate_superseded_direction_rounds(root, bundle, rubric_version, recorded):
     """Audit failed protocol returns without turning them into adoption authority."""
     from review_contract import bound_file, timestamp
+    from direction_purpose_contract import CREATIVE_REQUEST_REVISION, current_direction_request
     def nonempty(value): return isinstance(value, str) and bool(value.strip())
     def require(value, reason):
         if not value: raise ValueError(reason)
@@ -1262,6 +1263,11 @@ def validate_superseded_direction_rounds(root, bundle, rubric_version, recorded)
         require(str(path) not in seen_records and successor in accepted, 'Superseded record must be distinct and lead to an accepted independent round')
         seen_records.add(str(path)); r = load_json(path)
         fields = {'rubric_version', 'checker_context', 'author_session_id', 'checker_session_id', 'invocation_id', 'unavailable_metadata', 'input_prepared_at', 'started_at', 'completed_at', 'inputs', 'request', 'raw_return', 'result', 'case_references'}
+        request_revision = r.get('request_revision')
+        if request_revision is not None:
+            fields.add('request_revision')
+            require(request_revision == CREATIVE_REQUEST_REVISION and rubric_version == 'print-direction-v12',
+                    'Superseded request revision must retain its declared fixed text')
         require(set(r) == fields and r['rubric_version'] == rubric_version and r['checker_context'] == 'fresh-isolated', 'Superseded record must preserve the same fixed independent contract')
         require(nonempty(r['author_session_id']) and isinstance(r['unavailable_metadata'], dict) and set(r['unavailable_metadata']) <= {'checker_session_id', 'invocation_id'}, 'Superseded independent metadata is required')
         for key, seen in [('checker_session_id', seen_sessions), ('invocation_id', seen_invocations)]:
@@ -1286,7 +1292,12 @@ def validate_superseded_direction_rounds(root, bundle, rubric_version, recorded)
         projection = direction_case_projection(root, r['case_references'], prepared, competition, qualified_scope=True)
         require(json.loads(references) == projection, 'Superseded case input must match its qualified record')
         request_fn = globals().get('direction_request_' + rubric_version.rsplit('-', 1)[1])
-        require(callable(request_fn) and direction_request_matches(bound_file(root, r['request']).read_text(encoding='utf-8'), request_fn(content, references, counterexamples, *([bound_file(root, inputs[3]['file']).read_text(encoding='utf-8')] if rubric_version == 'print-direction-v12' else []))), 'Superseded request must be the unmodified fixed rubric and inputs')
+        if request_revision:
+            request_fn = current_direction_request
+        require(callable(request_fn), 'Unknown superseded fixed request')
+        expected_request = request_fn(content, references, counterexamples, *([bound_file(root, inputs[3]['file']).read_text(encoding='utf-8')] if rubric_version == 'print-direction-v12' else []))
+        actual_request = bound_file(root, r['request']).read_text(encoding='utf-8')
+        require(actual_request == expected_request if request_revision else direction_request_matches(actual_request, expected_request), 'Superseded request must be the unmodified fixed rubric and inputs')
         raw_path = bound_file(root, r['raw_return']); raw = load_json(raw_path)
         require(str(raw_path) not in seen_raw, 'Original independent return cannot be registered twice')
         seen_raw.add(str(raw_path))
@@ -1318,19 +1329,9 @@ def validate_superseded_direction_rounds(root, bundle, rubric_version, recorded)
     return observations
 
 
-def validate_method_decision(decision):
-    from visual_review_contract import require, nonempty
-    require(decision.get('decision') in {'adopted', 'supporting', 'rejected'}
-            and nonempty(decision.get('reason')) and nonempty(decision.get('relation_or_input_change')),
-            'Each method needs an adopted/supporting/rejected decision, reason and concrete participation or input change')
-    supporting = decision.get('supporting_candidate_direction_ids', [])
-    require(isinstance(supporting, list) and all(nonempty(i) for i in supporting)
-            and len(supporting) == len(set(supporting)), 'Supporting candidate IDs must be unique nonempty strings')
-    if decision['decision'] == 'supporting':
-        require(decision.get('candidate_direction_ids') == [] and bool(supporting),
-                'Supporting method needs actual supporting candidates and no primary candidate IDs')
-    require(decision['decision'] != 'rejected' or not supporting,
-            'Rejected method cannot also claim supporting participation')
+def validate_method_decision(decision, revision=None):
+    from method_decision_contract import validate_method_decision as validate
+    return validate(decision, revision)
 
 
 def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selection=False) -> dict:
@@ -1355,6 +1356,10 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
     try:
         import re
         v12 = manifest.get('direction_contract') == 'print-direction-v12'
+        from direction_purpose_contract import CREATIVE_REQUEST_REVISION, current_direction_request
+        request_revision = manifest.get('direction_request_revision')
+        require(request_revision in {None, CREATIVE_REQUEST_REVISION}
+                and (request_revision is None or v12), 'Unknown or incompatible direction request revision')
         v11 = manifest.get('direction_contract') in {'print-direction-v11','print-direction-v12'}
         v10 = manifest.get('direction_contract') in {'print-direction-v10','print-direction-v11','print-direction-v12'}
         v9 = manifest.get('direction_contract') in {'print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}
@@ -1413,8 +1418,12 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
                       'completed_at', 'inputs', 'request', 'raw_return', 'result'}
             if v2:
                 fields.add('case_references')
+            if request_revision:
+                fields.add('request_revision')
             require(set(r) == fields and r['rubric_version'] == rubric_version
                     and r['checker_context'] == 'fresh-isolated', 'Fresh independent direction context required; author self-review cannot replace it')
+            require(r.get('request_revision') == request_revision,
+                    'Independent request revision must match the manifest; revised runs cannot use a historical request')
             require(nonempty(r['author_session_id']) and isinstance(r['unavailable_metadata'], dict)
                     and set(r['unavailable_metadata']) <= {'checker_session_id', 'invocation_id'}, 'Record real checker metadata or unavailable explanation')
             for key in ('checker_session_id', 'invocation_id'):
@@ -1492,11 +1501,13 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
                         purpose_content = ref(inputs[3]['file']).read_text(encoding='utf-8')
                         validate_purpose_excerpt(root, purpose_content)
                         expected_request = direction_request_with_purpose(content, references_content, counterexamples_content, purpose_content)
+                        if request_revision:
+                            expected_request = current_direction_request(content, references_content, counterexamples_content, purpose_content)
                 else:
                     expected_request = direction_request_v2(content, references_content)
             else:
                 expected_request = INDEPENDENT_DIRECTION_RUBRIC + '\n方向一句话清单：\n' + content
-            require(direction_request_matches(request, expected_request),
+            require((request == expected_request if request_revision else direction_request_matches(request, expected_request)),
                     'Blind request must be fixed rubric plus sentence list only; no author explanation')
             raw_path = ref(r['raw_return'])
             raw_paths.add(raw_path)
@@ -1636,12 +1647,15 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
         require((v7 and user_choice_v6) or next(x for x in raw['drawability'] if x['direction_id'] == winner)['drawable'], 'Ranked-first direction must be drawable in one image')
         historical_observations = validate_superseded_direction_rounds(root, dict(bundle, _competition=manifest['competition']), rubric_version, recorded) if provenance else []
         retrieval = load_json(ref(adoption['method_retrieval']))
+        from method_decision_contract import ATTEMPT_REVISION, validate_attempt_evidence
+        require(retrieval.get('method_decision_revision') in {None, ATTEMPT_REVISION}, 'Unknown method decision revision')
         require(time(retrieval['recorded_at']) <= recorded, 'Method decisions must be saved before blind bundle record')
         for decision in retrieval['decisions']:
             if supplied:
                 # This is original retrieval history, not invented provenance for a user idea.
                 continue
-            validate_method_decision(decision)
+            validate_method_decision(decision, retrieval.get('method_decision_revision'))
+            validate_attempt_evidence(root, decision, origins=origins, used=manifest.get('method_cards_used', []))
             method = decision['method_id']
             candidates = decision.get('candidate_direction_ids')
             supporting = decision.get('supporting_candidate_direction_ids', [])
@@ -1868,6 +1882,8 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
         require(adoption['direction_id'] == manifest['selected_direction'], 'Retrieval must bind the adopted direction')
         adopted = time(adoption['adopted_at'])
         retrieval = load_json(bound_file(root, adoption['method_retrieval']))
+        from method_decision_contract import ATTEMPT_REVISION, validate_attempt_evidence
+        require(retrieval.get('method_decision_revision') in {None, ATTEMPT_REVISION}, 'Unknown method decision revision')
         require(retrieval.get('run_id') == manifest['run_id'], 'Method retrieval run identity differs')
         recorded = time(retrieval['recorded_at'])
         require(recorded < adopted, 'Method retrieval record must exist strictly before direction adoption')
@@ -1928,7 +1944,8 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
         require(isinstance(decisions, list) and len(decisions) == len(all_ids)
                 and {r['method_id'] for r in decisions} == all_ids, 'Explain every returned method once')
         for decision in decisions:
-            validate_method_decision(decision)
+            validate_method_decision(decision, retrieval.get('method_decision_revision'))
+            validate_attempt_evidence(root, decision, used=manifest.get('method_cards_used', []))
         require(bool(all_ids) or text(retrieval.get('empty_result_action')), 'Empty retrieval needs an honest next action')
         checks.append(check('method-retrieval-before-adoption', True, {'adopted_at': adoption['adopted_at'], 'methods': sorted(all_ids)}))
     except (OSError, ValueError, KeyError, TypeError, AttributeError, IndexError) as exc:

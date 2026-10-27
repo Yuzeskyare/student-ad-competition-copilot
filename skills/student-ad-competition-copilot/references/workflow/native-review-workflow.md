@@ -20,7 +20,15 @@
 
 后续原句、文案、核心机制或成员范围发生实质变化，或出现新硬风险时，只对受影响成员重新检查和确认；未改变成员继续引用本批锁和原消息。普通进度更新不得重开整组。最终确切像素仍需既有真实最终批准，可一次整组批准。
 
-方向推荐的补充展示用 `series_workflow.py --action recommend`，payload 为 `{candidates,result,provenance}`。并列保留传播清晰度、目的契合、新颖度、制作风险及原方向来源，未测项如实写未测；不从新颖度推算清晰度，不改原排序、已知反例硬拦和 user_override。
+方向推荐的补充展示用 `series_workflow.py --action recommend`，payload 为 `{manifest}`，manifest 是 `{path,sha256}` 引用。程序先校验绑定的真实方向记录，再从原输入、原返回和来源投影清单，不接受作者另外传入的候选与评分。并列保留传播清晰度、目的契合、新颖度、制作风险及原方向来源，未测项如实写未测；不从新颖度推算清晰度，不改原排序、已知反例硬拦和 user_override。
+
+## 平面原型的制作输入与首图观察
+
+`scripts/prototype_workflow.py --action prepare` 的 payload 为 `{manifest,visual_direction,scene_prompt,references}`。前两项是 `{path,sha256}` 引用；visual_direction 是选定且已展示面貌的 UTF-8 笔记，scene_prompt 描述本稿场景，references 为 `[{role,file}]`，file 同样是绑定引用。程序校验现有方向采用记录，返回 `{prepared,prompt,inputs}`；系列 `series_plan.shared_art_direction` 非空且逐字进入 prompt。按工具入口实际提交返回的完整 prompt 与参考输入；准备不等于调用完成。
+
+看过实际图像后运行 `--action observe`，payload 为 `{prepared,actual_request,artifact,observation,style_matches}`。prepared、actual_request、artifact 均为绑定引用；actual_request 是从实际工具参数保存的 JSON `{prompt,references:[{role,file}]}`，不能把准备内容另抄一份伪装实际提交。程序与准备内容逐字比对，绑定图像并再次校验当前方向。observation 写真实可见差异，style_matches 为严格布尔：false 返回 `needs-correction`，不据此扩展系列；true 返回 `style-observed`，只代表作者本次观察，不授予内容通过或用户批准。首图自动展示不等于完成复核。
+
+两种风格观察均不决定系列生产许可；能否继续沿既有代表稿内容确认和真实授权判断。语义 claim_lock 与匿名独立检查保持原范围，面貌仅作制作侧输入。宿主原生事件可取得时沿既有事件机制保存；本地 JSON 不认证被整体捏造的实际请求，也不能阻止宿主绕过入口直调工具。不新增审美硬门、独立审核轮或风格禁令，完整稿和交付仍走既有检查。
 
 ## 进度、计时与唯一当前入口
 

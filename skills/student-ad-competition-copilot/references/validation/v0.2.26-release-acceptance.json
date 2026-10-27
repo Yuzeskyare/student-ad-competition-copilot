@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.26",
+  "status": "release-qualified",
+  "change_id": "style-review-handoff-and-direction-request-integrity",
+  "promoted_candidate": "0.2.25-dev.style-review-handoff.4",
+  "candidate_manifest_sha256": "9b7a622f8e0e2d970754ba902e31077f0b5b9b600f6126d1a227f586d3687b33",
+  "runtime_scripts_changed_since_candidate": false,
+  "changes": [
+    "Direction recommendation consumes validated actual independent records",
+    "Selected visual direction and reference roles reach the real image request; style observation grants no content or series permission",
+    "Current direction review receives the existing creative comparison guidance without changing ranking or subjective advisory rules",
+    "Attempted but unused method drafts have bound evidence and cannot count as adopted or validated methods",
+    "Native desktop evidence accepts the observed codex_work_desktop originator alias while preserving identity, timing and byte checks"
+  ],
+  "candidate_checks": {
+    "request_history": 14,
+    "method_attempt": 25,
+    "prior_handoff_style": 18,
+    "synthetic_pipeline_stages": 270,
+    "desktop_boundary_cases": 24,
+    "actual_desktop_event_parsing": 2
+  },
+  "real_workflow_observation": "A real three-member print series exercised style handoff, actual independent review, adverse findings, user action revision and preserved history; the user accepted the revised visual series.",
+  "limits": [
+    "Synthetic checks do not prove creative quality, general ranking improvement, audience understanding or awards.",
+    "The existing ranking and subjective advisory rules are unchanged.",
+    "DES-01 and the old microscopic-package-print review issue are not claimed as fixed.",
+    "Visual acceptance is not submission readiness; no real user artwork or private conversation is included in this package."
+  ]
+}

@@ -1,10 +1,10 @@
 {
   "schema_version": "0.2.0",
   "skill_name": "student-ad-competition-copilot",
-  "skill_version": "0.2.25",
+  "skill_version": "0.2.26",
   "status": "stable-release",
-  "built_at": "2026-10-19",
-  "stable_release": "0.2.25",
+  "built_at": "2026-10-27",
+  "stable_release": "0.2.26",
   "runtime_scope": [
     "print-ad",
     "ad-copy",
@@ -159,8 +159,8 @@
     },
     {
       "path": "references/schemas/print-ad-run-manifest.schema.json",
-      "bytes": 1195862,
-      "sha256": "0de273e5765e17ed73a404fb630f8d26197a2ad2278dd865ab2daf401ec73880"
+      "bytes": 1198702,
+      "sha256": "e6926aaae597c168bd6eddd937dc3c33fad8c0843d6b3f91fcf3e6585d227bd3"
     },
     {
       "path": "references/schemas/production-request.schema.json",
@@ -294,8 +294,8 @@
     },
     {
       "path": "references/tracks/print-ad/playbook.md",
-      "bytes": 82081,
-      "sha256": "8f00f8445208ddf7d0144ac40dcc1031085da5457014ff533ac8a15fc761159b"
+      "bytes": 87153,
+      "sha256": "7e946ac3533affe2886ebc38bf5ac84fa52dedfc9f28400efc9d813c0f3082c4"
     },
     {
       "path": "references/tracks/print-ad/quality-gates-v0.1.0.json",
@@ -573,6 +573,11 @@
       "sha256": "5eae6dc80d66010022b589583cd7d5ac42feccf9ad70a297e3c0eef7ead7f03c"
     },
     {
+      "path": "references/validation/v0.2.26-release-acceptance.json",
+      "bytes": 1908,
+      "sha256": "740f30629db08a91b8c392677404c5ecd5bae575baa3f15a61d3d5fa2fba0b50"
+    },
+    {
       "path": "references/validation/v0.2.3-acceptance.json",
       "bytes": 2357,
       "sha256": "12659f68a64c24c05f4a53b8993332511994ff792c65a27477a2771d163aeeb1"
@@ -709,8 +714,8 @@
     },
     {
       "path": "references/workflow/image-tool-adaptation.md",
-      "bytes": 23186,
-      "sha256": "12cd9a533ea5a48bfa96b63067f36d46a3d3f1703b688aca7fee303002a224db"
+      "bytes": 24189,
+      "sha256": "5c97336e520d4dadf39b46b47fcefe2b01bbbd6b9c0e39e10385885d1375999a"
     },
     {
       "path": "references/workflow/model-redivergence.md",
@@ -719,8 +724,8 @@
     },
     {
       "path": "references/workflow/native-review-workflow.md",
-      "bytes": 7259,
-      "sha256": "c3844a1f02f6d2d03e1cbcc9ff3429c16875db80698fafb69bce50a95e47c43c"
+      "bytes": 9176,
+      "sha256": "a7c88e1d767cee0272cbf40b07648618c7ac5aadbddb86b1db7856f3f95502e4"
     },
     {
       "path": "references/workflow/product-relationship-v1.md",
@@ -789,8 +794,8 @@
     },
     {
       "path": "references/workflow/visual-style-direction.md",
-      "bytes": 14228,
-      "sha256": "f0a6ed17e13be6f81d6873910f327b0597b84b64914379b20a9dd3182114735a"
+      "bytes": 14920,
+      "sha256": "6f62921ce1c678cf5b0c389fe5b87f5570748f603634b137959ebb4b5a21e397"
     },
     {
       "path": "scripts/core_return_contract.py",
@@ -809,8 +814,8 @@
     },
     {
       "path": "scripts/desktop_host_evidence.py",
-      "bytes": 4434,
-      "sha256": "cd528cc4a94c3301beb89a882b6bdb2e3acb0f7d6da0520b06412bfcdf87308b"
+      "bytes": 4458,
+      "sha256": "c163a3b88e553705246c623c2a2608fb84ae5ef071d092d38d5c7eb10bfb4e97"
     },
     {
       "path": "scripts/direction_change_contract.py",
@@ -819,8 +824,8 @@
     },
     {
       "path": "scripts/direction_purpose_contract.py",
-      "bytes": 5665,
-      "sha256": "2a6b8beaf67252c359f6fe9fe9d14bf47a09a8c316d8ede06641fed161efd2d4"
+      "bytes": 7302,
+      "sha256": "1a2b80dcfbcd92d73934e61d5ef645d9a971325209b2c7477295e919b7340075"
     },
     {
       "path": "scripts/direction_redivergence_contract.py",
@@ -868,6 +873,11 @@
       "sha256": "b8b50e4d3eb103ad4943e69f5189dff41a1de609c2d937b2b3698dacb69edd75"
     },
     {
+      "path": "scripts/method_decision_contract.py",
+      "bytes": 3553,
+      "sha256": "a407f22e2859ebc178b9f75d8fcf89a316f90aaa08e0c19278d8921e763f44bc"
+    },
+    {
       "path": "scripts/package_upgrade_contract.py",
       "bytes": 6132,
       "sha256": "2c617c1438f3b2ff8dc476cae7767af12dfe1e32db57bbdb08e382a183982277"
@@ -886,6 +896,11 @@
       "path": "scripts/product_relationship_contract.py",
       "bytes": 10394,
       "sha256": "4d62e7d9f5eb3aeb4fd84fdefa873d9ba71c8df8f1cc597d3041beb25aa529cc"
+    },
+    {
+      "path": "scripts/prototype_workflow.py",
+      "bytes": 7259,
+      "sha256": "e0127bf6564990b3f31d060852133bb5c3128ad3a99b3b541125a1dc3da5e08d"
     },
     {
       "path": "scripts/quality_gate_contract.py",
@@ -939,8 +954,13 @@
     },
     {
       "path": "scripts/series_workflow.py",
-      "bytes": 7277,
-      "sha256": "8d2c15c079537765f217c46c1825aeb7aaf7595827066f057eb76d17108bb3fb"
+      "bytes": 7866,
+      "sha256": "40849aa46067a6f5a192326f41e50a483a9b042f6bcde9f62cd1c2cdac5ff088"
+    },
+    {
+      "path": "scripts/test_method_attempt_contract.py",
+      "bytes": 10230,
+      "sha256": "14c35f7b02d744fb64a04a38c260557470e5c70bb0c47fc963d4099d43066b0d"
     },
     {
       "path": "scripts/test_print_product_pipeline.py",
@@ -979,8 +999,8 @@
     },
     {
       "path": "scripts/validate_print_ad_run.py",
-      "bytes": 228384,
-      "sha256": "8b23bff8b0500868f28dacb23436a1f07bb530be264d4d2b05d0f4fba546730a"
+      "bytes": 229818,
+      "sha256": "e06035f9ad40349533685a6d54726d59b9645962fa3dd64690a219a1b5ab846e"
     },
     {
       "path": "scripts/validate_run.py",
@@ -1014,8 +1034,8 @@
     },
     {
       "path": "SKILL.md",
-      "bytes": 43449,
-      "sha256": "17729aa1f8e6606fc932df9e8f47b43cce2827aec783bfa5a836b8e52bf6d30a"
+      "bytes": 44476,
+      "sha256": "5f56a0f1ff839a47c3918274305e9ff49a0a943475a654bf5927bed4a587e1f8"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -1023,14 +1043,14 @@
       "sha256": "613bf434dc250f39d0fee8ebeffc8f8db6b3a2c58c791e6d52bb0e968992fbc9"
     }
   ],
-  "base_version": "0.2.24.2",
+  "base_version": "0.2.25",
   "internal_verification": {
-    "path": "references/validation/v0.2.25-release-acceptance.json",
-    "bytes": 2356,
-    "sha256": "5eae6dc80d66010022b589583cd7d5ac42feccf9ad70a297e3c0eef7ead7f03c"
+    "path": "references/validation/v0.2.26-release-acceptance.json",
+    "bytes": 1908,
+    "sha256": "740f30629db08a91b8c392677404c5ecd5bae575baa3f15a61d3d5fa2fba0b50"
   },
-  "rollback_release": "0.2.24.2",
-  "version": "0.2.25",
-  "milestone": "review-request-integrity-series-batch-confirmation-and-light-delivery",
-  "promoted_candidate_manifest_sha256": "f9472d08078238368577884c4d474a58238503effab27992bfa83b7d2d3751c3"
+  "rollback_release": "0.2.25",
+  "version": "0.2.26",
+  "milestone": "style-review-handoff-and-direction-request-integrity",
+  "promoted_candidate_manifest_sha256": "9b7a622f8e0e2d970754ba902e31077f0b5b9b600f6126d1a227f586d3687b33"
 }

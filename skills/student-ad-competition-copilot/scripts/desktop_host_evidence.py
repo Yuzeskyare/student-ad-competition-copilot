@@ -30,7 +30,7 @@ def completed_image_event(root, binding, request):
                     and item.get('type') == 'Extension' and item.get('kind') == 'image_gen.generation'
                     and item.get('id') == call_id):
                 matches.append((row, payload, item))
-    require(meta is not None and meta.get('originator') == 'Codex Desktop' and meta.get('source') == 'vscode',
+    require(meta is not None and meta.get('originator') in {'Codex Desktop', 'codex_work_desktop'} and meta.get('source') == 'vscode',
             'Missing native Codex Desktop session metadata')
     require(len(matches) == 1, 'Desktop image call ID must identify one native completion event')
     row, payload, item = matches[0]

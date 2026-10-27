@@ -2,6 +2,10 @@
 import json
 from review_contract import bound_file
 
+CREATIVE_REQUEST_REVISION = 'creative-comparison-v1'
+CREATIVE_COMPARISON_RUBRIC = '''现有创意比较依据补全：对去重后方向按既有规则强制排序，不并列、不用绝对分；依据具体转折、消费者时刻或产品利益的关联、意外感和创意本身强弱，结合可用案例参照比较，ranking.reason写明已提交内容的具体比较。合格方向仍排在被拦方向之前；不新增权重或门槛，产品意义、传播目的与因果提示仍不参与排序、可画、all_weak或采用。
+评价证据范围：不得仅凭影子、倒影、剪纸、摄影等通用表现形式的名称或常见程度判套路；须核对本方向实际对象关系及既有套路、反例的具体范围，命中时照旧执行。未命中列举机制也不自动证明创意强。只比较已提交内容，不补造未写出的文字、关系或未来成图效果；决定关系的必要图中文字应在现有方向句内，未提供则明确指出依赖尚待具体化，不提前计为已成立的优点，也不因此新增主观硬拦。完整图文可共同承担关系，不要求移除文字仍成立，不强制产品做机械动作，不使用竞品替换或品牌独占考试。方向句不能认证成图表现质量，表现效果留待既有代表稿看图验证。'''
+
 PURPOSE_RUBRIC = '''命题传播目的检查：只根据随附原文摘录和匿名方向，逐条判断方向让观众/用户做什么、感受什么、记住产品什么，以及是否服务于命题的传播目的。摘录是原文，不是作者解释；source与行号仅用于追溯，不读取其他文件。
 返回purpose_check数组，覆盖全部输入（含去重项），各项仅含direction_id、audience_takeaway、judgment（aligned/drift/reversed/unclear）、purpose_quote（摘录中的逐字原文）、observation、opposite_relation（仅reversed为非空文字，其余null）。不要把主题词吻合当成目的吻合，也不要求每个方向同时承载所有传播目标。
 读偏、偏弱、未读出或歧义只提示。明确读反须列出目的原文、方向原句和相反关系，沿既有主关系读反分级处理；不能把“没有服务目的”直接说成“与目的相反”。例如治疗/守护被读成少用/回避应核对是否目的错置，不作为品类分支或固定结论。方向文字不代替成图证据；未生图不得虚构像素或新增硬拦。purpose_check不参与原有套路筛、排序、可画、all_weak、eligible、user_override、采用、承接或生产守卫；不得借目的提示改写这些判断。保留原有完整图文阅读标准，字体/文字设计可以承担创意关系，不要求移除文字后仍成立。'''
@@ -37,6 +41,12 @@ def direction_request_with_purpose(content,references,counterexamples,purpose_co
     parse_purpose(purpose_content)
     return (direction_request_v11(content,references,counterexamples)
             +'\n'+PURPOSE_RUBRIC+'\n命题传播目的原文摘录：\n'+purpose_content)
+
+
+def current_direction_request(content,references,counterexamples,purpose_content):
+    """Current request only; historical generators and their exact bytes stay intact."""
+    return (CREATIVE_COMPARISON_RUBRIC+'\n'
+            +direction_request_with_purpose(content,references,counterexamples,purpose_content))
 
 def validate_purpose_check(result,candidates,purpose_content):
     purpose=parse_purpose(purpose_content);rows=result.get('purpose_check')

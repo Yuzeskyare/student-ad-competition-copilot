@@ -589,6 +589,9 @@
     },
     "package_upgrades": {
       "$ref": "#/$defs/bound_file"
+    },
+    "direction_request_revision": {
+      "const": "creative-comparison-v1"
     }
   },
   "allOf": [
@@ -1525,6 +1528,23 @@
                 "$ref": "#/$defs/user_direction_adoption_rc3"
               }
             ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "direction_request_revision"
+        ]
+      },
+      "then": {
+        "required": [
+          "direction_contract"
+        ],
+        "properties": {
+          "direction_contract": {
+            "const": "print-direction-v12"
           }
         }
       }
@@ -35347,7 +35367,8 @@
                 "enum": [
                   "adopted",
                   "rejected",
-                  "supporting"
+                  "supporting",
+                  "attempted-not-used"
                 ]
               },
               "reason": {
@@ -35397,6 +35418,9 @@
                   "type": "string",
                   "minLength": 1
                 }
+              },
+              "attempt_evidence": {
+                "$ref": "#/$defs/bound_file"
               }
             },
             "additionalProperties": false,
@@ -35423,12 +35447,91 @@
                     }
                   }
                 }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "decision": {
+                      "const": "attempted-not-used"
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "candidate_direction_ids",
+                    "supporting_candidate_direction_ids",
+                    "attempt_evidence"
+                  ],
+                  "properties": {
+                    "candidate_direction_ids": {
+                      "maxItems": 0
+                    },
+                    "supporting_candidate_direction_ids": {
+                      "maxItems": 0
+                    }
+                  },
+                  "not": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "rejection_basis"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "rejection_evidence"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "else": {
+                  "not": {
+                    "required": [
+                      "attempt_evidence"
+                    ]
+                  }
+                }
               }
             ]
           }
+        },
+        "method_decision_revision": {
+          "const": "attempted-not-used-v1"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "method_decision_revision"
+            ]
+          },
+          "else": {
+            "properties": {
+              "decisions": {
+                "items": {
+                  "properties": {
+                    "decision": {
+                      "enum": [
+                        "adopted",
+                        "rejected",
+                        "supporting"
+                      ]
+                    }
+                  },
+                  "not": {
+                    "required": [
+                      "attempt_evidence"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "invalid_core_return": {
       "type": "object",
