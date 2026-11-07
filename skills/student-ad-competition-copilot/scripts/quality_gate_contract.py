@@ -77,6 +77,8 @@ def validate_quality_gate_results(
     track: str,
     expected_run_id: str | None,
     completed_gate_ids: set[str] | None = None,
+    manifest: dict | None = None,
+    prerequisite_only: bool = False,
 ) -> list[dict]:
     checks: list[dict] = []
     definitions_path = Path(__file__).resolve().parents[1] / "references" / "tracks" / track / "quality-gates.json"
@@ -139,6 +141,8 @@ def validate_quality_gate_results(
     continue_ready = scope_valid
     unfinished_gates = []
     for gate_id, gate in gate_by_id.items():
+        if prerequisite_only and gate_id not in expected_completed:
+            continue  # A retry need not have passed its downstream review yet.
         result = result_by_id.get(gate_id)
         if not isinstance(result, dict):
             continue_ready = False
@@ -224,6 +228,15 @@ def validate_quality_gate_results(
                 exists = resolved is not None and resolved.is_file() and error is None
                 evidence_report.append({"path": relative, "exists": exists, "error": error})
                 evidence_ok = evidence_ok and exists
+        if track == 'print-ad' and gate_id == 'print-ad.series-increment':
+            from series_review_contract import gate_check, applies
+            if manifest is not None and applies(manifest):
+                series_ok, series_report = gate_check(run_dir, manifest, result)
+                evidence_ok = evidence_ok and series_ok
+                evidence_report.append({'series_binding': series_report, 'passed': series_ok})
+            elif manifest is None and status in {'pass', 'pass-with-boundaries', 'fail'}:
+                evidence_ok = False
+                evidence_report.append({'error': 'Series evidence needs its current manifest context'})
         checks.append(_check(f"quality-gate:{gate_id}:evidence", evidence_ok, evidence_report))
         status_matches_scope = (
             status not in {"not-run", "in-progress"} if gate_id in expected_completed else status == "not-run"

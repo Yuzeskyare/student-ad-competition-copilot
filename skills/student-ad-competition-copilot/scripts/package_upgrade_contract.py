@@ -27,12 +27,16 @@ def archive_identity(root, ref):
             data=z.read(prefix+n)
             require(hashlib.sha256(data).hexdigest()==r['sha256'] and len(data)==r['bytes'],'Package bytes differ from manifest')
         hashes={n:r['sha256'] for n,r in files.items() if n.startswith('scripts/') and n.endswith('.py')}
-        identity=dict(version=v['version'],checker_sha256=hashes,archive=ref)
+        identity=dict(version=v['version'],status=v.get('status'),checker_sha256=hashes,archive=ref)
         _ARCHIVES[key]=identity
         return identity
 
 def upgrade_chain(root, manifest):
     ref=manifest.get('package_upgrades')
+    review_ref=manifest.get('candidate_review_recheck')
+    if review_ref is not None:
+        require(ref is None, 'Choose installed upgrade history or a candidate review recheck')
+        return candidate_review_source(root, manifest, review_ref)
     if ref is None:return []
     chain=load(bound_file(root,ref))
     require(set(chain)=={'kind','run_id','upgrades'} and chain['kind']=='package-upgrade-chain' and chain['run_id']==manifest['run_id'],'Upgrade chain must bind the current run')
@@ -52,6 +56,30 @@ def upgrade_chain(root, manifest):
     require(previous['version']==current['version'] and previous['checker_sha256']==package_checker_hashes(),'Upgrade chain must end at the executing package')
     return result
 
+
+def candidate_review_source(root, manifest, ref):
+    from execution_contract import package_checker_hashes
+    from review_contract import read_contract
+    require(manifest.get('run_scope')=='production-candidate' and manifest.get('category')=='print-ad',
+            'Candidate recheck is for print production-candidate review only')
+    contract, _ = read_contract(root, manifest)
+    require(not contract['final_artifacts'] and contract['content_status']=='pending',
+            'Candidate recheck cannot certify an adopted or delivered artwork')
+    record=load(bound_file(root,ref))
+    require(set(record)=={'kind','run_id','from_package','to_package','rechecked_at'}
+            and record['kind']=='candidate-review-recheck-v1' and record['run_id']==manifest['run_id'],
+            'Candidate review recheck must bind the current run and package archives')
+    source=archive_identity(root,record['from_package'])
+    target=archive_identity(root,record['to_package'])
+    current=load(Path(__file__).resolve().parent.parent/'version.json')
+    require(source['status']==target['status']==current['status']=='development-candidate'
+            and source['version']!=target['version'] and target['version']==current['version']
+            and target['checker_sha256']==package_checker_hashes(),
+            'Candidate review archives must bind the original candidate and the executing candidate')
+    require(timestamp(record['rechecked_at'])<=datetime.now(timezone.utc),'Candidate review recheck cannot be in the future')
+    return [dict(source, review_only=True, rechecked_at=record['rechecked_at'])]
+
+
 def guard_source(root, manifest, receipt):
     from execution_contract import package_checker_hashes
     identity=receipt.get('guard_identity',{})
@@ -61,9 +89,13 @@ def guard_source(root, manifest, receipt):
         # Validate a supplied chain even if this particular guard is current.
         upgrade_chain(root,manifest)
         return dict(version=load(Path(__file__).resolve().parent.parent/'version.json')['version'],historical=False)
-    matches=[x for x in upgrade_chain(root,manifest) if x['checker_sha256']==hashes and timestamp(receipt['checked_at'])<=timestamp(x['upgraded_at'])]
+    matches=[x for x in upgrade_chain(root,manifest) if x['checker_sha256']==hashes
+             and timestamp(receipt['checked_at'])<=timestamp(x.get('rechecked_at') or x['upgraded_at'])]
     require(len(matches)==1,'Foreign guard source is absent from registered upgrade chain')
-    return dict(version=matches[0]['version'],historical=True,package=matches[0]['archive'])
+    source=matches[0]
+    result=dict(version=source['version'],historical=True,package=source['archive'])
+    if source.get('review_only'):result['review_only']=True
+    return result
 
 def validate_historical_guard(root, manifest, receipt, request, request_ref, rows):
     from review_contract import fingerprint, request_decision, validate_request_inputs, inside
@@ -82,7 +114,7 @@ def validate_historical_guard(root, manifest, receipt, request, request_ref, row
     if receipt.get('production_state')=='completed':
         require(receipt.get('executed') is True and receipt.get('command_returncode')==0 and {r['path'] for r in outputs}==set(request.get('output_files',[])),'Incomplete historical production output binding')
         for ref in outputs:bound_file(root,ref)
-    elif request.get('operation')=='external':
+    elif request.get('operation') in {'external', 'model'}:
         require(receipt.get('executed') is False and receipt.get('production_state')=='authorized','Invalid historical predispatch release')
     else:raise ValueError('Historical local production has not completed')
     return source

@@ -51,6 +51,8 @@ def run(root,manifest,save,text,stages,cli,skill):
     assert 'blind-read' in roles and any(x.startswith('product-triptych-metadata:') for x in roles)
     for product in current['row']['product_triptychs']:projection(root,product['triptych'],product['element_id'])
     value=copy.deepcopy(raw);value.pop('blind_read_sha256');value.pop('core_claim_sha256')
+    value.setdefault('judgment_basis', {})
+    value.setdefault('verified_errors', [])
     for answer in value['answers'].values():answer.pop('blind_read_sha256')
     for product in value['comparison']['product_scene']:product.pop('role');product.pop('triptych')
     original=save('rc25/new-compare-raw.json',value)
@@ -72,11 +74,16 @@ def run(root,manifest,save,text,stages,cli,skill):
     members=[dict(unit=u,manifest=save('rc25/member-'+u+'.json',manifest)) for u in plan['units']]
     batch=case('DES-02-all-members-checked-before-choice',lambda:series.prepare(root,members,plan))
     b=load(bound_file(root,batch));quote='SIMULATED 确认整组，知悉原检查风险。\n'+'\n'.join(m['unit']+' | '+m['statement'] for m in b['members'])
-    source=save('rc25/group-source.json',dict(actor_type='human',kind='user-message',event_id='SIMULATED-group-confirm',occurred_at=runtime.now(),text=quote))
+    source=save('rc25/group-source.json',dict(actor_type='human',kind='user-message',event_id='SIMULATED-group-confirm',occurred_at=runtime.now(),text=quote,reviewed_batch=batch))
     confirmed=case('DES-02-one-message-three-locks',lambda:series.confirm(root,batch,source,quote,plan['units']))
     outputs=load(bound_file(root,confirmed))['members']
     assert len(outputs)==3 and all(load(bound_file(root,m['selection']))['source']==source for m in outputs)
     case('DES-02-order-drift-rejected',lambda:series.confirm(root,batch,source,'\n'.join(reversed(quote.splitlines())),plan['units']),False)
+    short='SIMULATED 我明白这些问题，仍选择整组。'
+    short_source=save('rc25/short-source.json',dict(actor_type='human',kind='user-message',event_id='SIMULATED-short-group',occurred_at=runtime.now(),text=short,reviewed_batch=batch))
+    case('DES-02-natural-reply-with-bound-batch',lambda:series.confirm(root,batch,short_source,short,plan['units']))
+    wrong_source=load(bound_file(root,short_source));wrong_source['reviewed_batch']=dict(batch,sha256='0'*64)
+    case('DES-02-wrong-batch-binding-rejected',lambda:series.confirm(root,batch,save('rc25/wrong-batch-source.json',wrong_source),short,plan['units']),False)
     changed=copy.deepcopy(manifest);changed['direction_adoption']['direction_id']='SIMULATED-stale'
     case('DES-02-member-real-change-needs-check',lambda:series.prepare(root,[dict(unit='1',manifest=save('rc25/changed-member.json',changed))],dict(plan,units=['1'])),False)
     # Mutable progress never touches the immutable plan and does not certify delivery.

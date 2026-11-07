@@ -18,7 +18,7 @@
 - 最终文案以UTF-8纯文本保存；系统文本框仍是赛事真实提交位置，TXT是可追溯工作载体。
 - 使用`zh-copy-content-codepoints-v1`：UTF-8去BOM、换行统一、NFC归一化，统计非空白Unicode码点；中文、字母、数字和标点计入，空格与换行不计。
 - 零宽字符、控制字符、首尾空白、HTML/Markdown图片、表格、字段式作者信息和不允许的emoji按profile处理。
-- `ad-copy-run-manifest.json`符合[运行Schema](../schemas/ad-copy-run-manifest.schema.json)，连接实际通过内部筛选的1–5份候选（challenge模式可只保留稳定稿、0份新稿）、入选稿哈希、命题约束、人工评审、质量门、AIGC使用声明、必要记录、技术结果和运行状态。声明为`no`时不要求空白记录。
+- `ad-copy-run-manifest.json`符合[运行Schema](../schemas/ad-copy-run-manifest.schema.json)，连接实际通过内部筛选的1–5份候选（challenge模式可只保留稳定稿、0份新稿）、入选稿哈希、命题约束、人工评审、质量门、技术结果和运行状态。AIGC使用声明、记录及平台申报仅交付后提醒，不因unknown或缺后台记录阻断作品完成；声明为`no`时不要求空白记录。
 - `slogan`与`short-copy`必须有独立声音/朗读记录；其他子类型可按质量门说明豁免声音门，但自然语言检查仍不可省略。
 
 ## 技术验证
@@ -39,6 +39,10 @@ AIGC使用情况与后台记录仅作为交付后提醒；记录缺失、未知�
 投稿就绪记录中的证据路径统一相对于该次验证的`--run-dir`。尚未取得的证据可保留`null`和开放状态；一旦填写路径，即使对应事项仍为`incomplete`也必须可解析。`--self-check`仅检查工具自身能力声明，不代替对实际记录的校验。
 
 机器不判断语义、事实暗示、品牌归属、自然度、原创性或法律结论。作品交付前使用交付证据合同核对当前赛事规则、实际提交规格与外部研究引用。素材/字体使用依据与AIGC/平台申报在完成后提醒；报名、上传、回执不在默认范围。
+
+正文技术报告绑定实际 brief-constraints、赛事、工作子类和当前 profile/Emoji 规范哈希；任一变化需重新检查，旧报告保留。完整 `copy_delivery.submission` 在统一验收中另做UTF-8、纯文本、HTML/图片/表格及适用Emoji检查，不把正文专用字数上限误套给创意说明或完整提交文本。
+
+AI 须阅读完整提交文本并记录 `submission_identity_review`（结构与 `creator_identity_review` 相同、绑定 submission 实际哈希）；提交文本与正文原字节相同时可直接复用现有正文判断，不增加用户确认。角色台词、作者身份等含义继续由 AI 判断，程序仅核对该判断与实际文件的绑定。
 
 ## 新运行的版本与审核绑定
 

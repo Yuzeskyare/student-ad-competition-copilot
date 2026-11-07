@@ -20,8 +20,11 @@
       "const": "bound-production-v1"
     },
     "operation": {
-      "type": "string",
-      "minLength": 1
+      "enum": [
+        "local",
+        "external",
+        "model"
+      ]
     },
     "input_files": {
       "type": "array",
@@ -142,7 +145,10 @@
       ]
     },
     "product_contract": {
-      "const": "print-product-v2"
+      "enum": [
+        "print-product-v2",
+        "print-product-v3"
+      ]
     },
     "product_operation": {
       "enum": [
@@ -196,6 +202,21 @@
     "prepared_at": {
       "type": "string",
       "minLength": 1
+    },
+    "production_stage": {
+      "enum": [
+        "prototype",
+        "prototype-repair",
+        "artwork"
+      ],
+      "description": "AI-declared print stage; omitted means artwork. Prototype outputs cannot be released as complete artwork."
+    },
+    "marketing_stage": {
+      "enum": [
+        "sample",
+        "full-deck"
+      ],
+      "description": "AI-declared actual marketing work stage. Required by marketing dispatch; never infer from prompt, scope wording or page count. Samples cannot release a complete deck."
     }
   },
   "allOf": [
@@ -261,6 +282,28 @@
             }
           }
         ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "enum": [
+              "external",
+              "model"
+            ]
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "command"
+          ]
+        }
       }
     }
   ]

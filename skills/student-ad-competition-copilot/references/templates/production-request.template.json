@@ -16,7 +16,7 @@
     "used_origins": []
   },
   "output_files": [],
-  "product_contract": "print-product-v2",
+  "product_contract": "print-product-v3",
   "product_operation": "replace-with-generate-edit-or-not-related",
   "product_targets": [],
   "prepared_at": "replace-actual-request-prepared-time",

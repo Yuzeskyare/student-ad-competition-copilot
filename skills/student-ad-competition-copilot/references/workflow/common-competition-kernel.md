@@ -113,7 +113,7 @@
 
 平面广告和营销策划同时执行[内容形态驱动与反卡片化设计门](content-shaped-layout-gate.md)。先识别因果、层级、流程、空间、时间、对比或视觉动作，再选择对应结构；不得把网页 UI、仪表盘、圆角信息盒或卡片网格作为无需说明的默认骨架。
 
-真实界面/物件样机或确有离散同级、边界、归属、交互状态语义时，可以局部使用卡片，但必须记录语义角色、范围、非卡片替代和评审证据。观察到无语义卡片骨架、整本统一卡片模板或用容器掩盖内容不足时，回到最近的原型或页面蓝图阶段；在修复并完成人工复核前，不产生`content_pass`。
+真实界面/物件样机或确有离散同级、边界、归属、交互状态语义时，可以使用卡片或完整真实界面，但必须记录语义角色、范围和评审证据；仅必要性不清楚时比较非卡片替代。观察到无语义卡片骨架、整本统一卡片模板或用容器掩盖内容不足时，回到最近的原型或页面蓝图阶段；在修复并完成人工复核前，不产生`content_pass`。
 
 ## 6. 前台与后台语言
 
@@ -134,7 +134,7 @@
 
 - `technical_pass`：文件结构、尺寸、数量、字段或可客观检测项目通过；现有字段可记为 `technical_validation_status: pass`；
 - `content_pass`：对应赛道的人工内容质量门通过；现有字段可记为 `content_review_status: pass`；
-- `method_validated`：本次运行完整执行共享方法，并产生可复用证据；现有字段可记为 `method_run_complete: true`；
+- `method_validated`：本次运行完整执行共享方法，并产生可复用证据；旧等价字段为 `method_run_complete: true`。当前0.4.0平面以显式 `method_validation_status` 为准，`not-claimed` 不被旧字段覆盖；声明 `method-validated` 时仍通过相应方法效果证据门。文案与策划继续保留原共享流程完成字段；
 - `delivery_complete`：当前作品通过内容和适用技术/视觉验收，当前赛事规则、实际提交规格及外部引用已核对并交付；权利手续、AIGC记录与平台申报仅交付后提醒。
 
 机器检查通过不产生 `content_pass`。内容通过也不自动产生 `submission_ready`。内部方法运行完成时，允许 `method_validated: true` 且 `submission_ready: false`。

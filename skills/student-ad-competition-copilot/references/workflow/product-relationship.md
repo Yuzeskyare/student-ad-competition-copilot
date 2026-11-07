@@ -32,4 +32,4 @@ print-core-product-v5、print-core-blind-v4、print-direction-v9 与 print-ad.0.
 
 print-core-product-v6、print-core-blind-v5、print-direction-v10 与 print-ad.0.20.0 使用[上一版审稿定义](product-relationship-v2.md)。print-core-product-v7与print-ad.0.21.0使用[0.2.20历史审稿定义](product-relationship-v3.md)，方向print-direction-v10与盲读print-core-blind-v5仍按上一版定义解释。
 
-当前print-core-product-v8、print-core-blind-v6、print-direction-v11与print-ad.0.22.0使用本页定义；action_depicted_without_copy保留字段名以兼容记录，在新合同指不靠作品外作者说明读得完整图文关系。原型尚未成稿或证据不足保留待验证（not-run / in-progress），不能自动记通过；主观关系失败保留提示，连续两份不同完整稿同因提示走既有A4交回。
+当前print-core-product-v8、print-core-blind-v6、print-direction-v12与print-ad.0.22.0使用本页定义；action_depicted_without_copy保留字段名以兼容记录，在新合同指不靠作品外作者说明读得完整图文关系。原型尚未成稿或证据不足保留待验证（not-run / in-progress），不能自动记通过；主观关系失败保留提示，连续两份不同完整稿同因提示走既有A4交回。

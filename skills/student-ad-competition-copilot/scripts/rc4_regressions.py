@@ -110,6 +110,25 @@ def run(root, manifest, save, text, stages, cli, skill):
     hcr=save('rc4/history-contract.json',hc)
     ctl=save('rc4/history-control.json',dict(run_id=hc['run_id'],state='active',monitoring='not-requested'))
     hm=dict(schema_version='0.4.0',run_id=hc['run_id'],category='ad-copy',review_contract=hcr['path'],execution_control=ctl['path'])
+    hm.update(competition='academy-award',selected_direction='SIMULATED-copy',method_cards_used=['mc-brief-constraint-deconstruction'])
+    # This simulated prior package is built from the current code: supply its
+    # real production prerequisites instead of treating absent scope as a pass.
+    from validate_ad_copy_run import RUN_SCOPE_GATES
+    definitions=load(skill/'references/tracks/ad-copy/quality-gates.json')
+    gates=[]
+    for gate in definitions['gates']:
+        required=gate['gate_id'] in RUN_SCOPE_GATES['concept-only']
+        gates.append(dict(gate_id=gate['gate_id'],status='pass' if required else 'not-run',
+            passed_check_ids=[c['check_id'] for c in gate['checks']] if required else [],failed_check_ids=[],
+            boundaries=[],checked_at=now() if required else None,
+            reviewers=[dict(type='human',id='SYNTHETIC'),dict(type='machine',id='SYNTHETIC')] if required else [],
+            evidence_paths=[row['observed_image']['path']] if required else []))
+    hm.update(run_scope='production-candidate',artifacts={
+        'brief_constraints':save('rc4/history-constraints.json',dict(category_authorized=True))['path'],
+        'concept_gate':save('rc4/history-concept.json',dict(selected_direction=hm['selected_direction']))['path'],
+        'quality_gate_results':save('rc4/history-quality.json',dict(schema_version='1.0.0',track='ad-copy',
+            run_id=hm['run_id'],definition_set_id=definitions['definition_set_id'],results=gates))['path']})
+    hm['method_participation']=save('rc4/history-method-use.json',dict(run_id=hm['run_id'],selected_direction=hm['selected_direction'],methods=[dict(method_id=hm['method_cards_used'][0],decision='supporting',contribution='SYNTHETIC fixture: brief constraints guide copy draft',evidence=[row['observed_image']])]))
     hmanifest=save('rc4/history-manifest.json',hm)
     import subprocess,os
     cmd=[sys.executable,'-X','utf8','-B',str(old/'scripts/guard_production.py'),'--run-dir',str(root),'--manifest',hmanifest['path'],'--request-id',request['id'],'--output','rc4/history-guard.json','--execute']

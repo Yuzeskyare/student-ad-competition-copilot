@@ -63,5 +63,9 @@
   },
   "review_contract": "05-reviews/review-contract.json",
   "execution_profile": "bound-production-v1",
-  "execution_control": "05-reviews/execution-control.json"
+  "execution_control": "05-reviews/execution-control.json",
+  "method_participation": {
+    "path": "03-concepts/method-participation.json",
+    "sha256": "REPLACE_WITH_ACTUAL_SHA256"
+  }
 }

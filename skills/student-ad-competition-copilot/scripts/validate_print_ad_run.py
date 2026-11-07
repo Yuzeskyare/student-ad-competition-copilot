@@ -140,8 +140,10 @@ def validate_direction_sentence_v5(candidate):
         raise ValueError('Direction ID and a short direction sentence are required')
     if not sentence.endswith(suffix) or not sentence[:-len(suffix)].strip():
         raise ValueError('Direction statement must contain action + product relation + exact typed creative basis')
-    if '\n' in sentence or '\r' in sentence or len(re.split(r'[。！？.!?]', sentence.rstrip('。！？.!?'))) != 1:
-        raise ValueError('Direction statement must remain one single-line sentence')
+    if '\n' in sentence or '\r' in sentence:
+        raise ValueError('Direction statement must remain single-line text')
+    # The independent AI checks whether this expresses one coherent direction.
+    # Decimal points, abbreviations and quoted punctuation are not sentence votes.
 
 
 def direction_request_v5(sentences_content, references_content, counterexamples_content):
@@ -336,6 +338,11 @@ def validate_direction_causal_v8(result, ids):
                or any(type(x[k]) is not bool for k in ('attributed_to_product','product_participates','reminder'))
                or x['reminder'] != (x['attributed_to_product'] and not x['product_participates']) for x in rows)):
         raise ValueError('Each direction needs a neutral effect source, reason and conditional attribution reminder')
+    screens={x['direction_id']:x for x in result['trope_screen']}
+    draws={x['direction_id']:x['drawable'] for x in result['drawability']}
+    flags=[direction_eligible_v6(screens[x['direction_id']]) and draws[x['direction_id']] for x in result['ranking']]
+    if flags != sorted(flags, reverse=True):
+        raise ValueError('Eligible drawable directions must precede blocked directions; return to the independent checker, never reorder locally')
     first=result['ranking'][0]['direction_id']
     screen=next(x for x in result['trope_screen'] if x['direction_id']==first)
     drawable=next(x for x in result['drawability'] if x['direction_id']==first)['drawable']
@@ -590,7 +597,7 @@ def validate_repeated_failure_handoff(root, manifest, *, for_dispatch=False):
         resolution=handoff.get('resolution')
         if resolution:
             option=resolution.get('choice')
-            if option not in {'换方向','改动作后继续','照原样继续'} or option not in resolution.get('quote',''):
+            if option not in {'换方向','改动作后继续','照原样继续'}:
                 raise ValueError('Preserve an actual user decision, not an author-inferred continuation')
             at=human_source(root,resolution['source'],resolution['quote'])
             if not timestamp(trigger['triggered_at']) < at <= datetime.now(timezone.utc):raise ValueError('User decision must follow the second failure')
@@ -905,12 +912,16 @@ def comparison_request(row, blind_ref, locked_claim):
             + '\n锁定声明SHA256：' + locked_claim['statement_sha256'])
 
 
-def current_comparison_request(root,row,blind_ref,locked_claim):
+def current_comparison_request(root,row,blind_ref,locked_claim,*,structured=False):
     from review_projection import validate, PROFILE
     for p in row.get('product_triptychs',[]):
         if validate(root,p['triptych'],p['element_id']).get('contract')!=PROFILE:
             raise ValueError('field=product_triptychs current='+repr(p['triptych'])+'; legal source=review_workflow blind-save sanitized review projection')
-    return comparison_request(row,blind_ref,locked_claim)+'\n【审稿投影 v1】仅可读取绑定的审稿投影JSON及图片；不得读取 _review-private 或作者记录。'
+    request=comparison_request(row,blind_ref,locked_claim)+'\n【审稿投影 v1】仅可读取绑定的审稿投影JSON及图片；不得读取 _review-private 或作者记录。'
+    if structured:
+        from review_consistency_contract import STRUCTURED_FORMAT
+        request+=STRUCTURED_FORMAT
+    return request
 
 
 def assessment_hard_failure(root,row):
@@ -1065,6 +1076,14 @@ def validate_blind_core(root, row, render, record, invocation_keys, locked_claim
         allowed_requests.add(comparison_request(row,blind_ref,locked_claim).replace(asset_scope(row),'',1))
         if '【审稿投影 v1】' in actual_request:
             allowed_requests={current_comparison_request(root,row,blind_ref,locked_claim)}
+    from review_consistency_contract import JUDGMENT_SUPPLEMENT
+    # Exact prior edition remains valid; never rewrite immutable checker requests.
+    allowed_requests |= {request.replace(JUDGMENT_SUPPLEMENT, '', 1) for request in allowed_requests}
+    from review_consistency_contract import STRUCTURED_FORMAT
+    structured = (row.get('core_review_contract')=='print-core-product-v8' and projected_request
+                  and actual_request.endswith(STRUCTURED_FORMAT))
+    if structured:
+        allowed_requests.add(current_comparison_request(root,row,blind_ref,locked_claim,structured=True))
     require(actual_request in allowed_requests,'Comparison request contains author explanation or lacks blind hash')
     text_checks_required=CORE_RETURN_SUPPLEMENT in actual_request
     if not validate_return:
@@ -1082,7 +1101,14 @@ def validate_blind_core(root, row, render, record, invocation_keys, locked_claim
         from review_workflow import bind_return
         require(raw==bind_return(root,binding['original'],row,blind_ref),
                 'Trusted binding changed independent judgments or observations')
-    require(set(raw) - ({'scene_evidence'} if row.get('core_review_contract') in {'print-core-product-v7','print-core-product-v8'} else set()) - ({'product_meaning','meaning_check','compliance_check','review_issues','layout_review','brand_asset_review'} if meaning_core else {'product_participation','layout_review','brand_asset_review'} if current_core else set()) - ({'creative_failure_reasons','production_failure_reasons'} if row.get('product_contract')=='print-product-v3' and not meaning_core else set()) == ({'blind_read_sha256', 'comparison', 'answers', 'core_claim_sha256'} if locked else {'blind_read_sha256', 'comparison', 'answers'}) and raw['blind_read_sha256'] == blind_ref['sha256'],
+    from user_decision_contract import validate_judgment_fields
+    validate_judgment_fields(raw)
+    if structured:
+        expected_bases={q for q in ('product_label_consistent_readable','layout_readable')
+                        if raw['answers'][q]['answer'] is False}
+        require('judgment_basis' in raw and set(raw['judgment_basis'])==expected_bases and 'verified_errors' in raw,
+                'Structured comparison requires explicit classification for false label/layout answers and a verified_errors array')
+    require(set(raw) - {'judgment_basis', 'verified_errors'} - ({'scene_evidence'} if row.get('core_review_contract') in {'print-core-product-v7','print-core-product-v8'} else set()) - ({'product_meaning','meaning_check','compliance_check','review_issues','layout_review','brand_asset_review'} if meaning_core else {'product_participation','layout_review','brand_asset_review'} if current_core else set()) - ({'creative_failure_reasons','production_failure_reasons'} if row.get('product_contract')=='print-product-v3' and not meaning_core else set()) == ({'blind_read_sha256', 'comparison', 'answers', 'core_claim_sha256'} if locked else {'blind_read_sha256', 'comparison', 'answers'}) and raw['blind_read_sha256'] == blind_ref['sha256'],
             'Comparison must cite saved blind record hash')
     if locked:
         require(raw['core_claim_sha256'] == locked_claim['statement_sha256'], 'Raw comparison claim hash must equal adoption locked claim hash')
@@ -1243,7 +1269,7 @@ def direction_case_projection(root, reference, prepared_at, competition, *, qual
 def validate_superseded_direction_rounds(root, bundle, rubric_version, recorded):
     """Audit failed protocol returns without turning them into adoption authority."""
     from review_contract import bound_file, timestamp
-    from direction_purpose_contract import CREATIVE_REQUEST_REVISION, current_direction_request
+    from direction_purpose_contract import CREATIVE_REQUEST_REVISION, REQUEST_REVISIONS, current_direction_request
     def nonempty(value): return isinstance(value, str) and bool(value.strip())
     def require(value, reason):
         if not value: raise ValueError(reason)
@@ -1266,7 +1292,7 @@ def validate_superseded_direction_rounds(root, bundle, rubric_version, recorded)
         request_revision = r.get('request_revision')
         if request_revision is not None:
             fields.add('request_revision')
-            require(request_revision == CREATIVE_REQUEST_REVISION and rubric_version == 'print-direction-v12',
+            require(request_revision in REQUEST_REVISIONS and rubric_version == 'print-direction-v12',
                     'Superseded request revision must retain its declared fixed text')
         require(set(r) == fields and r['rubric_version'] == rubric_version and r['checker_context'] == 'fresh-isolated', 'Superseded record must preserve the same fixed independent contract')
         require(nonempty(r['author_session_id']) and isinstance(r['unavailable_metadata'], dict) and set(r['unavailable_metadata']) <= {'checker_session_id', 'invocation_id'}, 'Superseded independent metadata is required')
@@ -1293,7 +1319,7 @@ def validate_superseded_direction_rounds(root, bundle, rubric_version, recorded)
         require(json.loads(references) == projection, 'Superseded case input must match its qualified record')
         request_fn = globals().get('direction_request_' + rubric_version.rsplit('-', 1)[1])
         if request_revision:
-            request_fn = current_direction_request
+            request_fn = lambda *args: current_direction_request(*args, revision=request_revision)
         require(callable(request_fn), 'Unknown superseded fixed request')
         expected_request = request_fn(content, references, counterexamples, *([bound_file(root, inputs[3]['file']).read_text(encoding='utf-8')] if rubric_version == 'print-direction-v12' else []))
         actual_request = bound_file(root, r['request']).read_text(encoding='utf-8')
@@ -1334,7 +1360,7 @@ def validate_method_decision(decision, revision=None):
     return validate(decision, revision)
 
 
-def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selection=False) -> dict:
+def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selection=False, _preparing_group=False) -> dict:
     """Check recorded isolation, ordering and choices, without certifying judgment."""
     def require(value, reason):
         if not value:
@@ -1356,9 +1382,9 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
     try:
         import re
         v12 = manifest.get('direction_contract') == 'print-direction-v12'
-        from direction_purpose_contract import CREATIVE_REQUEST_REVISION, current_direction_request
+        from direction_purpose_contract import CREATIVE_REQUEST_REVISION, REQUEST_REVISIONS, current_direction_request
         request_revision = manifest.get('direction_request_revision')
-        require(request_revision in {None, CREATIVE_REQUEST_REVISION}
+        require(request_revision in ({None} | REQUEST_REVISIONS)
                 and (request_revision is None or v12), 'Unknown or incompatible direction request revision')
         v11 = manifest.get('direction_contract') in {'print-direction-v11','print-direction-v12'}
         v10 = manifest.get('direction_contract') in {'print-direction-v10','print-direction-v11','print-direction-v12'}
@@ -1383,7 +1409,8 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
             from direction_change_contract import validate_change
             change = validate_change(root, manifest)
         supplied = bool(change and change['supplied'])
-        if supplied:
+        recovered = bool(change and change.get('recovered'))
+        if supplied or recovered:
             minimum = 1
         adopted = time(adoption['adopted_at'])
         require(adoption['direction_id'] == manifest['selected_direction'], 'Blind review must bind selected direction')
@@ -1458,7 +1485,13 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
                     'At least six candidate directions are required' if v2 else 'At least three candidate directions are required')
             ids = []
             for candidate in candidates:
-                if v5:
+                if recovered:
+                    from direction_selection_recovery import evidence, candidate_projection
+                    recovery, original_candidate = evidence(root, change['event'])
+                    if recovery.get('prose_projection'):
+                        require(time(recovery['prose_projection']['recorded_at']) <= prepared, 'Projection must precede the actual formal review input')
+                    require(candidate == candidate_projection(original_candidate, recovery['basis_type'], recovery.get('prose_projection')), 'Recovery input differs from the original selected sentence and literal basis')
+                elif v5:
                     validate_direction_sentence_v5(candidate)
                 else:
                     require(isinstance(candidate, dict) and set(candidate) == {'direction_id', 'statement'},
@@ -1502,7 +1535,7 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
                         validate_purpose_excerpt(root, purpose_content)
                         expected_request = direction_request_with_purpose(content, references_content, counterexamples_content, purpose_content)
                         if request_revision:
-                            expected_request = current_direction_request(content, references_content, counterexamples_content, purpose_content)
+                            expected_request = current_direction_request(content, references_content, counterexamples_content, purpose_content, revision=request_revision)
                 else:
                     expected_request = direction_request_v2(content, references_content)
             else:
@@ -1540,8 +1573,8 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
                     'At least six distinct directions must remain after independent filtering' if v2
                     else 'At least three distinct directions must remain after independent filtering')
             # Catch identical descriptions even if a record incorrectly claims no duplicates.
-            normalized = [re.sub(r'\s|[，,。.!！?？]', '', input_by_id[i]['statement']) for i in retained]
-            require(len(normalized) == len(set(normalized)), 'Identical/near-duplicate directions were not removed')
+            statements = [input_by_id[i]['statement'] for i in retained]
+            require(len(statements) == len(set(statements)), 'Identical direction statements were not removed')
             rank, drawable = raw['ranking'], raw['drawability']
             require(isinstance(rank, list) and len(rank) == len(retained)
                     and all(set(x) == {'direction_id', 'reason'} and nonempty(x['reason']) for x in rank)
@@ -1618,7 +1651,7 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
                 and all(set(x) == origin_fields and nonempty(x['benefit_angle'])
                         and (x['method_id'] is None or nonempty(x['method_id'])) for x in origins)
                 and {x['direction_id'] for x in origins} == all_candidates,
-                'Every direction needs a method or distinct benefit angle outside blind inputs')
+                'Every direction needs method provenance and a concrete benefit angle outside blind inputs')
         origin_by_id = {x['direction_id']: x for x in origins}
         if v2:
             categories = {'consumer-moment', 'product-benefit', 'counter-intuitive'}
@@ -1626,9 +1659,9 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
                     'Every direction needs a concrete starting point; method card alone is not a starting point')
         for reference in rounds:
             result = load_json(ref(reference))['result']
-            keys = {(origin_by_id[x['direction_id']]['method_id'], origin_by_id[x['direction_id']]['benefit_angle']) for x in result['ranking']}
-            require(len(keys) == len(result['ranking']), 'Directions must differ by method card or benefit angle')
-            if v2 and not supplied:
+            # Shared method/benefit metadata does not determine semantic identity.
+            # The independent near_duplicates record above owns that judgment.
+            if v2 and not (supplied or recovered):
                 require({origin_by_id[x['direction_id']]['starting_point'] for x in result['ranking']} == categories,
                         'Each round after deduplication must cover three starting point categories')
         user_choice_v6 = v6 and adoption['selection_mode'] == 'user'
@@ -1651,7 +1684,7 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
         require(retrieval.get('method_decision_revision') in {None, ATTEMPT_REVISION}, 'Unknown method decision revision')
         require(time(retrieval['recorded_at']) <= recorded, 'Method decisions must be saved before blind bundle record')
         for decision in retrieval['decisions']:
-            if supplied:
+            if supplied or recovered:
                 # This is original retrieval history, not invented provenance for a user idea.
                 continue
             validate_method_decision(decision, retrieval.get('method_decision_revision'))
@@ -1686,16 +1719,28 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
         require(all(x['method_id'] is None or x['method_id'] in returned for x in origins), 'Origin method must be in actual retrieval')
         require(not supplied or all(x['method_id'] is None for x in origins),
                 'User-supplied direction must not claim a model method-card origin')
+        if recovered:
+            from direction_selection_recovery import evidence, candidate_projection
+            recovery, original_candidate = evidence(root, change['event'])
+            require(len(input_by_id) == 1 and input_by_id.get(recovery['candidate_id']) ==
+                    candidate_projection(original_candidate, recovery['basis_type'], recovery.get('prose_projection')),
+                    'Recovery only rechecks the exact previously selected candidate')
+            require(len(origins) == 1 and origins[0]['method_id'] is None and
+                    origins[0]['starting_point'] == original_candidate['starting_point'],
+                    'Recover original starting point; missing historical primary-method mapping stays unclaimed')
         if pending_selection:
             (validate_direction_choice_list_v8 if v8 else validate_direction_choice_list_v7 if v7 else validate_direction_choice_list_v6)(root, adoption, {ident: input_by_id[ident] for ident in ids}, raw, previous_end, datetime.now(timezone.utc))
             return check('independent-direction-blind-review',True,dict(winner=winner,rounds=len(rounds),
                 statement=input_by_id[winner]['statement'],completed_at=r['completed_at'],
                 raw_return=r['raw_return'],judgment=direction_judgment_v7(raw,winner,r['raw_return']),
                 selection_pending=True,approval_granted=False))
+        if not _preparing_group:
+            from series_commit import validate_commit
+            validate_commit(root,manifest)
         selection = load_json(ref(adoption['selection_record']))
         selection_fields = {'kind', 'actor', 'direction_id', 'decided_at', 'statement', 'source'}
         require(selection_fields <= set(selection)
-                and set(selection) <= selection_fields | ({'user_override', 'override_judgment'} if v6 else set()) | ({'carryover'} if v7 else set())
+                and set(selection) <= selection_fields | ({'user_override', 'override_judgment'} if v6 else set()) | ({'carryover'} if v7 else set()) | ({'recovery'} if recovered else set())
                 and selection['actor'] == 'user' and nonempty(selection['statement']), 'Real user delegation/choice record is required')
         source_content=ref(selection['source']).read_text(encoding='utf-8')
         try:
@@ -1706,7 +1751,11 @@ def validate_direction_blind_review(root: Path, manifest: dict, *, pending_selec
         require(isinstance(source_text,str) and selection['statement'] in source_text, 'User statement must bind actual source bytes')
         decided = time(selection['decided_at'])
         carry = v7 and selection.get('kind') == 'user-choice-carryover'
-        if carry:
+        if recovered:
+            require(not carry and 'carryover' not in selection, 'Selection recovery is not version migration')
+            from direction_selection_recovery import validate_selection
+            decided = validate_selection(root, change['event'], selection, adoption, input_by_id[winner], raw, previous_end)
+        elif carry:
             require(adoption['selection_mode']=='user','Delegation cannot carry over a user choice')
             decided=validate_direction_carryover_v7(root,selection,adoption,input_by_id[winner],raw,r['raw_return'],previous_end)
         else:
@@ -2008,9 +2057,13 @@ def validate_creative_contract(root: Path, manifest: dict) -> list[dict]:
                 require(row.get('assessment_method') == 'independent-review',
                         'Independent review required; author-inspection cannot support a pass')
                 claim = row['core_action']
-                require(len(claim) <= 160 and '\n' not in claim and '\r' not in claim
-                        and sum(claim.count(c) for c in '。！？!?') <= 1,
-                        'Core action must be one short sentence, not author explanation')
+                if manifest.get('core_review_contract') == 'print-core-product-v8':
+                    require(len(claim) <= 200 and '\n' not in claim and '\r' not in claim,
+                            'Current core action must preserve the short single-line direction claim')
+                else:
+                    require(len(claim) <= 160 and '\n' not in claim and '\r' not in claim
+                            and sum(claim.count(c) for c in '。！？!?') <= 1,
+                            'Historical core action must match its original sentence contract')
                 record_path = bound_file(root, row['independent_check'])
                 require(record_path not in independent_records, 'Each complete draft requires a new independent check record')
                 independent_records.add(record_path)
@@ -2258,7 +2311,12 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
         checks.extend(validate_quality_gate_results(
             run_dir, resolved["quality_gate_results"], "print-ad", manifest.get("run_id"),
             RUN_SCOPE_GATES.get(run_scope, set()),
+            manifest=manifest,
         ))
+
+    if manifest.get('category') == 'print-ad' and manifest.get('series_mode') == 'series' and run_scope != 'concept-only':
+        from series_review_contract import content_check
+        checks.append(content_check(run_dir, manifest))
 
     if method_status == "method-validated":
         used = manifest.get("method_cards_used")
@@ -2274,6 +2332,9 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
 
     from review_contract import concept_evidence_checks
     checks.extend(concept_evidence_checks(run_dir, manifest))
+    if manifest.get('schema_version') == '0.4.0':
+        from method_usage_contract import check_usage
+        checks.append(check_usage(run_dir, manifest))
     checks.extend(validate_visual_review(run_dir, manifest))
     checks.extend(validate_creative_contract(run_dir, manifest))
     if manifest.get('schema_version') == '0.4.0' and 'quality_gate_results' in resolved:

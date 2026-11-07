@@ -291,7 +291,7 @@
           "check_id": "layout-role-diversity",
           "assessment": "human",
           "question": "五页是否使用与数据、因果、流程、空间、时间、对比或视觉任务匹配的不同结构，而非统一卡片骨架？",
-          "pass_condition": "统一品牌系统但不是同一模板换文案；无语义网页卡片、仪表盘或重复圆角容器不作为默认骨架，局部例外有记录。",
+          "pass_condition": "统一品牌系统但不是同一模板换文案；无语义网页卡片、仪表盘或重复圆角容器不作为默认骨架，有语义的例外有范围和评审记录，允许完整真实界面。",
           "failure_severity": "hard-stop",
           "return_to_stage": "content-prototype",
           "evidence_required": true
@@ -332,7 +332,7 @@
           "stop_id": "generic-card-template",
           "condition": "五页以网页卡片、仪表盘面板或重复圆角容器作为默认骨架，且没有真实对象或内容关系语义。",
           "return_to_stage": "content-prototype",
-          "required_resolution": "按各页任务和关系重建不同结构；确有语义的局部例外须记录并复核。"
+          "required_resolution": "按各页任务和关系重建不同结构；确有语义的例外须记录范围并复核，允许完整真实界面。"
         }
       ],
       "waiver_policy": {
@@ -480,7 +480,7 @@
           "check_id": "layout-and-density",
           "assessment": "human",
           "question": "数据、模型、路线、活动、空间、预算等页面是否使用内容对应结构和适当密度，并避免网页卡片、悬浮面板、胶囊标签或仪表盘式统一模板？",
-          "pass_condition": "没有全稿卡片化、内容稀薄或装饰性空白；局部卡片有语义、范围、替代方案和评审证据。",
+          "pass_condition": "没有无语义的全稿卡片化、内容稀薄或装饰性空白；卡片有语义、范围和评审证据，允许完整真实界面，仅必要性不清楚时比较非卡片替代。",
           "failure_severity": "return-on-observed-failure",
           "return_to_stage": "full-deck",
           "evidence_required": true
@@ -524,7 +524,7 @@
       "order": 70,
       "stage": "technical-review",
       "gate_type": "machine",
-      "purpose": "验证赛事文件、页面、manifest、哈希、预算算术、KPI字段、AIGC使用声明和必要记录。",
+      "purpose": "验证赛事文件、页面、manifest、哈希、预算算术和KPI字段；AIGC使用声明、记录与申报仅交付后提醒。",
       "applicability": {
         "mode": "always"
       },
@@ -532,8 +532,7 @@
         "final-deliverables",
         "delivery-manifest",
         "brief-constraints",
-        "submission-profile",
-        "aigc-use-declaration"
+        "submission-profile"
       ],
       "required_outputs": [
         "technical-validation",

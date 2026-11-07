@@ -153,6 +153,60 @@
     "execution_control": {
       "type": "string",
       "minLength": 1
+    },
+    "method_participation": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "creator_identity_review": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "submission_identity_review": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
     }
   },
   "allOf": [
@@ -173,7 +227,6 @@
       "then": {
         "required": [
           "selected_candidate_id",
-          "aigc_used",
           "candidates"
         ],
         "properties": {
@@ -198,12 +251,6 @@
       },
       "then": {
         "properties": {
-          "aigc_used": {
-            "enum": [
-              "yes",
-              "no"
-            ]
-          },
           "artifacts": {
             "required": [
               "final_copy",
@@ -218,6 +265,11 @@
         "properties": {
           "aigc_used": {
             "const": "yes"
+          },
+          "schema_version": {
+            "not": {
+              "const": "0.4.0"
+            }
           }
         },
         "required": [
@@ -232,6 +284,58 @@
             ]
           }
         }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "run_scope": {
+            "const": "delivery-candidate"
+          },
+          "schema_version": {
+            "not": {
+              "const": "0.4.0"
+            }
+          }
+        },
+        "required": [
+          "run_scope"
+        ]
+      },
+      "then": {
+        "properties": {
+          "aigc_used": {
+            "enum": [
+              "yes",
+              "no"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "run_scope": {
+            "enum": [
+              "production-candidate",
+              "delivery-candidate"
+            ]
+          },
+          "schema_version": {
+            "not": {
+              "const": "0.4.0"
+            }
+          }
+        },
+        "required": [
+          "run_scope"
+        ]
+      },
+      "then": {
+        "required": [
+          "aigc_used"
+        ]
       }
     }
   ],

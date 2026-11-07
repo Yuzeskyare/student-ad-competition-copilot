@@ -21,7 +21,8 @@ KNOWN_SUBTYPES = (
 )
 
 MARKDOWN_IMAGE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
-HTML_TAG = re.compile(r"<\s*/?\s*[A-Za-z][^>]*>")
+# Recognize explicit tag grammar, not arbitrary text between angle brackets.
+HTML_TAG = re.compile(r'''</?[A-Za-z][A-Za-z0-9:-]*(?:\s+[A-Za-z_:][A-Za-z0-9_.:-]*(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*\s*/?>|<!--[\s\S]*?-->|<!DOCTYPE\s+html(?:\s+[^>]*)?>''', re.IGNORECASE)
 DATA_IMAGE = re.compile(r"data\s*:\s*image/", re.IGNORECASE)
 MARKDOWN_TABLE_SEPARATOR = re.compile(r"^\s*\|?(?:\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?\s*$")
 
@@ -65,13 +66,23 @@ def normalize_text(raw: str, contract: dict) -> tuple[str, dict]:
 
 
 def is_emoji(char: str) -> bool:
-    codepoint = ord(char)
-    return (
-        0x1F000 <= codepoint <= 0x1FAFF
-        or 0x2600 <= codepoint <= 0x27BF
-        or 0x2300 <= codepoint <= 0x23FF
-        or 0xFE00 <= codepoint <= 0xFE0F
-    )
+    return any(start <= ord(char) <= end for start, end in EMOJI_PROPERTIES['Emoji_Presentation'])
+
+
+EMOJI_PROPERTIES = load_json(SKILL_ROOT / 'references/competitions/emoji-properties.json')
+
+
+def emoji_positions(text: str) -> list[int]:
+    """Unicode presentation/sequence syntax, not a judgment of text meaning."""
+    found = {i for i, char in enumerate(text) if is_emoji(char)}
+    for i, char in enumerate(text):
+        if char == '\ufe0f' and i and any(a <= ord(text[i-1]) <= b for a, b in EMOJI_PROPERTIES['Emoji']):
+            found.add(i-1)
+        if char == '\u20e3' and i:
+            start = i-2 if text[i-1] == '\ufe0f' else i-1
+            if start >= 0 and text[start] in '#*0123456789':
+                found.add(start)
+    return sorted(found)
 
 
 def invalid_invisible_characters(text: str) -> list[dict]:
@@ -91,9 +102,41 @@ def invalid_invisible_characters(text: str) -> list[dict]:
 
 def has_markdown_table(text: str) -> bool:
     lines = text.splitlines()
-    if any(MARKDOWN_TABLE_SEPARATOR.match(line) for line in lines):
-        return True
-    return any(line.count("|") >= 2 for line in lines)
+    def cells(line):
+        return re.split(r'(?<!\\)\|', line.strip().strip('|'))
+    # Require an actual header + matching delimiter row. Other apparent
+    # tabular layouts remain an AI format-review task, not a pipe-count guess.
+    return any(MARKDOWN_TABLE_SEPARATOR.fullmatch(line) and i > 0
+               and '|' in lines[i-1] and len(cells(lines[i-1])) == len(cells(line))
+               and len(cells(line)) >= 2 for i, line in enumerate(lines))
+
+
+def text_format_checks(path, profiles_document, profile, emoji_policy):
+    """Only full-text format constraints; body length/meaning are separate."""
+    checks = [check('input-extension', path.suffix.lower() in profile['allowed_input_extensions'], path.suffix),
+              check('input-size', path.stat().st_size <= profile['max_input_bytes'], path.stat().st_size)]
+    try:
+        raw = path.read_bytes().decode('utf-8')
+    except UnicodeDecodeError as exc:
+        return checks + [check('utf8-decode', False, str(exc))]
+    normalized, metrics = normalize_text(raw, profiles_document['count_contract'])
+    checks += [check('utf8-decode', True, 'UTF-8'),
+        check('non-empty-content', metrics['content_character_count'] > 0, metrics['content_character_count']),
+        check('leading-trailing-whitespace', normalized == normalized.strip(), None),
+        check('tabs-controls-zero-width', not invalid_invisible_characters(normalized), invalid_invisible_characters(normalized)[:20]),
+        check('embedded-image', not (MARKDOWN_IMAGE.search(normalized) or DATA_IMAGE.search(normalized)), None),
+        check('html', not HTML_TAG.search(normalized), None),
+        check('table', not has_markdown_table(normalized), None)]
+    found = sorted({normalized[i] for i in emoji_positions(normalized)})
+    checks.append(check('emoji', not found or emoji_policy == 'allowed',
+        {'policy': emoji_policy, 'found': found}, 'error' if emoji_policy == 'forbidden' else 'warning'))
+    return checks
+
+
+def validation_inputs(brief_path=None, profiles_path=DEFAULT_PROFILES):
+    return dict(brief_constraints_sha256=sha256(brief_path) if brief_path and brief_path.is_file() else None,
+                profiles_sha256=sha256(profiles_path),
+                emoji_properties_sha256=sha256(SKILL_ROOT/'references/competitions/emoji-properties.json'))
 
 
 def validate_brief_document(document: dict, competition: str, profile: dict) -> list[str]:
@@ -212,6 +255,7 @@ def main() -> int:
     parser.add_argument("--self-check", action="store_true")
     parser.add_argument("--real-submission", action="store_true")
     parser.add_argument("--rule-verification", type=Path)
+    parser.add_argument("--creator-identity-review", type=Path, help="AI judgment of the entire exact copy; lexical markers alone never decide identity")
     args = parser.parse_args()
 
     if args.self_check:
@@ -256,7 +300,18 @@ def main() -> int:
     creator_matches = []
     for pattern in profiles_document.get("creator_marker_patterns", []):
         creator_matches.extend(match.group(0).strip() for match in re.finditer(pattern, normalized))
-    checks.append(check("creator-markers", not creator_matches, sorted(set(creator_matches))))
+    checks.append(check("creator-marker-candidates", not creator_matches, sorted(set(creator_matches)), "warning"))
+    identity_record = None
+    if args.creator_identity_review:
+        try:
+            from ad_copy_identity import validate_identity
+            identity_record = load_json(args.creator_identity_review)
+            found = validate_identity(identity_record, sha256(args.input))
+            checks.append(check("creator-identity-ai", not found, identity_record))
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            checks.append(check("creator-identity-ai", False, str(exc)))
+    else:
+        checks.append(check("creator-identity-ai-pending", False, "AI must review the complete copy before formal delivery; markers are only candidates", "error" if args.real_submission else "warning"))
 
     competition_allowed = args.subtype in profile["allowed_subtypes"]
     checks.append(check("subtype-allowed-by-competition", competition_allowed, {
@@ -314,7 +369,7 @@ def main() -> int:
         for term in brief_document.get("prohibited_terms", []):
             checks.append(check(f"prohibited-term:{term}", term not in normalized, term))
 
-    emoji_found = sorted({char for char in normalized if is_emoji(char)})
+    emoji_found = sorted({normalized[i] for i in emoji_positions(normalized)})
     emoji_policy = profile["emoji"]
     if brief_document and not brief_errors:
         override = brief_document.get("emoji_policy", "inherit")
@@ -366,6 +421,7 @@ def main() -> int:
         "competition": args.competition,
         "subtype": args.subtype,
         "profile_snapshot": profile["snapshot"],
+        "validation_inputs": validation_inputs(args.brief_constraints, args.profiles),
         "input": {
             "path": str(args.input.resolve()),
             "bytes": args.input.stat().st_size,
@@ -377,6 +433,7 @@ def main() -> int:
         "rule_snapshot_status": rule_status,
         "rule_evidence": rule_evidence,
         "content_review_assessment": content_review_assessment,
+        "creator_identity_review": identity_record,
         "claim_review_status": claim_status,
         "brief_subtype_basis": brief_document.get("subtype_basis") if brief_document else None,
         "brief_length_status": brief_document.get("length_status") if brief_document else None,

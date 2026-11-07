@@ -18,6 +18,8 @@ def required_content_checks(manifest):
     if manifest.get('schema_version')=='0.4.0':
         if manifest.get('category') in {'print-ad','marketing-plan'} and manifest.get('run_scope')!='concept-only':
             required.add('final-pixel-evidence')
+        if manifest.get('category') == 'print-ad' and manifest.get('series_mode') == 'series' and manifest.get('run_scope') != 'concept-only':
+            required.add('series-increment-evidence')
         if manifest.get('category') in {'ad-copy','marketing-plan'} and (manifest.get('award_review_requested') is True or manifest.get('revision_mode')=='challenge'):
             required.add('creative-iteration-evidence')
     return required
@@ -62,7 +64,12 @@ def technical_diagnostics(root, manifest, contract):
 def technical_state(root,manifest,run_result,contract):
     checks={r['name']:r['passed'] for r in run_result.get('checks',[])}
     if manifest['category']=='ad-copy':
-        return checks.get('technical-pass',False) and checks.get('technical-final-hash-linked',False)
+        required = {'technical-pass', 'technical-final-hash-linked'}
+        if manifest.get('schema_version') == '0.4.0':
+            required.add('technical-current-rules-linked')
+            if manifest.get('run_scope') == 'delivery-candidate':
+                required.add('technical-submission-format')
+        return all(checks.get(name, False) for name in required)
     if manifest['category']=='marketing-plan':return checks.get('technical-validation-linked',False)
     try:
         report=load(inside(root,manifest['artifacts']['technical_validation']))
@@ -164,7 +171,10 @@ def validate(root,manifest_path,handoff_path=None):
     method=False
     try:
         status=load(inside(root,manifest['artifacts']['run_status']))
-        method=bool(passed and (manifest.get('method_validation_status')=='method-validated' or status.get('method_run_complete') is True))
+        if manifest.get('category') == 'print-ad' and manifest.get('schema_version') == '0.4.0':
+            method=bool(passed and manifest.get('method_validation_status')=='method-validated')
+        else:
+            method=bool(passed and (manifest.get('method_validation_status')=='method-validated' or status.get('method_run_complete') is True))
     except (OSError,ValueError,KeyError,TypeError):pass
     if manifest.get('schema_version')!='0.4.0':next_action='Preserve legacy results; explicitly migrate evidence before claiming current-contract acceptance.'
     elif errors:next_action='Repair the first evidence/identity error: '+errors[0]

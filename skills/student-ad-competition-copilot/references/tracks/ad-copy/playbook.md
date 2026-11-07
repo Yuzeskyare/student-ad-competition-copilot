@@ -291,3 +291,6 @@
 ## 按需冲奖与挑战稿
 
 用户明确追求更高奖级时执行[上限诊断与挑战稿协议](../../workflow/award-ceiling-and-challengers.md)，先定位失分责任层，允许保留已批准文本或方案；模拟评审不代表真人或奖级保证。
+
+
+作者身份由 AI 阅读完整文案判断，不能因“学校：”“姓名：”等字面命中就把情境叙事当作参赛者元数据。技术脚本只提示词法候选。正式文案交付须提供 creator_identity_review 文件引用：kind=ad-copy-identity-review-v1、input_sha256（实际完整文案哈希）、reviewer=ai、reviewed_at、has_creator_metadata 布尔和 observation（具体判断理由）。AI 应区分角色台词/校园叙事与作者姓名、学校、联系方式等参赛身份，不按关键词下结论；有实际作者元数据须修正文案并重审，尚未审核不能正式交付。可用 validate_ad_copy.py --creator-identity-review 对同一判断做结构核对；该选项缺失只表示技术扫描尚未完成语义审核，不能据 technical pass 放行正式交付。

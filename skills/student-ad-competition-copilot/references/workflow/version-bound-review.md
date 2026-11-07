@@ -14,6 +14,8 @@
 
 ## 生产前实际执行
 
+营销请求另须由AI明确填写 `marketing_stage`（sample/full-deck）；全稿生产消费已有五页内容与执行工程前置门，阶段不由脚本解释自然语言。
+
 高清、批量或全稿生产前保存一个请求JSON：`id`、`operation`、明确的`output_scope`、`representatives`作品引用；本地命令另含`command`字符串数组（不用shell）。代表内容通过或明确生产授权的决定，通过`production_request_sha256`绑定整个请求。请求的工具、提示、参数、输出范围或本地命令变化后重新核对，不能重用旧请求哈希。
 
 用户已明确授权在本轮范围内继续生产时，使用`production-authorization`并引用原消息；不能因为Skill默认检查点再询问同一权限。representatives是生产前授权材料，保留请求、授权与回执原字节。平面production-candidate的完整稿验收范围从core_creative_review.current_assessment_ids对应artifact读取，并核对completed守卫产出、所属当前请求及output_scope；delivery-candidate仍从final_artifacts读取。该授权不等于看过成品或内容通过。源消息只有生产授权时`content_pass`仍为pending。
@@ -28,9 +30,11 @@
 
 外部生图/文档工具仅在返回authorized后立即调用，参数须与被绑定请求一致；不得隔着改稿复用回执。将回执的路径和哈希加入`production_receipts`。该脚本不能拦截任意外部工具，执行者必须按此入口调用；它也不替代资产、事实、权利或工具能力前检。
 
-本地已获授权命令使用同一入口增加`--execute`：脚本在启动前重新读取并核对请求和决定，通过后才用无shell的子进程执行，记录是否执行、返回码和时间。拒绝时不运行命令。外部调用模式回执中的`executed: false`表示脚本未代调工具，不能声称生产成功。回执仅证明生产前校验，不证明文件质量或调用结果；产物仍须各自验证。
+operation 只允许 local / external / model；external/model 不得携带本地 command，原生 image_gen.imagegen 必须使用标准 external 入口。本地完成回执只能证明本地命令完成，不能冒充原生调用终态。
 
-生产及交付范围必须有匹配请求的回执，最终补录的内容批准不能追认缺失的生产前校验。后续撤回会影响当前动作/内容状态，已发生的有效生产历史原样保留。
+本地已获授权命令使用同一入口增加`--execute`（仅限 local）：脚本在启动前重新读取并核对请求和决定，通过后才用无shell的子进程执行，记录是否执行、返回码和时间。拒绝时不运行命令。外部调用模式回执中的`executed: false`表示脚本未代调工具，不能声称生产成功。回执仅证明生产前校验，不证明文件质量或调用结果；产物仍须各自验证。
+
+生产及交付范围必须有匹配请求的回执，最终补录的内容批准不能追认缺失的生产前校验。当前文案的 copy、explanation（适用时）与完整 submission 均须对应适用请求的 output_files / output_scope 和实际成功输出哈希；失败历史保留，但不能释放当前对象。外部/model路径必须有原前检后开始的真实 saved 终态。已有用户文本或旧作品可作为新请求输入，按仍适用的已有授权生成新输出；不补造历史回执。后续撤回会影响当前动作/内容状态，已发生的有效生产历史原样保留。
 
 未执行即取消时保留原请求，在合同的可选 production_cancellations 中引用取消记录：request_id、request_sha256、cancelled_at、reason、executed:false。已取消请求不要求成功生产回执，不计入实际调用数，也不能再通过生产前检；重新启动须另建请求。已启动、失败或已完成的操作不能改记为“未执行取消”。外部工具的实际调用与结果仍按真实工具回执留档；机器字段无法证明不存在未登记调用。
 
@@ -56,7 +60,7 @@ guard_production 的 status:authorized 仅表示授权前检；production_state 
 
 合同`final_artifacts`恰好覆盖上述实际交付对象；`candidate_review.manual_content_review`的`status`、`review_decision_ids`与运行状态和合同一致。同范围仍有pending或内容边界时，不得写无条件pass；无关权利/平台边界放到相应状态，不能混进内容结论。
 
-平面交付manifest增加`final_artifacts`作品引用数组，必须与合同中的最终集合完全相同。既有逐文件尺寸、DPI、格式、角色等记录继续保留，预览不混入实际参赛集合。策划合同绑定运行清单`final_artifact`的实际路径、哈希和全部`1..slide_count`页，五页样稿批准不能外推全稿。
+平面交付manifest增加`final_artifacts`作品引用数组，必须与合同中的最终集合完全相同。既有逐文件尺寸、DPI、格式、角色等记录继续保留，预览不混入实际参赛集合。策划合同绑定运行清单`final_artifact`的实际路径、哈希和全部`1..slide_count`页，五页样稿批准不能外推全稿。 当前最终对象还须匹配 `marketing_stage=full-deck` 的有效成功生产输出：请求的 output_files、逐页 output_scope 和实际输出哈希一致。本地须成功完成，external/model须在有效前检后开始并有真实 saved 终态；sample输出、失败残留和未生产的其他文件均不能充作全稿交付。失败历史可保留，不要求全部历史尝试成功。
 
 `validate_ad_copy.py`只输出`content_review_assessment: not-performed-by-technical-validator`，不会把“不评内容”再写成项目待审状态。读取它的消费者使用该字段描述工具能力；实际内容状态只取上述决定链。三条赛道运行校验器会在0.4.0运行中核对本合同；任一来源、版本、范围、组成文本或状态冲突都使合同检查失败。
 

@@ -2,7 +2,7 @@
 
 ## 新成稿的固定请求
 
-新返回使用 `print-ad-run-manifest.schema.json#/$defs/core_comparison_return_product_rc4`，历史定义保持原字节语义。新对照请求统一调用 `validate_print_ad_run.comparison_request(row, blind_ref, locked_claim)`，不手拼旧 rubric。它固定输出一致性规则、正反例和从 assessment 推导的三联 JSON 绑定表。输入观看 PNG，返回的 `triptych` 则复制绑定表中的 JSON 元数据引用。历史精确请求仍可读取，不能借此改写旧返回或声明旧稿通过。
+新返回使用原生 `blind-save` 生成的 `response_schema` 和固定请求。Schema 复用历史 `core_comparison_return_product_rc4` 结构并登记 `judgment_basis`、`verified_errors`，历史请求和定义保留。证据项填 `product_role` 等裸键，`text_readable` 填布尔，观察写入 `observation`。第6、8问的 false 由检查者填写已有判断类别，两问都通过时用空对象，未观察到可核实错误用空数组。输入观看 PNG，`triptych` 按绑定表返回 JSON 元数据引用。
 
 `aspect` 是歧义分类依据，`affects_main_relation` 逐项等于 `aspect != secondary`。原五问失败码只对应同问 false 和逐字观察。整体成立但局部可改善时，检查者可保留 true，另登记 `severity=hint, question=local-detail, reason_code=local-detail`，明确局部位置和影响；不计作整问失败，不触发同因创意失败计数，也不豁免任何硬性问题。原来的 true + claim-unfulfilled、other-main + false、PNG 冒充 JSON 仍无效；作者不得把旧错误码换成新局部类别来修返回。
 
@@ -43,3 +43,7 @@ python scripts/recheck_history.py --run-dir RUN --manifest NEW-MANIFEST --output
 该入口重跑本包原生生产回执绑定、成稿放行、原图技术检查和缩略/局部视图像素派生检查，保存带当前检查器身份与来源版本的新回执；技术失败如实写入，不转成内容通过。不能重演的生图前放行只作为已绑定的历史授权接受；不再执行旧生产命令，不生图、不改原像素、不伪造事后放行。新派发 guard 也会重新核对升级链与全部历史放行绑定。技术或记录结果不能代替新成稿的独立内容审稿。
 
 来源真实性仍由原始宿主事件和受保护证据承担：本地校验可拒绝可检测的伪造与绑定矛盾，不能认证被整体替换且所有内容一致的宿主历史。
+
+## 未安装候选包的只读复查
+
+平面 `production-candidate` 可在新的运行快照用 `candidate_review_recheck` 引用本次真实复查记录。记录为 `{kind:"candidate-review-recheck-v1",run_id,from_package,to_package,rechecked_at}`，两份 ZIP 分别是原制作候选包和本次实际执行候选包，引用带路径与哈希，时间用本次真实复查时间。现有归档检查验证完整文件清单、字节、检查器身份和原放行绑定，再用 `recheck_history.py` 检查原稿。此入口只支持无最终采用记录的候选审稿，正式采用、交付和新生产仍走原入口。两个版本来源字段不可混用。

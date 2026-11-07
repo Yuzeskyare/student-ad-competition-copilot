@@ -837,8 +837,9 @@ def inspect_product_record_v3(root, product, current_ref):
     require(independent['official']==product['official'] and independent['final']==product['final']
             and independent['triptych']==product['triptych'],'Independent confirmation uses stale product pixels')
     raw=load(bound_file(root,independent['raw_return']))
-    from user_decision_contract import confirmations
-    confirmed=confirmations(root,product,independent['raw_return'],raw,current_ref,independent['completed_at'])
+    from user_decision_contract import confirmations, validate_judgment_fields
+    validate_judgment_fields(raw)
+    confirmed=confirmations(root,product,independent['raw_return'],raw,current_ref,independent['completed_at'],independent.get('author_session_id'))
     require(raw==independent['result'] and (raw['label_consistent_readable'] is True or 'label_consistent_readable' in confirmed) and nonempty(raw.get('label_observation')),
             'Independent product label check failed')
     require(timestamp(independent['started_at'])<=timestamp(independent['completed_at'])<=datetime.now(timezone.utc), 'Invalid independent product check time')

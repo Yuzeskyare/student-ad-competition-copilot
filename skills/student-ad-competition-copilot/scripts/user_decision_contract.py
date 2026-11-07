@@ -1,11 +1,10 @@
 """Exact-artwork human confirmations and explicitly selected delivery scope.
 
 These records change the effective decision, never the independent raw return.
-Unstructured historical doubts are accepted conservatively; definite errors fail
-closed. New independent returns can state judgment_basis explicitly.
+Meaning is supplied by independent AI classification, never inferred from words.
+Historical returns remain unchanged; a bound current classification can supplement them.
 """
 from datetime import datetime, timezone
-import re
 from review_contract import artifact, bound_file, human_source, load, timestamp
 
 
@@ -33,23 +32,72 @@ def terminal_rejections(root, manifest):
     return rejected
 
 
-def subjective_doubt(raw, question, observation):
+QUESTIONS = {'label_consistent_readable', 'product_label_consistent_readable', 'layout_readable'}
+BASES = {'subjective-uncertainty', 'verified-error'}
+
+
+def validate_judgment_fields(raw):
+    if 'judgment_basis' in raw:
+        bases = raw['judgment_basis']
+        require(isinstance(bases, dict) and set(bases) <= QUESTIONS
+                and all(isinstance(v, str) and v in BASES for v in bases.values()),
+                'Independent judgment_basis must map supported questions to existing judgment categories')
+        for question in bases:
+            answer = raw.get('answers', {}).get(question)
+            value = answer.get('answer') if isinstance(answer, dict) else raw.get(question)
+            require(value is False, 'A judgment category must describe an existing false answer, not contradict or invent one')
+    if 'verified_errors' in raw:
+        require(isinstance(raw['verified_errors'], list)
+                and all(isinstance(v, str) and v.strip() for v in raw['verified_errors']),
+                'verified_errors must be an explicit list of independently observed errors')
+        require(not raw['verified_errors'] or 'verified-error' in raw.get('judgment_basis', {}).values(),
+                'Explicit verified errors must bind an existing false answer classified as verified-error')
+
+
+def subjective_doubt(raw, question, observation=None):
+    validate_judgment_fields(raw)
     if raw.get('meaning_check', {}).get('reversed') or raw.get('compliance_check', {}).get('violated'):
         return False
     if raw.get('verified_errors'):
         return False
-    # A confirmed misspelling, omitted glyph, reversal or pixel conflict is not
-    # an uncertainty. Do not reinterpret such a finding as a human waiver.
-    text = re.sub(r'(?:未见|没有|未发现|无)(?:明显|明确|可见|任何)?(?:错字|缺字|漏字|镜像|伪字|反向|残缺)', '', observation)
-    if re.search(r'错字|错写|误写|写错|写成|错别字|错误|漏字|漏掉|漏了|漏[“「\"]|缺字|缺少|缺失|缺[“「\"]|镜像|伪字|读反|反向|倒置|残缺|变形|visible.conflict|misspell|incorrect|wrong|missing|omitt|mismatch|mirrored|reversed', text, re.I):
+    checks = raw.get('comparison', {}).get('product_label', {}).get('checks', [])
+    if any(any(row.get(k) is True for k in ('mirrored', 'inverted', 'misspelled', 'pseudo_text')) for row in checks):
         return False
-    basis = raw.get('judgment_basis', {}).get(question)
-    if basis is not None:
-        return basis == 'subjective-uncertainty'
-    return bool(re.search(r'无法确认|不能确认|不确定|存疑|不能判为|uncertain|cannot confirm|unable to confirm', observation, re.I))
+    return raw.get('judgment_basis', {}).get(question) == 'subjective-uncertainty'
 
 
-def confirmations(root, holder, raw_ref, raw, current, completed_at):
+def classified_return(root, decision, raw_ref, raw, question, observation, completed_at, original_author=None):
+    """Supplement missing historical classification, never rewrite an existing verdict."""
+    validate_judgment_fields(raw)
+    ref = decision.get('judgment_classification')
+    if ref is None:
+        require(question in raw.get('judgment_basis', {}),
+                'Missing independent judgment category: classify the saved return now; preserve history and existing user confirmation')
+        return raw
+    classification = load(bound_file(root, ref))
+    fields = {'kind', 'independent_raw', 'question', 'observation', 'judgment_basis',
+              'checker_context', 'author_session_id', 'checker_session_id', 'invocation_id', 'completed_at'}
+    require(set(classification) == fields and classification['kind'] == 'independent-judgment-classification'
+            and classification['independent_raw'] == raw_ref and classification['question'] == question
+            and classification['observation'] == observation,
+            'Current classification must bind the exact original return, question and observation')
+    require(question not in raw.get('judgment_basis', {}) and classification['judgment_basis'] in BASES,
+            'Do not replace an existing independent category with a new classification')
+    require(classification['checker_context'] == 'fresh-isolated'
+            and all(isinstance(classification[k], str) and classification[k].strip()
+                    for k in ('author_session_id', 'checker_session_id', 'invocation_id'))
+            and classification['author_session_id'] != classification['checker_session_id'],
+            'Historical classification requires a separate independent AI pass')
+    require(isinstance(original_author, str) and bool(original_author.strip())
+            and classification['author_session_id'] == original_author
+            and classification['checker_session_id'] != original_author,
+            'Classification must preserve the known original author and exclude that author as checker')
+    require(timestamp(completed_at) <= timestamp(classification['completed_at']) <= datetime.now(timezone.utc),
+            'Classification must use its actual current time, never backdate history')
+    return dict(raw, judgment_basis={**raw.get('judgment_basis', {}), question: classification['judgment_basis']})
+
+
+def confirmations(root, holder, raw_ref, raw, current, completed_at, original_author=None):
     """Validate every supplied record, including unused/stale confirmations."""
     confirmed = {}
     for ref in holder.get('user_confirmations', []):
@@ -60,7 +108,8 @@ def confirmations(root, holder, raw_ref, raw, current, completed_at):
         answer = raw.get('answers', {}).get(q)
         value = answer['answer'] if answer else raw.get(q)
         observation = answer['observation'] if answer else raw.get('label_observation')
-        require(value is False and subjective_doubt(raw, q, observation or ''),
+        classified = classified_return(root, decision, raw_ref, raw, q, observation, completed_at, original_author)
+        require(value is False and subjective_doubt(classified, q),
                 'Only an independent subjective uncertainty may receive human confirmation; verified errors require repair')
         require(q not in confirmed and decision.get('kind') == 'exact-artwork-confirmation'
                 and decision.get('decision') == 'confirm' and decision.get('independent_raw') == raw_ref
@@ -92,11 +141,26 @@ def assessment_confirmations(root, row, record=None, raw=None):
     raw = raw or load(bound_file(root, record['raw_return']))
     # Humans view the native render; the editable source may be SVG/PSD.
     current = row.get('observed_image', row['artifact'])
-    return confirmations(root, row, record['raw_return'], raw, current, record['completed_at'])
+    return confirmations(root, row, record['raw_return'], raw, current, record['completed_at'], record.get('author_session_id'))
 
 
 def effective_series_plan(root, manifest):
+    from series_commit import validate_commit
+    validate_commit(root,manifest)
     plan = manifest.get('series_plan', {})
+    binding = manifest.get('series_direction_batch')
+    if binding is not None:
+        from workflow_runtime import semantics
+        batch = load(bound_file(root, binding['batch']))
+        require(batch.get('kind') in {'series-direction-batch-v1','series-direction-batch-v2'}
+                and semantics(plan) == batch['plan'] and manifest.get('series_mode') == plan.get('mode')
+                and binding['unit'] in plan['units'], 'Member plan differs from its presented series batch')
+        members = [m for m in batch['members'] if m['unit'] == binding['unit']]
+        require(len(members) == 1 and manifest.get('selected_direction') == members[0]['direction_id'],
+                'Member direction differs from its checked series batch')
+        selection = load(bound_file(root, manifest['direction_adoption']['selection_record']))
+        source = load(bound_file(root, selection['source']))
+        require(source.get('reviewed_batch') == binding['batch'], 'Member choice must bind the presented series batch')
     choice_ref = manifest.get('delivery_scope_selection')
     if choice_ref is None:
         return plan
@@ -115,9 +179,8 @@ def effective_series_plan(root, manifest):
     projected = dict(original, units=units, member_roles=[r for r in original.get('member_roles', []) if r.get('unit') in units])
     from workflow_runtime import semantics
     require(semantics(plan) == semantics(original) or semantics(plan) == semantics(projected), 'Delivery selection cannot silently rewrite the retained series plan')
-    source = load(bound_file(root, choice['source']))
-    require(all(u in source['text'] for u in units) or ('第一幅' in choice['quote'] and units == original['units'][:1]),
-            'Scope source must explicitly identify selected members or the first planned member')
+    # units is AI's scope interpretation, bound above to the original plan and source.
+    # Literal IDs or ordinal words in a user message do not establish its meaning.
     return projected
 
 
@@ -140,5 +203,5 @@ def delivery_decisions(root, manifest):
                 record = load(bound_file(root, product['independent_confirmation']))
                 raw = load(bound_file(root, record['raw_return']))
                 current = dict(product['final'], version=unit['artifact']['version'], units=unit['artifact']['units'])
-                result.extend(confirmations(root, product, record['raw_return'], raw, current, record['completed_at']).values())
+                result.extend(confirmations(root, product, record['raw_return'], raw, current, record['completed_at'], record.get('author_session_id')).values())
     return result

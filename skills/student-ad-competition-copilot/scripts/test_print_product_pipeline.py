@@ -54,7 +54,8 @@ def regression_decisions(root, manifest, contract, unit, product, row, plan, q, 
 
     original_pixels=load(root/'visual.json')
     doubt=dict(load(root/'product-raw.json'),label_consistent_readable=False,
-               label_observation='SYNTHETIC cannot confirm the complete final stroke')
+               label_observation='SYNTHETIC cannot confirm the complete final stroke',
+               judgment_basis={'label_consistent_readable':'subjective-uncertainty'})
     independent=load(root/'product-independent.json')
     independent.update(raw_return=save('decisions/product-doubt-raw.json',doubt),result=doubt)
     p=dict(product,independent_confirmation=save('decisions/product-doubt-independent.json',independent))
@@ -77,7 +78,7 @@ def regression_decisions(root, manifest, contract, unit, product, row, plan, q, 
                               ('uncertain-but-wrong','SYNTHETIC uncertain quality; brand misspelled as ANOTHER'),
                               ('uncertain-but-omitted','SYNTHETIC uncertain final stroke; mandatory word omitted'),
                               ('uncertain-but-omitted-glyph','SYNTHETIC 字形存疑，功能文字缺“所致”')]:
-        hard=dict(doubt,label_observation=observation)
+        hard=dict(doubt,label_observation=observation,judgment_basis={'label_consistent_readable':'verified-error'})
         independent.update(raw_return=save('decisions/'+label+'-raw.json',hard),result=hard)
         p['independent_confirmation']=save('decisions/'+label+'-independent.json',independent)
         d=dict(decision,independent_raw=independent['raw_return'],observation=observation)
@@ -95,6 +96,7 @@ def regression_decisions(root, manifest, contract, unit, product, row, plan, q, 
     record=load(root/row['independent_check']['path']);raw=load(root/record['raw_return']['path'])
     core=copy.deepcopy(raw);core['answers']['product_label_consistent_readable'].update(answer=False,observation=doubt['label_observation'])
     core['comparison']['product_label']['observation']=doubt['label_observation']
+    core['judgment_basis']={'product_label_consistent_readable':'subjective-uncertainty'}
     core['review_issues'].append(dict(severity='hard',question='product_label_consistent_readable',reason_code='label',observation=doubt['label_observation'],priority=1))
     rec=dict(record,raw_return=save('decisions/core-doubt-raw.json',core))
     r=dict(row,answers=core['answers'],independent_check=save('decisions/core-doubt-record.json',rec))
@@ -142,6 +144,7 @@ def regression_decisions(root, manifest, contract, unit, product, row, plan, q, 
     # Cumulative count must reflect this exhausted fixture, not the base record.
     repairref=save('decisions/repair-production.json',repair)
     m=copy.deepcopy(manifest);m['artifacts']['production_manifest']=repairref['path'];m['run_scope']='production-candidate'
+    production_supply_fixture(root,m,save,'decisions/production-supply-review.json')
     m.pop('core_creative_review',None)
     message=visual.image_budget_message(root,m)
     repair['exhausted_failure_handoff']['user_facing_copy']=text('decisions/exhausted.md',reason+'\n'+failed_art['path']+'\n追加额度 / 换方向\n'+message)
@@ -195,10 +198,11 @@ def regression_decisions(root, manifest, contract, unit, product, row, plan, q, 
     result=visual.inspect_product_record(root,corrected,repaired_ref)
     assert result['pixel_difference']['outside_changed_pixels']==0
     stages.append(dict(stage='exhausted-repair-independent-pixel-review',passed=True,pixel_proof=proof,image_generation_calls=0))
-    for label,changes in [('exhausted-model',dict(operation='external',command=None)),
-                           ('exhausted-model-with-local-action',dict(operation='imagegen',main_visual_action='local-composite',command=None)),
+    for label,changes in [('exhausted-model',dict(operation='external')),
+                           ('exhausted-model-with-local-action',dict(operation='model',main_visual_action='local-composite')),
                            ('exhausted-create',dict(operation='local',main_visual_action='create'))]:
-        bad=dict(request,**changes)
+        bad=dict(request,**changes);bad['id']='SYNTHETIC-'+label+'-unique-request'
+        if bad['operation'] != 'local':bad.pop('command', None)
         try:v.validate_main_visual_dispatch_v6(root,m,bad);rejected=False
         except ValueError as exc:rejected='Exhausted' in str(exc)
         assert rejected,label
@@ -433,7 +437,7 @@ def regression_hotfix(root, manifest, dr, save, text, stages, cli):
     """SYNTHETIC hotfix regressions use real package CLIs; no model calls."""
     from jsonschema import Draft202012Validator
     from visual_review_contract import image_budget_message
-    save('gates.json',dict(definition_set_id='print-ad.0.22.0'))
+    save('gates.json',dispatch_gate_fixture(manifest))
     schema=load(SKILL/'references/schemas/print-ad-run-manifest.schema.json')
     validator=Draft202012Validator({'$ref':'#/$defs/method_retrieval_supporting','$defs':schema['$defs']})
     original=load(root/manifest['direction_adoption']['method_retrieval']['path'])
@@ -495,7 +499,7 @@ def regression_hotfix(root, manifest, dr, save, text, stages, cli):
     contract=dict(schema_version='1.0.0',run_id=manifest['run_id'],track='print-ad',content_status='pending',
                   decisions=[],production_requests=[],production_receipts=[],final_artifacts=[])
     save('hotfix/concept-review.json',contract);concept['review_contract']='hotfix/concept-review.json'
-    save('gates.json',dict(definition_set_id='print-ad.0.22.0'))
+    save('gates.json',dispatch_gate_fixture(manifest))
     save('hotfix/concept-manifest.json',concept)
     cli('concept-only-handoff-zero-usage','prepare_handoff.py',['--run-dir',root,'--manifest','hotfix/concept-manifest.json','--output-dir','hotfix/handoff'])
     handoff=load(root/'hotfix/handoff/handoff.json')
@@ -638,7 +642,9 @@ def regression_invalid_returns(root, manifest, q, save, text, stages, cli):
     decision=copy.deepcopy(contract['decisions'][0]);decision.update(id='SYNTHETIC-next-after-invalid');decision.pop('production_request_sha256',None)
     nextpath=action('next-request-after-invalid','request',rejected,dict(request=nextq,input_paths=list(dict.fromkeys(['art.png']+[r['path'] for r in q['input_files']])),decision=decision))
     # Before invalidation the exact same next request still fails at the old error.
-    nextmanifest=load(root/nextpath);nextmanifest['run_scope']='production-candidate';save(nextpath,nextmanifest)
+    nextmanifest=load(root/nextpath);nextmanifest['run_scope']='production-candidate'
+    production_supply_fixture(root,nextmanifest,save,'invalid/production-supply-review.json')
+    save(nextpath,nextmanifest)
     blocked=copy.deepcopy(nextmanifest);blocked['core_creative_review']=base['core_creative_review']
     # These two counterexamples explicitly lack a terminal user rejection.
     # A rejection now legitimately retires all returns for these exact pixels.
@@ -825,8 +831,10 @@ def model_retry_fixture(root, manifest, save, text, label, retries, *, final_wea
         weak=index<retries or final_weak
         raw['all_weak']=weak
         if weak:
-            first=raw['ranking'][0]['direction_id'];screen=next(x for x in raw['trope_screen'] if x['direction_id']==first)
-            screen.update(is_trope=True,reason='SIMULATED weak round '+str(index),new_twist=None,twist_basis=None,object_relation_change=None,counterexample_matches=[])
+            # A synthetic all-weak round cannot leave eligible drawable items
+            # behind a blocked first item; the existing partition rule forbids it.
+            for screen in raw['trope_screen']:
+                screen.update(is_trope=True,reason='SIMULATED weak round '+str(index),new_twist=None,twist_basis=None,object_relation_change=None,counterexample_matches=[])
         dr=copy.deepcopy(baseline)
         dr.update(checker_session_id='SIMULATED-'+label+'-round-'+str(index),invocation_id='SIMULATED-'+label+'-round-call-'+str(index),input_prepared_at=now(),started_at=now(),completed_at=now())
         dr['inputs'][0]['file']=text(label+'/r'+str(index)+'-sentences.json',content)
@@ -942,6 +950,29 @@ def regression_drawability(root,manifest,save,text,stages):
         stages.append(dict(stage='drawability-'+name+'-rejected',expected_accept=False,result=result))
 
 
+def production_supply_fixture(root,manifest,save,name):
+    """Explicit synthetic review for a test that reopens delivery as production."""
+    supply=manifest['visual_generation_capability']['external_supply']
+    supply['scope']='production-candidate'
+    review=load(root/supply['review']['path'])
+    review.update(scope='production-candidate',observation='SYNTHETIC supplied bitmap reviewed for reopened production')
+    supply['review']=save(name,review)
+
+
+def dispatch_gate_fixture(manifest):
+    """SYNTHETIC prerequisite records; no actual creative review is claimed."""
+    definitions=load(SKILL/'references/tracks/print-ad/quality-gates.json')
+    required={'print-ad.brief-evidence','print-ad.direction-distinctness','print-ad.visual-relation-prototype'}
+    return dict(document_type='gate-results',schema_version='0.1.0',
+        definition_set_id=definitions['definition_set_id'],track='print-ad',run_id=manifest['run_id'],
+        results=[dict(gate_id=g['gate_id'],status='pass' if g['gate_id'] in required else 'not-run',
+            passed_check_ids=[c['check_id'] for c in g['checks']] if g['gate_id'] in required else [],
+            failed_check_ids=[],boundaries=[],waiver_reason=None,
+            checked_at=now() if g['gate_id'] in required else None,
+            reviewers=[dict(type='human',id='SYNTHETIC-reviewer'),dict(type='machine',id='SYNTHETIC-checker')] if g['gate_id'] in required else [],
+            evidence_paths=['brief.txt'] if g['gate_id'] in required else []) for g in definitions['gates']])
+
+
 def run_pipeline(root):
     from PIL import Image, ImageDraw
     root=root.resolve();root.mkdir(parents=True,exist_ok=False)
@@ -1035,10 +1066,13 @@ def run_pipeline(root):
     planref=save('product-plan.json',plan)
     prod=dict(main_visual_contract='main-visual-v1',main_visuals=[],image_budget=dict(direction_id=ident,revision_id='SYNTHETIC',revision_index=1,prior_revisions=[],limit=2,used=0),product_scene_plans=[plan],mandatory_brand_asset_placements=[])
     prodref=save('production-before.json',prod)
+    manifest['method_cards_used']=[d['method_id'] for d in seed['decisions'] if d['decision'] in {'adopted','supporting'}]
     manifest.update(required_brand_assets=[],brand_asset_requirements_source=text('brief.txt','SYNTHETIC no mandatory extra brand assets'),series_plan=dict(mode='single',units=['1'],reason='SYNTHETIC one artwork',user_requested_series=False,member_roles=[dict(unit='1',benefit_or_action=claim,contribution='SYNTHETIC one complete relation')],shared_art_direction='SYNTHETIC geometric raster',scope_basis=[ref('brief.txt')]))
     save('control.json',dict(run_id=manifest['run_id'],state='active',monitoring='not-requested'))
-    save('gates.json',dict(definition_set_id=gates['definition_set_id']))
+    save('gates.json',dispatch_gate_fixture(manifest))
     # The same historical identity rule also applies to method retrieval.
+    initial_supply_review=save('initial-supply-review.json',dict(status='pass',scope='production-candidate',assets=[supplied],observation='SYNTHETIC supplied bitmap decoded before dispatch'))
+    manifest['visual_generation_capability']=dict(status='unavailable',provider=None,operations=[],checked_at=now(),evidence='SYNTHETIC supplied pixels',user_decision='use-external-assets',impact_acknowledged=True,external_supply=dict(kind='provided-assets',status='ready',scope='production-candidate',evidence='SYNTHETIC supplied fixture bitmap',assets=[supplied],review=initial_supply_review))
     original_methods=load(root/'methods.json');moved_methods=copy.deepcopy(original_methods)
     moved_methods['execution']['pack']=str(root/'removed-skill/references/case-library/v0.2.1')
     moved_methods['execution']['command'][1]=str(root/'removed-skill/scripts/query_case_library.py')
@@ -1131,6 +1165,36 @@ def run_pipeline(root):
     manifest['proposition_message']=row['proposition_message']
     manifest['core_creative_review']=dict(assessments=[row],current_assessment_ids=[row['id']],completed_draft_render_records=[renderref])
     for result in visual.validate_visual_review(root,manifest):require_result('production-visual-evidence-2.7.0',result)
+    from jsonschema import Draft202012Validator
+    from review_consistency_contract import comparison_response_schema
+    response_schema = comparison_response_schema()
+    Draft202012Validator.check_schema(response_schema)
+    props = response_schema['properties']
+    basis_check = Draft202012Validator(props['judgment_basis'])
+    assert all(basis_check.is_valid(x) for x in ({}, {'layout_readable':'subjective-uncertainty'},
+                                                {'product_label_consistent_readable':'verified-error'}))
+    assert not basis_check.is_valid({'layout_readable': True})
+    for layout in (props['layout_review'], props['comparison']['properties']['layout']):
+        reading_check = Draft202012Validator(layout['properties']['text_readable'])
+        assert reading_check.is_valid(True) and not reading_check.is_valid('SYNTHETIC readable')
+    evidence_check = Draft202012Validator(props['answers']['properties']['layout_readable']['properties']['comparison_evidence'])
+    assert evidence_check.is_valid(['layout']) and not evidence_check.is_valid(['comparison.layout'])
+    stages.append(dict(stage='structured-comparison-judgment-evidence-and-readability',passed=True))
+    ready_manifest = save('artwork-receipt/manifest.json', manifest)
+    ready_payload = save('artwork-receipt/ready.json', dict(manifest_path=ready_manifest['path'], stage='awaiting-user-review'))
+    ready_args = ['--run-dir', root, '--action', 'receipt', '--payload', ready_payload['path']]
+    cli('headline-ready-receipt-without-secondary-copy', 'review_workflow.py', ready_args)
+    ready_pointer = digest(root/'CURRENT.json')
+    visual_pack = load(root/'visual.json')
+    scene_only = copy.deepcopy(visual_pack)
+    scene_only['units'][0]['text_elements'][0]['role'] = 'scene-text'
+    save('visual.json', scene_only)
+    blocked = cli('scene-text-cannot-stand-in-for-headline', 'review_workflow.py', ready_args, (1,))
+    assert 'Title references must identify headline roles' in blocked.stdout
+    assert digest(root/'CURRENT.json') == ready_pointer
+    cli('current-entry-rechecks-headline-evidence', 'review_workflow.py',
+        ['--run-dir', root, '--action', 'check-entry'], (1,))
+    save('visual.json', visual_pack)
     # Series first-member production review, before any final approval/delivery.
     for key in ['brief_evidence','direction_cards','concept_gate','official_asset_manifest','human_visual_review']:
         manifest['artifacts'][key]=key+'.json';save(key+'.json',dict(boundary='SYNTHETIC fixture evidence',evidence=[]))
@@ -1144,11 +1208,15 @@ def run_pipeline(root):
     production_manifest['artifacts']['technical_validation']='production-technical.json'
     production_manifest['artifacts']['run_status']='production-status.json'
     save('production-status.json',dict(content_review_status='pending',review_decision_ids=[],method_run_complete=False))
+    production_gates=copy.deepcopy(load(root/'gates.json'))
+    series_gate=next(g for g in production_gates['results'] if g['gate_id']=='print-ad.series-increment')
+    series_gate.update(status='not-run',passed_check_ids=[],failed_check_ids=[],reviewers=[],evidence_paths=[],checked_at=None)
+    production_manifest['artifacts']['quality_gate_results']=save('production-gates.json',production_gates)['path']
     save('production-technical.json',dict(technical_validation_status='pass',failure_names=[],files=[dict(path=str(root/'art.png'),sha256=art['sha256'])],boundary='SYNTHETIC raster record'))
     save('production-manifest.json',production_manifest)
-    cli('series-first-production-unified','validate_run.py',['--run-dir',root,'--manifest','production-manifest.json','--output','production-unified.json'])
+    cli('series-first-production-unified','validate_run.py',['--run-dir',root,'--manifest','production-manifest.json','--output','production-unified.json'],accepted_codes=(2,))
     first=load(root/'production-unified.json')
-    assert first['technical_pass'] and not first['content_pass'] and not first['delivery_complete'] and first['status']=='passed',first
+    assert first['technical_pass'] and not first['content_pass'] and not first['delivery_complete'] and first['status']=='in-progress',first
     assert not first['repair_checks'] and any(x['name']=='final-pixel-evidence' and x['passed'] for x in first['run_validation']['checks']),first
     stages.append(dict(stage='series-first-production-candidate',passed=True,series_units=['1','2','3'],current_units=['1'],content_pass=False,delivery_complete=False))
     def reject_visual(label,m,expected):
@@ -1236,7 +1304,30 @@ def run_pipeline(root):
         quote='SYNTHETIC deliver series member 1 only',decided_at=load(root/scope_source['path'])['occurred_at'])
     manifest.update(series_mode='series',series_plan=production_manifest['series_plan'],delivery_scope_selection=save('decisions/scope-selection.json',selection))
     validate_current(root,manifest,contract)
+    # Even explicit partial delivery cannot relabel a single compare as a group review.
+    from series_review_contract import current_members, prepare_review, decide_review, CHECKS
+    bound_members,_=current_members(root,manifest)
+    matrix=save('decisions/series-matrix.json',dict(kind='series-invariant-variable-increment-matrix-v1',
+        observer_type='author',members=bound_members,observations=[dict(unit=r['unit'],visible_relation='SYNTHETIC relation',
+        increment='SYNTHETIC explicitly selected partial scope',pixel_evidence='SYNTHETIC supplied bitmap',
+        compared_with=[x['unit'] for x in bound_members if x!=r]) for r in bound_members],
+        checks={k:dict(status='supported',observation='SYNTHETIC scoped group comparison') for k in CHECKS}))
+    prepared=prepare_review(root,save('decisions/pre-series-review.json',manifest),matrix=matrix)
+    group_source=save('decisions/series-human.json',dict(actor_type='human',kind='user-message',event_id='SYNTHETIC-series-human',
+        text='SYNTHETIC confirm current partial group',occurred_at=now(),reviewed_series=prepared['review']))
+    group=decide_review(root,prepared['manifest'],group_source,'SYNTHETIC confirm current partial group',
+        {k:dict(passed=True,observation='SYNTHETIC actual scope-specific human check') for k in CHECKS})
+    manifest=load(root/group['manifest']['path'])
     assert v.validate(root,root/save('decisions/partial-series-manifest.json',manifest)['path'])['status']=='passed'
+    missing_group=copy.deepcopy(manifest);missing_group.pop('series_review')
+    save('decisions/single-passes-without-group.json',missing_group)
+    cli('series-single-passes-no-group-content','validate_run.py',['--run-dir',root,
+        '--manifest','decisions/single-passes-without-group.json','--output','decisions/no-group-result.json'],accepted_codes=(1,))
+    no_group=load(root/'decisions/no-group-result.json')
+    assert not no_group['content_pass'] and not no_group['delivery_complete']
+    cli('series-single-passes-no-group-export','export_current_artwork.py',['--run-dir',root,
+        '--manifest','decisions/single-passes-without-group.json','--destination','forbidden-no-group-delivery',
+        '--package-kind','user-delivery'],accepted_codes=(1,))
     stages.append(dict(stage='explicit-partial-series-delivery',passed=True,planned_units=['1','2','3'],current_units=['1']))
     unauthorized=copy.deepcopy(manifest);unauthorized.pop('delivery_scope_selection')
     try:validate_current(root,unauthorized,contract);rejected=False

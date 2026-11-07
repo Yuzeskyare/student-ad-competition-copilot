@@ -20,6 +20,8 @@
 
 从宿主实际调用参数保存完整提示词与带职责的参考输入，作为 `actual_request` 绑定；不能重新抄一份准备内容冒充实际提交。回传后查看真实图像，按同一准备记录运行 `--action observe`，比对实际请求并指出具体面貌的保留或偏离，再决定定向修正或进入既有代表稿审核。不同入口可用不同设置，不要求不同工具生成相同像素；本地记录只校验承接一致性，不认证被整体捏造的宿主输入或自动判审美。
 
+实际原生调用必须使用[标准生图入口](standard-production-entry.md#生产入口)，让准备、真实守卫与工具调用在同一函数内顺序执行。已有选择的记录缺口按同页[原选择承接](standard-production-entry.md#已明确选择的记录承接)处理，不要求重新选择、不补造历史放行。
+
 ## 工具分支
 
 以下官方指导于 2026-09-26 核对。模型、接口和界面持续更新，版本相关参数以当次入口为准。每个例子都是提示词编写示范，未承诺一次生成成功。
@@ -144,15 +146,15 @@ cd "<Skill根目录>"
 
 先从画面动作与镜头确定产品姿态：产品如何被拿或放、支撑与接触在哪里；产品轴线及可见面与镜头是什么角度；近远端缩短、曲面透视和手指/场景遮挡如何相容。再据此组织生图输入，官方产品图只承担身份、结构、材质与文字参考，不能为了标签好认默认正面竖直或照搬官方图朝向。动作确实需要正面或竖直时照常采用，不强制倾斜或追求与参考不同。
 
-新生产前计划使用print-product-plan-v4，在已有product_scene_plans中增加posture_and_perspective：action_and_support写拿放动作与支撑，camera_relation写产品相对镜头的角度和可见面，perspective_and_occlusion写透视缩短与接触遮挡。场景产品三项非空是生产准备的流程守卫，缺项拒绝派发；脚本只核对完整性，不判角度是否好看。对应生产Schema为main_visual_production_product_v6；旧计划与旧生产定义原样保留，历史记录不补造姿态。局部返工也在新计划写清本次保留/改变的姿态。
+新生产前计划使用print-product-plan-v4，在已有product_scene_plans中增加posture_and_perspective：action_and_support写拿放动作与支撑，camera_relation写产品相对镜头的角度和可见面，perspective_and_occlusion写透视缩短与接触遮挡。场景产品三项非空是生产准备的流程守卫，缺项拒绝派发；脚本只核对完整性，不判角度是否好看。对应当前生产Schema为print-ad-run-manifest.schema.json的main_visual_production_product_v6_whole_image（真实局部修正同样按其中适用条件提供mask；旧v6仅历史读取）；旧计划与旧生产定义原样保留，历史记录不补造姿态。局部返工也在新计划写清本次保留/改变的姿态。
 
 把计划中的动作、产品相对镜头的角度、透视和遮挡明确写入实际生成/编辑提示词，不只写“产品融入场景”。按入口能力提交官方参考并说明职责；标签随这个姿态生成，文字修复沿已有局部路径处理，不能为省去修字把产品改成参考图的正面竖直。
 
 场景内产品（scene-object）必须作为场景的一部分生成或编辑进入画面，不得只把官方产品图或标签以贴片形式放进画面；独立展示物和版式 Logo 可用官方原件，但生产前计划必须声明为 display-object 并写 display_reason。计划用现有 role、generation_method、choice_reason、display_reason 登记；scene-object 只允许 reference-generate-label 或有已记录标签缺陷及局部范围的 reference-edit-label-remap，official-asset-composite 只允许 display-object。计划与请求的角色、时间、输入图和蒙版一致后，包内生产守卫才放行；不能通过改角色名称把场景里的产品冒充独立展示物。
 
-新print-product-v3请求在调用前绑定生产记录内product_scene_plans。逐个场景产品先登记官方参考、容器/接触结构、覆盖其范围的二值蒙版、画布尺寸、生成方式和理由，绑定实际input_files及prepared_at；缺项生产守卫拒绝。若用官方贴图，必须登记display-object及独立展示理由。局部返工沿同一入口重新登记并复查独立第七问。
+新print-product-v3请求在调用前绑定生产记录内product_scene_plans。逐个场景产品先登记官方参考、容器/接触结构、画布尺寸、生成方式和理由，绑定实际input_files及prepared_at。reference-generate-label整图不要求编辑前图、蒙版或区外零差异；只有reference-edit-label-remap或真实局部编辑才额外登记二值允许蒙版及局部修正证据。缺少本路径适用项时生产守卫拒绝。若用官方贴图，必须登记display-object及独立展示理由。局部返工沿同一入口重新登记并复查独立第七问。
 
-方向因果提示使用 print-direction-v11：逐条写“核心效果来自：产品本职（含正常结果、赋能结果）/ 人的动作 / 场景设定 / 产品未参与的其他东西”之一，并给一句理由。只有画面或文案把效果归给产品、而产品未参与产生该效果时，才提醒“这里借用了产品没参与的效果”；人的自主动作、场景设定、症状表现或护理选择本身不构成产品归因。不使用合格/不合格判词，不按品类或命题类型分支。causal_check 记录 direction_id、effect_source、reason、attributed_to_product、product_participates、reminder；最后一项等于归因成立且产品未参与。选择清单的 rows 和覆盖全部输入（含去重项）的 causal_advisories 原样展示。提示不影响排序、可画、all_weak、自动采用、user_override、版本迁移承接或生产许可，因果提示不改变[产品关系与审稿分级](product-relationship.md)中的意义判断与分级。历史 v7 返回按原定义保留，不转换旧结论冒充新独立返回。
+方向因果提示使用 print-direction-v12：逐条写“核心效果来自：产品本职（含正常结果、赋能结果）/ 人的动作 / 场景设定 / 产品未参与的其他东西”之一，并给一句理由。只有画面或文案把效果归给产品、而产品未参与产生该效果时，才提醒“这里借用了产品没参与的效果”；人的自主动作、场景设定、症状表现或护理选择本身不构成产品归因。不使用合格/不合格判词，不按品类或命题类型分支。causal_check 记录 direction_id、effect_source、reason、attributed_to_product、product_participates、reminder；最后一项等于归因成立且产品未参与。选择清单的 rows 和覆盖全部输入（含去重项）的 causal_advisories 原样展示。提示不影响排序、可画、all_weak、自动采用、user_override、版本迁移承接或生产许可，因果提示不改变[产品关系与审稿分级](product-relationship.md)中的意义判断与分级。历史 v7 返回按原定义保留，不转换旧结论冒充新独立返回。
 
 每个完整稿（审稿、导出、交付、current artwork 选择所用稿）须由包内 guard_production.py 直接放行并绑定产出。守卫自动写 request_id、request_sha256、outputs 的实际 SHA256，以及 guard_identity 中守卫和包内检查器脚本哈希；--execute 结束后才有可消费的 completed 记录，预检 authorized 不能代替产出放行。准备审稿使用 prepare_visual_views.py --manifest；当前集合、导出、交付和完整稿审查重新核对记录及字节。缺记录、产出改变或检查器不是本包文件，一律拒绝。认为检查器有误时停下向用户报告具体报错和输入，不得包装、修补、monkeypatch、替换检查器，也不得在守卫拒绝后用其它脚本产出同一稿。历史稿没有新哈希不能补填为当时放行：保留旧记录，按新合同重新授权、在新路径经守卫执行必要的制作/确定性复制与复核，形成当前时间的新证据；该记录不认证旧生产过程。
 
@@ -161,3 +163,5 @@ cd "<Skill根目录>"
 新合同的创作指导与独立检查均先问观众能得到什么产品/品牌意义，按[产品关系与审稿分级](product-relationship.md)统一判断；方向盲评仅新增product_meaning_hints，选择清单保存全部product_meaning_advisories，向用户最多展示2条偏弱提示，原排序、可画、all_weak、采用、承接和守卫不变。先盲读后对照的顺序、真实像素、独立身份和声明锁仍须核验。
 
 版本升级中已选方向按[连续版本迁移的选择承接](version-bound-review.md#连续版本迁移的选择承接)从最初真实选择直接迁移到当前版本；旧承接保留，不替新版本签守卫。
+
+本地`guard_production.py --execute`与原生标准入口共用run/request派发占用；纯预检不占用。失败/中断或未知结果先按占用记录中的原清单和回执核对实际产物，不删除记录、不换回执路径重复执行。合法重试沿已有流程建立新请求ID并绑定对应授权。

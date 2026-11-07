@@ -93,7 +93,46 @@ def pptx_slide_count(path: Path) -> int | None:
         return None
 
 
-def technical_pass(payload: dict, final_hash: str | None) -> tuple[bool, dict]:
+def technical_pass(payload: dict, final_hash: str | None, root: Path | None = None, manifest: dict | None = None) -> tuple[bool, dict]:
+    if payload.get('kind') == 'marketing-technical-bundle-v1':
+        try:
+            from review_contract import bound_file, load, timestamp
+            from datetime import datetime, timezone
+            if root is None: raise ValueError('Bundle needs the run directory to verify actual files')
+            source=bound_file(root,payload['source'])
+            native=load(bound_file(root,payload['native_report']))
+            exports=load(bound_file(root,payload['export_report']))
+            record=load(bound_file(root,payload['export_record']))
+            if source.suffix.lower()!='.pptx' or payload['source']['sha256']!=final_hash:
+                raise ValueError('Bundle must bind the final editable PPTX')
+            native_ok,native_detail=technical_pass(native,final_hash)
+            if native.get('kind') != 'marketing-native-technical-v1' and not native_detail.get('presentation_finalizer_pass'):
+                raise ValueError('Native report needs actual presentation checker results')
+            if not native_ok or exports.get('kind')!='marketing-export-technical-v1' or exports.get('technical_validation_status')!='pass' or exports.get('error_failures'):
+                raise ValueError('Both native and export checks must pass')
+            if record.get('kind')!='presentation-export-record-v1' or record.get('source')!=payload['source'] or not record.get('producer') or timestamp(record['completed_at'])>datetime.now(timezone.utc):
+                raise ValueError('Actual export record must bind this source, producer and time')
+            actual={(str(bound_file(root,r)),r['sha256']) for r in record['outputs']}
+            reported={(str(Path(r['path']).resolve()),r['sha256']) for r in exports['files']}
+            if not actual or actual!=reported or len(actual)!=len(record['outputs']):
+                raise ValueError('Export report must cover exactly the actual exported files')
+            for key in ('delivery_manifest','brief_constraints'):
+                ref=exports[key];path=Path(ref['path']).resolve()
+                if root.resolve() not in path.parents or sha256(path)!=ref['sha256']:
+                    raise ValueError('Export inputs changed or escaped run directory')
+            if manifest is not None:
+                from review_contract import inside
+                current_brief=inside(root,manifest['artifacts']['brief_constraints'])
+                if (Path(exports['brief_constraints']['path']).resolve()!=current_brief
+                    or exports['brief_constraints']['sha256']!=sha256(current_brief)
+                    or exports.get('competition')!=manifest.get('competition')
+                    or exports.get('proposition_id')!=manifest.get('proposition_id')):
+                    raise ValueError('Export report does not bind the current run competition, proposition and brief constraints')
+            if native.get('slide_count',pptx_slide_count(source))!=exports.get('page_count'):
+                raise ValueError('Native/export page coverage differs')
+            return True,dict(native=True,exports=True,source_export_binding=True)
+        except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+            return False,dict(reason=str(exc))
     direct = payload.get("technical_validation_status") == "pass" and not payload.get("error_failures")
     finalizer = (
         payload.get("packageIntegrity", {}).get("status") == "pass"
@@ -102,6 +141,10 @@ def technical_pass(payload: dict, final_hash: str | None) -> tuple[bool, dict]:
         and payload.get("firstPartyImport", {}).get("passed") is True
         and payload.get("nativeTableArithmetic", {}).get("passed") is True
     )
+    if payload.get('kind') == 'marketing-native-technical-v1':
+        required={'package','layout','table_arithmetic'}
+        native_checks=payload.get('checks',{})
+        direct=direct and set(native_checks)==required and all(row.get('passed') is True for row in native_checks.values())
     linked_hash = payload.get("finalSha256") or payload.get("input", {}).get("sha256")
     return (direct or finalizer) and linked_hash == final_hash, {
         "direct_pass": direct, "presentation_finalizer_pass": finalizer,
@@ -245,7 +288,9 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
         if isinstance(budget_kpi, dict):
             checks.extend(budget_kpi_checks(budget_kpi))
         if isinstance(technical, dict):
-            passed, evidence = technical_pass(technical, final_hash)
+            passed, evidence = technical_pass(technical, final_hash, run_dir, manifest)
+            if manifest.get('schema_version') == '0.4.0' and technical.get('kind') != 'marketing-technical-bundle-v1':
+                passed, evidence = False, {'reason':'Current complete delivery requires both native and export reports; legacy native-only reports are historical evidence'}
             checks.append(check("technical-validation-linked", passed, evidence))
         checks.append(check("run-method-complete", status.get("method_run_complete") is True, status.get("method_run_complete")))
         if run_scope in {"production-candidate", "delivery-candidate"}:
@@ -254,6 +299,9 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
             checks.append(check("submission-status-explicit", isinstance(status.get("submission_ready"), bool), status.get("submission_ready")))
 
     checks.extend(validate_visual_review(run_dir, manifest))
+    if manifest.get('schema_version') == '0.4.0':
+        from method_usage_contract import check_usage
+        checks.append(check_usage(run_dir, manifest))
     checks.extend(validate_creative_iteration(run_dir, manifest))
     review_checks = validate_review_contract(run_dir, manifest)
     # Historical validation stays reproducible, but is never new-contract acceptance.

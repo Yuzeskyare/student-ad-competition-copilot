@@ -78,11 +78,14 @@ def capture_blind(root, state_ref, host_ref):
     inputs += [dict(role='product-triptych-metadata:'+p['element_id'],file=p['triptych']) for p in row.get('product_triptychs',[])]
     inputs.append(dict(role='blind-read',file=record['raw_return']))
     inputs += [dict(role='mandatory-brand-asset:'+p['element_id'],file=p['official']) for p in row['required_brand_assets']]
+    from review_consistency_contract import comparison_response_schema
+    schema=write(root,path/'response-schema.json',comparison_response_schema())
     state=dict(stage='compare-ready',row=row,author_session_id=state['author_session_id'],blind_read=blind,
-               input_prepared_at=now(),inputs=inputs,request=write(root,path/'request.txt',current_comparison_request(root,row,blind,lock),True))
+               input_prepared_at=now(),inputs=inputs,response_schema=schema,
+               request=write(root,path/'request.txt',current_comparison_request(root,row,blind,lock,structured=True),True))
     write(root,path/'host-source.json',host_ref)
     write(root,path/'state.json',state)
-    return dict(state=ref(root,path/'state.json'),inputs=inputs,request=state['request'])
+    return dict(state=ref(root,path/'state.json'),inputs=inputs,request=state['request'],response_schema=schema)
 
 
 def bind_return(root, raw_ref, row, blind):
@@ -101,9 +104,16 @@ def bind_return(root, raw_ref, row, blind):
     return bound
 
 
-def capture_compare(root, state_ref, host_ref, manifest):
+def capture_compare(root, state_ref, host_ref, manifest, *, verify_only=False):
     state=load(bound_file(root,state_ref))
     if state['stage']!='compare-ready':error('stage',state['stage'],'compare-ready state')
+    from review_consistency_contract import STRUCTURED_FORMAT, comparison_response_schema
+    structured=bound_file(root,state['request']).read_text(encoding='utf-8').endswith(STRUCTURED_FORMAT)
+    if structured:
+        if load(bound_file(root,state.get('response_schema'))) != comparison_response_schema():
+            raise ValueError('Comparison state must bind the generated response schema')
+    if verify_only and not structured:
+        raise ValueError('Read-only comparison verification requires the current structured request')
     path=allocate(root,'admit');row=state['row'];record=host_record(root,host_ref,state,'print-core-product-v8')
     raw=bind_return(root,record['raw_return'],row,state['blind_read'])
     original=record['raw_return'];record['raw_return']=write(root,path/'bound-return.json',raw)
@@ -115,6 +125,19 @@ def capture_compare(root, state_ref, host_ref, manifest):
     validate_return(root,manifest,row)
     review=copy.deepcopy(manifest['core_creative_review'])
     same=[r for r in review['assessments'] if r['observed_image']['sha256']==row['observed_image']['sha256']]
+    if verify_only:
+        from core_return_contract import review_state
+        from execution_contract import verify_artwork_release
+        effective=review_state(root,manifest)
+        if not any(r['artifact']==row['artifact'] and r['observed_image']==row['observed_image']
+                   and r['id'] in effective['current_assessment_ids'] for r in effective['assessments']):
+            raise ValueError('Read-only comparison verification must bind the current artwork bytes and version')
+        for artwork_ref in (row['artifact'],row['observed_image']):
+            verify_artwork_release(root,manifest,artwork_ref)
+        if load(bound_file(root,row['render_record'])).get('target_renderer_verified') is not True:
+            raise ValueError('Read-only comparison verification requires a verified target render')
+        return dict(assessment=write(root,path/'review-only-assessment.json',row),original_return=original,
+                    verified=True,manifest_changed=False,content_pass_granted=False)
     if same:
         pending=[e for e in review.get('invalid_returns',[]) if e['assessment_id'] in {r['id'] for r in same} and e['replacement_assessment_id'] is None]
         if len(pending)!=1:error('same-artwork',row['observed_image'],'one native pending invalid-return registration; valid adverse returns cannot be silently superseded')
@@ -126,13 +149,18 @@ def capture_compare(root, state_ref, host_ref, manifest):
         review['current_assessment_ids']=[i for i in review.get('current_assessment_ids',[]) if previous[i]['artifact']['path']!=row['artifact']['path']]+[row['id']]
     result=copy.deepcopy(manifest);result['core_creative_review']=review
     write(root,path/'manifest.json',result)
-    return dict(manifest=ref(root,path/'manifest.json'),assessment_id=row['id'],original_return=original)
+    response=dict(manifest=ref(root,path/'manifest.json'),assessment_id=row['id'],original_return=original)
+    from series_review_contract import applies, content_check
+    if applies(result):
+        response['series_review']=content_check(root,result)
+        response['scope']='single-artwork-admission; whole-series judgment is separate'
+    return response
 
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--run-dir',required=True,type=Path)
-    p.add_argument('--action',required=True,choices=['prepare','blind-save','compare-save','status','receipt','check-entry','timing-start','timing-end','timing-summary'])
+    p.add_argument('--action',required=True,choices=['prepare','blind-save','compare-save','compare-verify','status','receipt','check-entry','timing-start','timing-end','timing-summary'])
     p.add_argument('--payload',help='Run-relative JSON containing actual references; see native-review-workflow.md')
     args=p.parse_args();root=args.run_dir.resolve()
     payload=load(inside(root,args.payload)) if args.payload else {}
@@ -141,7 +169,8 @@ def main():
         if args.action not in {'timing-start','timing-end','timing-summary'}:token=timing(root,args.action,'start')['token']
         if args.action=='prepare':result=prepare(root,payload['row'],payload['author_session_id'])
         elif args.action=='blind-save':result=capture_blind(root,payload['state'],payload['host'])
-        elif args.action=='compare-save':result=capture_compare(root,payload['state'],payload['host'],load(bound_file(root,payload['manifest'])))
+        elif args.action in {'compare-save','compare-verify'}:
+            result=capture_compare(root,payload['state'],payload['host'],load(bound_file(root,payload['manifest'])),verify_only=args.action=='compare-verify')
         elif args.action=='status':result=update_status(root,load(bound_file(root,payload['manifest'])),payload['member'],payload['changes'])
         elif args.action=='receipt':result=receipt(root,**payload)
         elif args.action=='check-entry':result=check_entries(root)

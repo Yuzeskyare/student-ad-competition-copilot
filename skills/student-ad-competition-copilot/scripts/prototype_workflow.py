@@ -14,6 +14,8 @@ from review_workflow import allocate, write, error
 def _direction(root, manifest_ref):
     from validate_print_ad_run import validate_direction_blind_review, load_claim_lock
     manifest = load(bound_file(root, manifest_ref))
+    from method_usage_contract import validate_usage
+    validate_usage(root, manifest)
     result = validate_direction_blind_review(root, manifest)
     if not result['passed']:
         error('manifest.direction_adoption', result['evidence'], 'existing complete direction and actual selection check')
@@ -31,12 +33,13 @@ def _references(root, references):
     return references
 
 
-def _prompt(lock, visual_text, shared, scene_prompt, references):
+def _prompt(lock, visual_text, shared, scene_prompt, references, plan):
     if not isinstance(scene_prompt, str) or not scene_prompt.strip():
         error('scene_prompt', scene_prompt, 'the actual scene and composition requirements')
     return ('选定方向：' + lock['direction_id'] + '\n锁定创意原句：\n' + lock['statement']
             + '\n已展示并选定的视觉要求：\n' + visual_text
             + ('\n系列共同美术：\n' + shared if shared else '')
+            + '\n已确认系列计划（机制、成员顺序及各自贡献）：\n' + json.dumps(plan,ensure_ascii=False,indent=2)
             + '\n本稿场景与构图：\n' + scene_prompt
             + '\n参考输入及职责：\n' + json.dumps(references, ensure_ascii=False, indent=2) + '\n')
 
@@ -54,7 +57,7 @@ def _inputs(root, manifest_ref, visual_direction, scene_prompt, references):
     if manifest.get('series_mode') == 'series' and not shared.strip():
         error('series_plan.shared_art_direction', shared, 'the selected series common art direction')
     _references(root, references)
-    return lock, evidence, shared, _prompt(lock, visual_text, shared, scene_prompt, references)
+    return lock, evidence, shared, _prompt(lock, visual_text, shared, scene_prompt, references, plan)
 
 
 def prepare(root, manifest, visual_direction, scene_prompt, references):
@@ -86,6 +89,9 @@ def observe(root, prepared, actual_request, artifact, observation, style_matches
     """Record a real view of the returned image, against the same submitted inputs."""
     state, prompt = _prepared(root, prepared)
     request = load(bound_file(root, actual_request))
+    if request.get('dispatch_nonce'):
+        from standard_production_entry import content_parameters
+        request = dict(request, prompt=content_parameters(request)['prompt'])
     if request.get('prompt') != prompt or request.get('references') != state['references']:
         error('actual_request', actual_request, 'the exact submitted prompt and reference roles from prepare')
     _references(root, request['references'])

@@ -2,7 +2,9 @@
 import json
 from review_contract import bound_file
 
-CREATIVE_REQUEST_REVISION = 'creative-comparison-v1'
+LEGACY_REQUEST_REVISION = 'creative-comparison-v1'
+CREATIVE_REQUEST_REVISION = 'creative-comparison-v2'
+REQUEST_REVISIONS = {LEGACY_REQUEST_REVISION, CREATIVE_REQUEST_REVISION}
 CREATIVE_COMPARISON_RUBRIC = '''现有创意比较依据补全：对去重后方向按既有规则强制排序，不并列、不用绝对分；依据具体转折、消费者时刻或产品利益的关联、意外感和创意本身强弱，结合可用案例参照比较，ranking.reason写明已提交内容的具体比较。合格方向仍排在被拦方向之前；不新增权重或门槛，产品意义、传播目的与因果提示仍不参与排序、可画、all_weak或采用。
 评价证据范围：不得仅凭影子、倒影、剪纸、摄影等通用表现形式的名称或常见程度判套路；须核对本方向实际对象关系及既有套路、反例的具体范围，命中时照旧执行。未命中列举机制也不自动证明创意强。只比较已提交内容，不补造未写出的文字、关系或未来成图效果；决定关系的必要图中文字应在现有方向句内，未提供则明确指出依赖尚待具体化，不提前计为已成立的优点，也不因此新增主观硬拦。完整图文可共同承担关系，不要求移除文字仍成立，不强制产品做机械动作，不使用竞品替换或品牌独占考试。方向句不能认证成图表现质量，表现效果留待既有代表稿看图验证。'''
 
@@ -43,7 +45,7 @@ def direction_request_with_purpose(content,references,counterexamples,purpose_co
             +'\n'+PURPOSE_RUBRIC+'\n命题传播目的原文摘录：\n'+purpose_content)
 
 
-def current_direction_request(content,references,counterexamples,purpose_content):
+def legacy_creative_request(content,references,counterexamples,purpose_content):
     """Current request only; historical generators and their exact bytes stay intact."""
     return (CREATIVE_COMPARISON_RUBRIC+'\n'
             +direction_request_with_purpose(content,references,counterexamples,purpose_content))
@@ -81,3 +83,17 @@ def validate_purpose_choice(root,choice,result):
     for row in result['purpose_check']:
         if not any(row['direction_id'] in block and direction_purpose_text(row) in block for block in direction_choice_blocks(text)):
             raise ValueError('Show original purpose hints for every direction before selection')
+
+
+def current_direction_request(content,references,counterexamples,purpose_content, *, revision=CREATIVE_REQUEST_REVISION):
+    if revision not in REQUEST_REVISIONS:
+        raise ValueError('Unknown direction request revision')
+    original=legacy_creative_request(content,references,counterexamples,purpose_content)
+    if revision==LEGACY_REQUEST_REVISION:
+        return original
+    old='第一名为无有效转折的套路时all_weak=true，其他情况false；不可因有相对第一名放行。生产每轮后台至少6个去重后方向且覆盖三类起点，最多重新发散一次，第二轮仍弱停下；'
+    new='合格且可画方向排在其它方向之前，分区内保持既有强制比较排序；第一名不合格或不可画时all_weak=true，否则false。产品意义、目的与因果提示不改变此判断。生产每轮后台至少6个去重后方向且覆盖三类起点；启用print-model-redivergence-v1时模型最多再发散三次，每次必须经过既有实质变化检查，三次后仍弱停下交用户；未启用时沿用一次上限。'
+    if old not in original:
+        raise ValueError('Historical rubric changed; review current request assembly')
+    # Change only the fixed rubric, never user content that happens to quote it.
+    return original.replace(old,new,1)

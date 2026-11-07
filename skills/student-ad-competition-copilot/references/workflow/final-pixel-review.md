@@ -1,6 +1,6 @@
 # 最终画面验收
 
-平面和策划的 0.4.0 运行通过 artifacts.visual_review 引用视觉证据。新记录用视觉协议 2.1.0；旧 1.0.0 / 2.0.0 按原合同验证，不静默改写历史结论。生产阶段覆盖代表稿，交付阶段覆盖全部最终页面。五页样稿和联系表不能外推为全稿通过。
+平面和策划的 0.4.0 运行通过 artifacts.visual_review 引用视觉证据。当前平面 product-v3 / secondary-copy-v2 及无蒙版整图从 [平面模板](../templates/visual-review.template.json) 的 2.7.0 填写；营销策划从 [策划模板](../templates/marketing-visual-review.template.json) 的 2.1.0 填写，不添加平面专用合同。历史 2.6.0 局部编辑和其他旧版本按其原合同验证，不静默改写历史结论。生产阶段覆盖代表稿，交付阶段覆盖全部最终页面。五页样稿和联系表不能外推为全稿通过。
 
 ## 默认检查与停止条件
 
@@ -24,9 +24,9 @@ print-core-v4 在采用方向时保存 direction_adoption.claim_lock（$defs.cor
 
 
 
-新平面运行使用 print-core-v4 / print-direction-v11 / print-product-v3 / print-ad.0.22.0；历史核心、方向及 print-ad.0.1.0—0.14.0 按原定义解析。每个完整稿（包括首稿、失败稿及每次返工/修订）由独立检查者查看实际图。八问及宿主优先路径见[平面 Playbook](../tracks/print-ad/playbook.md#独立核心检查与宿主路径)，作者自答不能作为新合同通过依据。
+新平面运行使用 print-core-v4 / print-direction-v12 / print-product-v3 / print-ad.0.22.0；历史核心、方向及 print-ad.0.1.0—0.14.0 按原定义解析。每个完整稿（包括首稿、失败稿及每次返工/修订）由独立检查者查看实际图。八问及宿主优先路径见[平面 Playbook](../tracks/print-ad/playbook.md#独立核心检查与宿主路径)，作者自答不能作为新合同通过依据。
 
-当前完整稿使用print-core-product-v8、盲读print-core-blind-v6与print-direction-v11，先开放读“这张图在说这个产品/品牌什么”，保存后才给锁定句、官方资产与命题信息对照。创作、方向提示、盲读、八问和A4原因码只用[统一定义](product-relationship.md)。新返回product_meaning / meaning_check / compliance_check / review_issues保留全部理由和像素观察；只按其中经核实的hard返工，提示每次交付最多2条，同方向两稿同因提示交回真实用户选择。第6/7/8问与主关系读反、合规和流程守卫仍拦截。缺命题信息、资产或真实独立返回不能用图像校准补齐或放行。
+当前完整稿使用print-core-product-v8、盲读print-core-blind-v6与print-direction-v12，先开放读“这张图在说这个产品/品牌什么”，保存后才给锁定句、官方资产与命题信息对照。创作、方向提示、盲读、八问和A4原因码只用[统一定义](product-relationship.md)。新返回product_meaning / meaning_check / compliance_check / review_issues保留全部理由和像素观察；只按其中经核实的hard返工，提示每次交付最多2条，同方向两稿同因提示交回真实用户选择。第6/7/8问与主关系读反、合规和流程守卫仍拦截。缺命题信息、资产或真实独立返回不能用图像校准补齐或放行。
 
 下面原五问的字段和V2/V4行为仅供历史合同复现；新合同不沿用“任一false完整返工”的结论。
 
@@ -58,7 +58,7 @@ independent_check 仍引用独立记录，现在是对照记录 `$defs.independe
 
 每个 unit 保存 artifact（路径、哈希、版本、一个页码）、render_record、checks、critical_review、issues。提供的缩略和细节图继续做像素派生验证。没有细节图本身不失败，但必要放大未做不能通过。不得只更新文件名冒充当前画面。
 
-正式visual_review从[现有模板](../templates/visual-review.template.json)构建，身份、run_scope与units绑定当前验收作品；平面production-candidate先在core_creative_review.current_assessment_ids登记当前完整稿，逐项核对所属选定请求、completed守卫产出和output_scope，不将生产前representatives改成事后成图；系列首幅可按首幅请求验收，交付候选仍须全系列齐备并用final_artifacts；实际观察填入成员的checks、critical_review和issues，引用真实派生视图。自然语言报告可摘要这些记录，不把自建单artifact笔记映射为正式协议。旧观察复用前核对对象、覆盖和视图；自定义“通过但有限制”等文字不是新状态值，按实际证据使用协议现有状态，不能机械转pass。结构补齐不证明缺少的观察、引用或人审已完成。
+正式visual_review按本页开头的赛道模板构建，身份、run_scope与units绑定当前验收作品；平面production-candidate先在core_creative_review.current_assessment_ids登记当前完整稿，逐项核对所属选定请求、completed守卫产出和output_scope，不将生产前representatives改成事后成图；系列首幅可按首幅请求验收，交付候选仍须全系列齐备并用final_artifacts；实际观察填入成员的checks、critical_review和issues，引用真实派生视图。自然语言报告可摘要这些记录，不把自建单artifact笔记映射为正式协议。旧观察复用前核对对象、覆盖和视图；自定义“通过但有限制”等文字不是新状态值，按实际证据使用协议现有状态，不能机械转pass。结构补齐不证明缺少的观察、引用或人审已完成。
 
 ## 先看当前合成，再记录观察
 
@@ -136,15 +136,15 @@ critical_review 每页有三项：
 
 新运行使用 print-ad.0.22.0、product_contract=print-product-v3；保留 print-core-v4 的锁定声明与原盲读，第二步对照使用现行模块常量 `comparison_request(row, blind_ref, locked_claim)` 生成包含一致性规则与产品字检查的完整固定请求（基础常量 INDEPENDENT_COMPARE_RUBRIC_PRODUCT_V8，PRODUCT_V3—V7仅供对应历史合同解释），增加第6问：“产品上的品牌/品类文字是否与官方一致、正向可读（不倒置、不镜像、无伪字）？”通过标准为品牌与产品文字可识别、无错字/镜像/伪字，不要求整张标签正对镜头，也不要求所有包装细字缩略可读。answers.product_label_consistent_readable 引用 comparison.product_label，逐稿保留原始返回；为否则核心失败，当前稿不得交付，回生产修正文字/合成并重新独立检查。动作、因果与意义偏弱按[产品关系与审稿分级](product-relationship.md)提示；明确读反和合规冲突仍硬拦。不得把作者检查填成独立确认。
 
-visual-review 使用2.6.0，沿用2.1.0单位字段，增加 product_present、product_presence_observation 和 product_integration（所有可见产品逐一登记；无产品时明确观察并给空数组）。记录结构由 visual-review.schema.json 的 $defs.product_integration_v3 定义，运行时由 visual_review_contract.inspect_product_record 核验：
+当前visual-review使用2.7.0，沿用适用的单位字段，增加 product_present、product_presence_observation 和 product_integration（所有可见产品逐一登记；无产品时明确观察并给空数组）。记录结构由 visual-review.schema.json 的 $defs.product_integration_v3_user_decisions 定义（当前2.7；旧product_integration_v3供2.6历史记录读取），运行时由 visual_review_contract.inspect_product_record 核验：
 
-- contract、element_id、role（scene-object/display-object）、method（reference-generate-label/reference-edit-label-remap/official-asset-composite）、choice_reason；official、before、final均为实际path/sha256引用。scene-object默认参考生成标签；仅标签出错可选择局部官方像素修正，独立展示用官方原图。
+- contract、element_id、role（scene-object/display-object）、method（reference-generate-label/reference-edit-label-remap/official-asset-composite）、choice_reason；official、final为实际path/sha256引用；before仅真实局部编辑/合成需要，整图不补造旧图。scene-object默认参考生成标签；仅标签出错可选择局部官方像素修正，独立展示用官方原图。
 - 仅官方像素合成/局部修正的 geometry 登记rotation_degrees（官方图层全部旋转的累计净角度）、flip_horizontal、flip_vertical、perspective_matrix（额外透视3×3按行展开，含全部透视步骤）、official_reading_vector、label_sample_points（覆盖文字区域的实际采样点）和mapping_record。曲面逆映射参数留在mapping_record，矩阵与采样检验不能代替曲面文字的像素检查。glyphs_changed、colors_changed必须false；occlusion_observation记录实际可见字与遮挡。
 - triptych引用JSON：panels按official/generated/final各登记source、bounds、zoom（1.5—4），image是按此顺序横排的原样放大图；text_checks逐项记录kind=brand/category/mark、official_text、final_text、status、generated_observation与observation。品牌必须pass且文字一致；其他项允许如实absent-on-official或occluded，不能补造官方没有的字。生成与最终两个阶段都核对，不能只证明来源正确。
 - independent_confirmation引用真实独立记录：fresh-isolated、author_session_id、checker_session_id、invocation_id、started_at、completed_at、official、final、triptych、raw_return与result。result原样等于raw_return，含label_consistent_readable及label_observation；场景编辑另含residue_absent/residue_observation、scene_integration/scene_observation。透视、遮挡、接触、光影和旧图残留仍由独立像素检查判断。
 - 几何风险为倒置/镜像时，orientation_correction必须有reason与detail（source=当前final、image、bounds、zoom），独立记录引用corrected_detail且原始result.corrected_orientation_readable=true。此例外必须针对修正后的可见文字；旧旋转或镜像失败记录不得删除。
-- pixel_proof含before、after、allowed_mask及changed_pixels、outside_changed_pixels、difference_bounds。必须重算，outside_changed_pixels=0；允许蒙版为二值、同尺寸，比较全部原生通道，不把小变化、alpha变化或色彩容差忽略。
-- 参考编辑另登记generated、generation_reference=official、edit_execution、edit_mask、container_contact_mask、opening_mask、replacement_layer和boundary_on_natural_edge=true。edit_mask完整覆盖container_contact_mask；opening_mask在容器内；replacement_layer为同尺寸RGBA最终合成层，开口alpha全255且开口RGB与final一致。透明度证明与独立残留观察都通过，防止不透明层本身仍有旧图。
+- 仅真实局部编辑的pixel_proof含before、after、allowed_mask及changed_pixels、outside_changed_pixels、difference_bounds。必须重算，outside_changed_pixels=0；允许蒙版为二值、同尺寸，比较全部原生通道，不把小变化、alpha变化或色彩容差忽略。
+- 仅真实局部参考编辑（含reference-edit-label-remap）另登记generated、generation_reference=official、edit_execution、edit_mask、container_contact_mask、opening_mask、replacement_layer和boundary_on_natural_edge=true。edit_mask完整覆盖container_contact_mask；opening_mask在容器内；replacement_layer为同尺寸RGBA最终合成层，开口alpha全255且开口RGB与final一致。透明度证明与独立残留观察都通过，防止不透明层本身仍有旧图。
 
 已有 prepare_visual_views.py 提供可复用 product-triptych 与 pixel-proof 操作（见脚本 --help）；输出均写当前run内新目录。不运行生图。机器验证真实字节、几何风险与记录关系，不以结构通过认证品牌字、透视或艺术质量。独立第6问与局部确认均不替代最终人工认可。
 
@@ -152,13 +152,13 @@ visual-review 使用2.6.0，沿用2.1.0单位字段，增加 product_present、p
 
 ### 产品在场景中的独立第七问
 
-新print-product-v3与visual-review 2.6.0沿用既有三联像素合同，独立对照额外回答：“产品是否真正处于场景中（透视、遮挡、接触、光影一致），而非贴片？”对每个场景内产品绑定官方/生成/最终三联局部，记录comparison.product_scene，汇总为product_in_scene。失败为核心失败，不可被作者自评或其它检查冲销。仅产品问题可局部返工，保留失败与新生产计划、区外零变化证明，再取得新独立检查；缺返回校验失败。
+当前print-product-v3与visual-review 2.7.0沿用适用的三联像素合同，独立对照额外回答：“产品是否真正处于场景中（透视、遮挡、接触、光影一致），而非贴片？”对每个场景内产品绑定官方/生成/最终三联局部，记录comparison.product_scene，汇总为product_in_scene。独立判断按当前统一分级：疑似贴片只提示，真实可见冲突按证据返回生产，不可被作者自评冲销。实际局部返工保留失败、新计划和区外零变化证明，再取得新独立检查；整图不要求区外零变化，缺独立返回仍校验失败。
 
-方向因果提示使用 print-direction-v11：逐条写“核心效果来自：产品本职（含正常结果、赋能结果）/ 人的动作 / 场景设定 / 产品未参与的其他东西”之一，并给一句理由。只有画面或文案把效果归给产品、而产品未参与产生该效果时，才提醒“这里借用了产品没参与的效果”；人的自主动作、场景设定、症状表现或护理选择本身不构成产品归因。不使用合格/不合格判词，不按品类或命题类型分支。causal_check 记录 direction_id、effect_source、reason、attributed_to_product、product_participates、reminder；最后一项等于归因成立且产品未参与。选择清单的 rows 和覆盖全部输入（含去重项）的 causal_advisories 原样展示。提示不影响排序、可画、all_weak、自动采用、user_override、版本迁移承接或生产许可，因果提示不改变[产品关系与审稿分级](product-relationship.md)中的意义判断与分级。历史 v7 返回按原定义保留，不转换旧结论冒充新独立返回。
+方向因果提示使用 print-direction-v12：逐条写“核心效果来自：产品本职（含正常结果、赋能结果）/ 人的动作 / 场景设定 / 产品未参与的其他东西”之一，并给一句理由。只有画面或文案把效果归给产品、而产品未参与产生该效果时，才提醒“这里借用了产品没参与的效果”；人的自主动作、场景设定、症状表现或护理选择本身不构成产品归因。不使用合格/不合格判词，不按品类或命题类型分支。causal_check 记录 direction_id、effect_source、reason、attributed_to_product、product_participates、reminder；最后一项等于归因成立且产品未参与。选择清单的 rows 和覆盖全部输入（含去重项）的 causal_advisories 原样展示。提示不影响排序、可画、all_weak、自动采用、user_override、版本迁移承接或生产许可，因果提示不改变[产品关系与审稿分级](product-relationship.md)中的意义判断与分级。历史 v7 返回按原定义保留，不转换旧结论冒充新独立返回。
 
 ## 次级文案：可用，也可不用（print-ad.0.17.0）
 
-按[次级文案原则与文字角色范围](typography-direction.md#次级文案可用也可不用print-ad0160)决定是否使用，并在现有作品记录中登记一句理由；未使用不算缺项。新成图使用 `print-secondary-copy-v2` 与visual-review `2.6.0`；全部旧合同与文案/排版检查保留。
+按[次级文案原则与文字角色范围](typography-direction.md#次级文案可用也可不用print-ad0160)决定是否使用，并在现有作品记录中登记一句理由；未使用不算缺项。新成图使用 `print-secondary-copy-v2` 与visual-review `2.7.0`；全部旧合同与文案/排版检查保留。
 
 每稿用 `text_elements` 登记标题、次级文案、页脚事实限定或必需信息、品牌/产品标识、场景文字。只有角色为 `secondary-copy` 的元素进入本原则的内容、字号/字重、420px可读、系列及独立语义检查。独立输入用实际文字/位置及scope hash明确范围；其他文字区的意见只留作信息，不触发次级文案返工。页脚限定是否解释画面不由本原则判断，页脚小字不套420px下限，既有页脚检查原样执行。
 
@@ -170,7 +170,7 @@ visual-review 使用2.6.0，沿用2.1.0单位字段，增加 product_present、p
 
 用户要求继续、做到成品或不要提问，不能覆盖生产守卫拒绝。拒绝后只能按报错修正记录并重新通过，或停下把拒绝原因原样交给用户；不得自写“边界说明”代替放行。新合同完整稿在接收独立审稿记录、选择 current artwork、导出及交付时核对包内守卫放行；通用视觉准备工具仍可用于原型、用户素材、营销视觉和历史合同。
 
-当前质量门为print-ad.0.22.0，core_review_contract=print-core-product-v8，direction_contract=print-direction-v11，产品合同仍print-product-v3。创作、方向盲评、开放盲读、核心八问与A4原因码统一引用[产品关系与审稿分级](product-relationship.md)。新比较同时绑定proposition_message的真实命题信息。旧合同及历史rubric原样保留。
+当前质量门为print-ad.0.22.0，core_review_contract=print-core-product-v8，direction_contract=print-direction-v12，产品合同仍print-product-v3。创作、方向盲评、开放盲读、核心八问与A4原因码统一引用[产品关系与审稿分级](product-relationship.md)。新比较同时绑定proposition_message的真实命题信息。旧合同及历史rubric原样保留。
 
 版式读字同时看当前native与其420px实际预览：主标题、广告口号、品牌名在预览清楚；法定/事实限定小字按native局部阅读，不把所有包装细字套缩略可读。逐区保留真实读到的字，不能用作者给出的文字补读。最大连续空白记录位置、约占比及文图分离/单侧重心的具体观察，只作提示。
 

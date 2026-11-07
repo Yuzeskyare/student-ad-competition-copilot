@@ -43,6 +43,8 @@ def required(manifest, contract, root):
 
 
 def validate_current(root, manifest, contract):
+    if 'candidate_review_recheck' in manifest:
+        raise ValueError('Candidate review recheck cannot project or export a formal artwork selection')
     from execution_contract import verify_complete_artworks
     verify_complete_artworks(root, manifest, contract)
     if manifest.get('category') != 'print-ad' or not required(manifest, contract, root):

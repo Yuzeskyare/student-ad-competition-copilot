@@ -505,6 +505,11 @@ def main() -> int:
 
     payload = {
         "schema_version": "0.1.0",
+        "kind": "marketing-export-technical-v1",
+        "delivery_manifest": {"path": str(args.delivery_manifest.resolve()), "sha256": sha256(args.delivery_manifest)},
+        "brief_constraints": {"path": str(args.brief_constraints.resolve()), "sha256": sha256(args.brief_constraints)},
+        "files": [{"path": str(path.resolve()), "sha256": sha256(path)} for row, path in artifact_map.values()],
+        "page_count": len(manifest.get("pages", [])),
         "competition": args.competition,
         "plan_id": manifest.get("plan_id"),
         "proposition_id": manifest.get("proposition_id"),

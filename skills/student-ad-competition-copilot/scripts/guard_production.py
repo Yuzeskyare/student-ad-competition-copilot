@@ -7,6 +7,7 @@ import subprocess
 import sys
 
 from review_contract import inside, load, preflight, fingerprint, digest
+from standard_production_entry import intent_path, existing_intent, DispatchAlreadyReserved
 
 
 def main():
@@ -27,6 +28,9 @@ def main():
         if target.exists():
             raise ValueError("Use a new receipt path; do not overwrite production history")
         manifest = load(manifest_path)
+        intent = intent_path(root, manifest, args.request_id)
+        if args.execute and intent.exists():
+            raise existing_intent(root, intent)
         receipt = preflight(root, manifest, args.request_id, for_dispatch=True)
         if guard_runtime_identity() != identity:
             raise ValueError('Checker identity changed during preflight')
@@ -36,6 +40,8 @@ def main():
         if target in {inside(root, p) for p in receipt['request']['output_files']}:
             raise ValueError('Receipt path must not collide with a declared production output')
         command = receipt["request"].get("command")
+        if args.execute and receipt['request'].get('operation') != 'local':
+            raise ValueError('--execute supports local operations only; use the actual external/native entry')
         if args.execute and (not isinstance(command, list) or not command or not all(isinstance(v, str) and v for v in command)):
             raise ValueError("--execute requires an explicit command array in the approved request")
         if args.execute:
@@ -46,8 +52,18 @@ def main():
             fresh = preflight(root, load(manifest_path), args.request_id, for_dispatch=True)
             if any(fresh[k] != receipt[k] for k in ("request_sha256", "decision_sha256", "decision_id", "execution_control")) or fingerprint(load(manifest_path)) != fingerprint(manifest):
                 raise ValueError("Inputs changed during preflight; review the new request")
+        if args.execute:
+            # Same run/request namespace as native dispatch. Preflight-only never reserves.
+            intent.parent.mkdir(parents=True, exist_ok=True)
+            record = dict(kind='standard-dispatch-intent', run_id=manifest['run_id'],
+                          request_id=args.request_id, recorded_at=datetime.now(timezone.utc).isoformat(),
+                          local_execution='unknown', checked=dict(manifest=dict(path=args.manifest,sha256=digest(manifest_path)),
+                          receipt_path=args.output, request_sha256=receipt['request_sha256']))
+            from dispatch_reservation import reserve
+            reserve(root, manifest, receipt['request'], intent, record)
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        with target.open("x", encoding="utf-8") as stream:
+            stream.write(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n")
         if args.execute:
             receipt["action_started_at"] = datetime.now(timezone.utc).isoformat()
             receipt["production_state"] = "running"
@@ -70,6 +86,11 @@ def main():
             target.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(json.dumps({k: receipt.get(k) for k in ("status", "request_id", "authorization_kind", "content_pass_granted", "executed", "production_state", "command_returncode")}, ensure_ascii=False))
         return receipt.get("command_returncode", 0)
+    except DispatchAlreadyReserved as exc:
+        print(json.dumps(dict(status='blocked', reason=str(exc), executed=False,
+                              dispatch_intent=exc.path, checked=exc.record.get('checked'),
+                              recovery='Recover the original manifest and resolve actual lifecycle evidence before an authorized new request; changing IDs alone is blocked.'), ensure_ascii=False))
+        return 1
     except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
         print(json.dumps({"status": "blocked", "reason": str(exc), "executed": False}, ensure_ascii=False))
         return 1

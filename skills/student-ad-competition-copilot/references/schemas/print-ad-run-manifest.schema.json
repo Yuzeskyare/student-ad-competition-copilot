@@ -360,6 +360,9 @@
       "type": "string",
       "minLength": 1
     },
+    "series_review": {
+      "$ref": "#/$defs/bound_file"
+    },
     "series_plan": {
       "type": "object",
       "required": [
@@ -590,8 +593,49 @@
     "package_upgrades": {
       "$ref": "#/$defs/bound_file"
     },
+    "candidate_review_recheck": {
+      "$ref": "#/$defs/bound_file"
+    },
     "direction_request_revision": {
-      "const": "creative-comparison-v1"
+      "enum": [
+        "creative-comparison-v1",
+        "creative-comparison-v2"
+      ]
+    },
+    "series_direction_batch": {
+      "type": "object",
+      "required": [
+        "batch",
+        "unit"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "batch": {
+          "type": "object",
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commit_path": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     }
   },
   "allOf": [
@@ -610,9 +654,6 @@
         ]
       },
       "then": {
-        "required": [
-          "aigc_used"
-        ],
         "properties": {
           "visual_generation_capability": {
             "anyOf": [
@@ -674,12 +715,6 @@
       },
       "then": {
         "properties": {
-          "aigc_used": {
-            "enum": [
-              "yes",
-              "no"
-            ]
-          },
           "artifacts": {
             "required": [
               "delivery_manifest"
@@ -693,6 +728,11 @@
         "properties": {
           "aigc_used": {
             "const": "yes"
+          },
+          "schema_version": {
+            "not": {
+              "const": "0.4.0"
+            }
           }
         },
         "required": [
@@ -1547,6 +1587,58 @@
             "const": "print-direction-v12"
           }
         }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "run_scope": {
+            "const": "delivery-candidate"
+          },
+          "schema_version": {
+            "not": {
+              "const": "0.4.0"
+            }
+          }
+        },
+        "required": [
+          "run_scope"
+        ]
+      },
+      "then": {
+        "properties": {
+          "aigc_used": {
+            "enum": [
+              "yes",
+              "no"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "run_scope": {
+            "enum": [
+              "production-candidate",
+              "delivery-candidate"
+            ]
+          },
+          "schema_version": {
+            "not": {
+              "const": "0.4.0"
+            }
+          }
+        },
+        "required": [
+          "run_scope"
+        ]
+      },
+      "then": {
+        "required": [
+          "aigc_used"
+        ]
       }
     }
   ],
@@ -29098,6 +29190,9 @@
         },
         "carryover": {
           "$ref": "#/$defs/direction_choice_carryover_v11"
+        },
+        "recovery": {
+          "$ref": "#/$defs/bound_file"
         }
       },
       "allOf": [
@@ -38015,7 +38110,8 @@
             "rediverge",
             "change-direction",
             "amend-statement",
-            "provided-direction"
+            "provided-direction",
+            "recover-selection"
           ]
         },
         "source": {
@@ -38031,8 +38127,34 @@
         },
         "previous_manifest": {
           "$ref": "#/$defs/bound_file"
+        },
+        "selection_recovery": {
+          "$ref": "#/$defs/bound_file"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "recover-selection"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "selection_recovery"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "selection_recovery"
+              ]
+            }
+          }
+        }
+      ]
     },
     "model_redivergence_state_v1": {
       "type": "object",

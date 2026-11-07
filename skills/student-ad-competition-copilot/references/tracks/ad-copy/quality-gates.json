@@ -421,14 +421,13 @@
       "order": 70,
       "stage": "technical-review",
       "gate_type": "machine",
-      "purpose": "验证纯文本、计数、字面约束、AIGC使用声明、必要记录、哈希和运行路径。",
+      "purpose": "验证纯文本、计数、字面约束、交付后的AIGC使用声明提醒、交付后记录提醒、哈希和运行路径。",
       "applicability": {
         "mode": "always"
       },
       "required_inputs": [
         "final-copy",
-        "brief-constraints",
-        "aigc-use-declaration"
+        "brief-constraints"
       ],
       "required_outputs": [
         "technical-validation",

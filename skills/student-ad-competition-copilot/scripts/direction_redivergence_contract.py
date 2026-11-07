@@ -1,7 +1,5 @@
 """Three model retries, independently checked changes, and a preserved final handback."""
 import json
-import re
-import unicodedata
 from datetime import datetime, timezone
 
 CONTRACT = 'print-model-redivergence-v1'
@@ -19,10 +17,6 @@ def enabled(manifest):
 
 def limit(manifest):
     return LIMIT if enabled(manifest) else 1
-
-
-def normalize(value):
-    return re.sub(r'[\W_]+', '', unicodedata.normalize('NFKC', value).casefold())
 
 
 def request(previous, current, changes):
@@ -102,7 +96,7 @@ def validate(root, manifest, bundle, inherited_used=0):
                         and {k:j[k] for k in ('axis','before','after')}==c and type(j['substantive']) is bool
                         and text(j['reason']) for c,j in zip(changes,judgments)),
                 'Each registered change needs its unchanged independent substantive judgment')
-        require(any(j['substantive'] and normalize(j['before'])!=normalize(j['after']) for j in judgments),
+        require(any(j['substantive'] for j in judgments),
                 'No substantive change of thinking; this round is not a qualified retry')
         previous_ids={x['direction_id'] for x in previous['ranking']}
         current_ids={x['direction_id'] for x in current['ranking']}
@@ -117,9 +111,6 @@ def validate(root, manifest, bundle, inherited_used=0):
                         and set(x['previous_matches'])<=previous_ids for x in new)
                 and {x['direction_id'] for x in new}==current_ids,
                 'Check every current retained mechanism against the previous round')
-        for item in new:
-            exact={p['direction_id'] for p in profiles if normalize(p['mechanism'])==normalize(item['mechanism'])}
-            require(exact<=set(item['previous_matches']), 'Identical mechanisms cannot be reported as novel by changing IDs')
         repeated=all(x['previous_matches'] for x in new)
         require(type(raw['round_repeats_previous_mechanism']) is bool and raw['round_repeats_previous_mechanism']==repeated,
                 'Round repetition must agree with every independent mechanism comparison')

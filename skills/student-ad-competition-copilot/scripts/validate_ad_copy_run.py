@@ -216,6 +216,21 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
                 "status": technical.get("technical_validation_status"), "errors": technical.get("error_failures"),
             }))
             checks.append(check("technical-final-hash-linked", technical.get("input", {}).get("sha256") == final_hash, technical.get("input", {}).get("sha256")))
+            if manifest.get('schema_version') == '0.4.0':
+                from validate_ad_copy import validation_inputs
+                checks.append(check('technical-current-rules-linked',
+                    technical.get('competition') == manifest.get('competition')
+                    and technical.get('subtype') == manifest.get('subtype')
+                    and constraints.get('competition') == manifest.get('competition')
+                    and constraints.get('proposition_id') == manifest.get('brief_id')
+                    and technical.get('validation_inputs') == validation_inputs(resolved_artifacts['brief_constraints']),
+                    technical.get('validation_inputs')))
+                try:
+                    from ad_copy_identity import validate_final_identity
+                    identity = validate_final_identity(run_dir, manifest, final_hash)
+                    checks.append(check('creator-identity-ai', True, identity))
+                except (OSError, ValueError, TypeError, KeyError) as exc:
+                    checks.append(check('creator-identity-ai', False, str(exc)))
             if length_status == "not-specified":
                 checks.append(check("open-length-warning-linked", "length-unspecified-by-brief" in technical.get("warnings", []), technical.get("warnings")))
         checks.append(check("run-method-complete", status.get("method_run_complete") is True, status.get("method_run_complete")))
@@ -223,6 +238,18 @@ def validate(run_dir: Path, manifest_path: Path) -> dict:
             checks.append(check("run-technical-status-linked", status.get("technical_validation_status") == technical.get("technical_validation_status"), status.get("technical_validation_status")))
             checks.append(check("submission-status-explicit", isinstance(status.get("submission_ready"), bool), status.get("submission_ready")))
 
+    if manifest.get('schema_version') == '0.4.0':
+        from method_usage_contract import check_usage
+        checks.append(check_usage(run_dir, manifest))
+    if manifest.get('schema_version') == '0.4.0' and manifest.get('run_scope') == 'delivery-candidate':
+        try:
+            from review_contract import read_contract, copy_submission_format_checks
+            contract, _ = read_contract(run_dir, manifest)
+            full_checks = copy_submission_format_checks(run_dir, manifest, contract)
+            checks.append(check('technical-submission-format',
+                all(row['passed'] or row['severity'] != 'error' for row in full_checks), full_checks))
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            checks.append(check('technical-submission-format', False, str(exc)))
     checks.extend(validate_creative_iteration(run_dir, manifest))
     review_checks = validate_review_contract(run_dir, manifest)
     # Historical validation stays reproducible, but is never new-contract acceptance.

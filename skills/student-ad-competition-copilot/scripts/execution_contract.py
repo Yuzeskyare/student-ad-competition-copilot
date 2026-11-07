@@ -8,6 +8,18 @@ import tokenize
 PROFILE = 'bound-production-v1'
 
 
+def validate_operation(request):
+    operation = request.get('operation')
+    require(operation in {'local', 'external', 'model'}, 'Unknown production operation')
+    if operation == 'local':
+        require(isinstance(request.get('command'), list) and bool(request['command']), 'Local operation needs an explicit command')
+    else:
+        require('command' not in request, 'External/model operations cannot carry a local command')
+    if request.get('tool') in {'image_gen.imagegen', 'image_gen__imagegen'}:
+        require(operation == 'external' and request['tool'] == 'image_gen.imagegen',
+                'Native image requests must use the standard external tool identity')
+
+
 def package_checker_hashes():
     """Bind the distributed scripts, not author-supplied paths or hashes."""
     from review_contract import digest, load
@@ -50,6 +62,13 @@ def guard_runtime_identity():
     return dict(profile='package-guard-v1', entrypoint='scripts/guard_production.py', checker_sha256=hashes)
 
 
+def is_final_production(manifest, request):
+    """Declared stage is structural evidence, never inferred from the output."""
+    return (request.get('production_stage', 'artwork') == 'artwork'
+            and (manifest.get('category') != 'marketing-plan'
+                 or request.get('marketing_stage') == 'full-deck'))
+
+
 def verify_artwork_release(root, manifest, artifact_ref, receipt_ref=None):
     """A preflight-only or foreign-checker receipt cannot release complete artwork."""
     from review_contract import bound_file, read_contract, load, fingerprint
@@ -62,6 +81,11 @@ def verify_artwork_release(root, manifest, artifact_ref, receipt_ref=None):
         request = requests.get(receipt.get('request_sha256'))
         if not request or receipt.get('request_id') != request.get('id') or receipt.get('request') != request:
             continue
+        validate_operation(request)
+        if request['operation'] != 'local':
+            continue  # Local completion receipts cannot certify an external/native call.
+        if not is_final_production(manifest, request):
+            continue  # Prototypes and marketing samples are inputs, not final releases.
         provenance = receipt.get('guard_identity', {})
         if (receipt.get('run_id') != manifest['run_id'] or receipt.get('status') != 'authorized'
             or receipt.get('dispatch_checked') is not True or receipt.get('production_state') != 'completed'
@@ -89,6 +113,8 @@ def release_required(root, manifest):
     """Only consumption of complete artwork under print gate 0.17+ needs release."""
     if manifest.get('category') != 'print-ad':
         return False
+    if manifest.get('product_contract') == 'print-product-v3':
+        return True  # A current contract cannot opt out by changing its gate label.
     from review_contract import inside, load
     path = manifest.get('artifacts', {}).get('quality_gate_results')
     if not path:
@@ -118,6 +144,8 @@ def require(value, message):
 
 def dispatch_inputs(root, manifest, contract, request):
     from review_contract import bound_file, inside, load, digest
+    require('candidate_review_recheck' not in manifest, 'Candidate review recheck cannot authorize production')
+    validate_operation(request)
     if manifest.get('direction_contract') in {'print-direction-v6','print-direction-v7','print-direction-v8','print-direction-v9','print-direction-v10','print-direction-v11','print-direction-v12'}:
         from validate_print_ad_run import validate_direction_blind_review, validate_main_visual_dispatch_v6
         direction = validate_direction_blind_review(root, manifest)
@@ -246,6 +274,7 @@ def validate_events(root, contract, pending=None):
     from review_contract import bound_file, load, timestamp
     requests = {r['sha256']: load(bound_file(root, r)) for r in contract['production_requests']}
     previous = {}
+    call_requests = {}
     transitions = {None: {'started'}, 'started': {'running', 'returned', 'failed'},
                    'running': {'running', 'returned', 'failed'}, 'returned': {'saved'}}
     events = [(ref, load(bound_file(root, ref))) for ref in contract.get('production_events', [])]
@@ -255,11 +284,15 @@ def validate_events(root, contract, pending=None):
         key = event.get('request_sha256')
         require(key in requests and event.get('request_id') == requests[key]['id'], 'Lifecycle request mismatch')
         require(isinstance(event.get('call_id'), str) and event['call_id'].strip(), 'Use actual host call ID')
+        require(call_requests.setdefault(event['call_id'], key) == key,
+                'One native call cannot complete multiple production requests')
         if event.get('profile') == 'codex-desktop-imagegen-v1':
             require(key not in previous, 'Duplicate or mixed desktop lifecycle evidence')
             from desktop_host_evidence import completed_image_event
             previous[key] = (completed_image_event(root, event, requests[key]), ref)
             continue
+        require(requests[key].get('tool') != 'image_gen.imagegen',
+                'Native image completion requires its original invocation and standard intent; generic events cannot release it')
         at = timestamp(event.get('occurred_at'))
         require(at <= datetime.now(timezone.utc), 'Future lifecycle event')
         evidence = load(bound_file(root, event.get('evidence')))

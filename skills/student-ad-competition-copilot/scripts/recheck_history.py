@@ -47,6 +47,7 @@ def recheck(root, manifest):
                            technical_pass=all(c['passed'] for c in checks if c.get('severity')=='error')))
     return dict(kind='native-history-recheck',run_id=manifest['run_id'],checked_at=datetime.now(timezone.utc).isoformat(),
                 checker_sha256=package_checker_hashes(),upgrade_chain=manifest.get('package_upgrades'),guards=guards,releases=releases,
+                candidate_review_recheck=manifest.get('candidate_review_recheck'),
                 pixel_checks=pixels,content_pass_granted=False,production_executed=False,image_generation_calls=0)
 
 def main():

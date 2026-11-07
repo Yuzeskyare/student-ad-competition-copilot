@@ -1,5 +1,8 @@
 """Fixed independent instructions and verifiable product-text observations."""
 import json
+from pathlib import Path
+
+from review_contract import load
 
 SUPPLEMENT = '''
 【返回一致性与产品文字核对 v1】
@@ -11,9 +14,44 @@ SUPPLEMENT = '''
 5. 任何产品文字镜像/倒置/错字/伪字是可核实硬性问题：第6问必须false，review_issues 必须 hard/question=product_label_consistent_readable/reason_code=label，observation逐字第6问观察；不能作为local-detail或主观不确定通过。无这些错误也不自动推出可读。
 '''
 
+JUDGMENT_SUPPLEMENT = '\n6. 第6问或版面可读性为false时，由你结合完整观察判断其属于主观无法确认还是已核实错误，在judgment_basis中以对应问题名记录subjective-uncertainty或verified-error；可以附verified_errors字符串数组保存已核实错误。不能从某个词是否出现推断类别，不把已核实字形错误写成主观存疑。原八问、主观提示分级和可确认范围保持不变。\n'
+
+STRUCTURED_FORMAT = """
+【结构化对照 v1】使用准备步骤返回的 response_schema。comparison_evidence 只写 comparison 中的裸键，如 product_role。
+comparison.layout 和 layout_review 中的 text_readable 均为布尔，实际观察写入 observation；两个布局对象逐项一致。
+judgment_basis 只填写第6问及第8问中回答 false 的项目；两问都通过时返回空对象。verified_errors 无实际已核实错误时返回空数组。
+"""
+
+
+def comparison_response_schema():
+    path = Path(__file__).resolve().parents[1]/'references/schemas/print-ad-run-manifest.schema.json'
+    definitions = load(path)['$defs']
+    schema = definitions['core_comparison_return_product_rc4']
+    schema['$defs'] = {'bound_file': definitions['bound_file']}
+    basis = {'type':'string','enum':['subjective-uncertainty','verified-error']}
+    label, layout = 'product_label_consistent_readable', 'layout_readable'
+    schema['properties']['judgment_basis'] = {'anyOf': [
+        dict(type='object',properties={key:basis for key in keys},required=list(keys),additionalProperties=False)
+        for keys in ((), (label,), (layout,), (label, layout))
+    ]}
+    schema['properties']['verified_errors'] = dict(type='array',items={'type':'string'})
+    schema['required'].extend(['judgment_basis','verified_errors'])
+
+    def for_transport(value):
+        if isinstance(value,list):return [for_transport(item) for item in value]
+        if not isinstance(value,dict):return value
+        result={key:for_transport(item) for key,item in value.items()
+                if key not in {'pattern','minItems','minLength','minimum','uniqueItems'}}
+        if 'enum' in result and 'type' not in result:
+            result['type']='string'
+        return result
+
+    return for_transport(schema)
+
+
 def supplement(row):
     bindings=[dict(element_id=p['element_id'],role=p['role'],triptych=p['triptych']) for p in row.get('product_triptychs',[])]
-    return SUPPLEMENT+'三联JSON绑定表：'+json.dumps(bindings,ensure_ascii=False,sort_keys=True,separators=(',',':'))
+    return SUPPLEMENT+JUDGMENT_SUPPLEMENT+'三联JSON绑定表：'+json.dumps(bindings,ensure_ascii=False,sort_keys=True,separators=(',',':'))
 
 
 def asset_scope(row):

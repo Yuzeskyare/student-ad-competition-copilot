@@ -255,6 +255,9 @@ def preflight(root, manifest, request_id, *, for_dispatch=False):
     validate_request_inputs(root, request)
     control = None
     if for_dispatch:
+        if manifest.get('schema_version') == '0.4.0':
+            from method_usage_contract import validate_usage
+            validate_usage(root, manifest)
         from execution_contract import dispatch_inputs, validate_events
         events = validate_events(root, contract)
         if matches[0]['sha256'] in events:
@@ -266,6 +269,11 @@ def preflight(root, manifest, request_id, *, for_dispatch=False):
         if manifest.get('category') == 'print-ad':
             from execution_contract import validate_new_run_gate
             validate_new_run_gate(root,manifest,contract,rows)
+            from track_preproduction import validate_print_preproduction
+            validate_print_preproduction(root, manifest, request)
+        else:
+            from track_preproduction import validate_preproduction
+            validate_preproduction(root, manifest, request)
         control = dispatch_inputs(root, manifest, contract, request)
     return {"schema_version": "1.0.0", "run_id": manifest["run_id"], "status": "authorized",
             "request_id": request_id, "request_sha256": matches[0]["sha256"],
@@ -317,6 +325,8 @@ def validate_receipts(root, contract, rows):
     ids = []
     for ref in requests:
         request = load(bound_file(root, ref))
+        from execution_contract import validate_operation
+        validate_operation(request)
         ids.append(request["id"])
         if request['id'] in cancelled:
             continue
@@ -366,6 +376,69 @@ def validate_receipts(root, contract, rows):
         raise ValueError("Production/delivery needs an active production request, not only cancellations")
 
 
+def validate_production_outputs(root, manifest, contract, rows, refs):
+    """Bind current final objects, not every historical attempt, to actual outputs."""
+    from execution_contract import verify_artwork_release, validate_events, is_final_production
+    from package_upgrade_contract import validate_historical_guard
+    events = validate_events(root, contract)
+    cancelled = cancelled_requests(root, contract)
+    requests = {r['sha256']: (r, load(bound_file(root, r))) for r in contract['production_requests']}
+    receipts = [(r, load(bound_file(root, r))) for r in contract['production_receipts']]
+    for artifact_ref in refs:
+        target = bound_file(root, artifact_ref)
+        matched = False
+        for receipt_ref, receipt in receipts:
+            pair = requests.get(receipt.get('request_sha256'))
+            if not pair:
+                continue
+            request_ref, request = pair
+            if (request['id'] in cancelled or not is_final_production(manifest, request)
+                    or not set(artifact_ref['units']) <= set(request.get('output_scope', []))
+                    or artifact_ref['path'] not in request.get('output_files', [])):
+                continue
+            if request['operation'] == 'local':
+                try:
+                    verify_artwork_release(root, manifest, artifact_ref, receipt_ref)
+                except ValueError:
+                    continue
+                matched = True
+            else:
+                event = events.get(request_ref['sha256'], {})
+                if event.get('state') != 'saved':
+                    continue
+                validate_historical_guard(root, manifest, receipt, request, request_ref, rows)
+                if receipt.get('executed') is not False or receipt.get('production_state') != 'authorized':
+                    continue
+                starts = [event['started_at']] if event.get('started_at') else [
+                    e['occurred_at'] for r in contract.get('production_events', [])
+                    for e in [load(bound_file(root, r))]
+                    if e.get('request_sha256') == request_ref['sha256'] and e.get('state') == 'started']
+                if len(starts) != 1 or timestamp(starts[0]) < timestamp(receipt['checked_at']):
+                    continue
+                matched = any(bound_file(root, output) == target and output['sha256'] == artifact_ref['sha256']
+                              for output in event.get('outputs', []))
+            if matched:
+                break
+        if not matched:
+            raise ValueError('Current final object lacks matching completed production output: ' + artifact_ref['path'])
+
+
+def validate_copy_production(root, manifest, contract, rows, refs):
+    # Keep the existing copy consumer API and its behavior.
+    validate_production_outputs(root, manifest, contract, rows, refs)
+
+
+def copy_submission_format_checks(root, manifest, contract):
+    submission = contract['copy_delivery']['submission']
+    constraints = load(inside(root, manifest['artifacts']['brief_constraints']))
+    from validate_ad_copy import DEFAULT_PROFILES, text_format_checks
+    profiles = load(DEFAULT_PROFILES)
+    profile = profiles['profiles'][manifest['competition']]
+    emoji = constraints.get('emoji_policy', 'inherit')
+    emoji = profile['emoji'] if emoji == 'inherit' else emoji
+    return text_format_checks(bound_file(root, submission), profiles, profile, emoji)
+
+
 def validate_copy(root, manifest, contract, rows):
     delivery = contract.get("copy_delivery")
     if not isinstance(delivery, dict):
@@ -409,6 +482,17 @@ def validate_copy(root, manifest, contract, rows):
     refs.append(submission)
     if coverage(root, refs) != coverage(root, contract.get("final_artifacts")):
         raise ValueError("Final review scope must cover copy, explanation (if present), and submission text")
+    validate_copy_production(root, manifest, contract, rows, refs)
+    # Check the actual submitted object, without applying body-only length limits
+    # to explanations. Identity is still AI's judgment of this exact full text.
+    format_checks = copy_submission_format_checks(root, manifest, contract)
+    failures = [r['name'] for r in format_checks if not r['passed'] and r['severity'] == 'error']
+    if failures:
+        raise ValueError('Actual submission format failed: ' + ', '.join(failures))
+    from ad_copy_identity import validate_identity
+    identity_ref = manifest.get('submission_identity_review', manifest.get('creator_identity_review'))
+    if validate_identity(load(bound_file(root, identity_ref)), submission['sha256']):
+        raise ValueError('AI identified prohibited entrant metadata in the actual submission')
     stable = contract.get("stable_copy")
     if manifest.get("revision_mode", "initial") == "challenge" and not stable:
         raise ValueError("Challenge mode requires an approved stable baseline")
@@ -488,6 +572,7 @@ def validate_review_contract(root, manifest):
                 pages = {u for r in refs if inside(root, r["path"]) == inside(root, final.get("path")) for u in r["units"]}
                 if not required_pages or pages != required_pages:
                     raise ValueError("Whole-deck approval cannot be inferred from sample pages")
+                validate_production_outputs(root, manifest, contract, rows, refs)
             elif manifest["category"] == "print-ad":
                 delivery = load(inside(root, manifest["artifacts"]["delivery_manifest"]))
                 if coverage(root, delivery.get("final_artifacts")) != coverage(root, refs):

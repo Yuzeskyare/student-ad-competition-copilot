@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "0.2.27",
+  "status": "release-qualified",
+  "change_id": "creative-handoff-series-review-and-structured-artwork-checks",
+  "promoted_candidate": "0.2.26-dev.candidate-review-recovery.3",
+  "candidate_manifest_sha256": "69b424ba03b4ec4bea3ac02f64ba39250ea6d0d7dfff81d4651250ad808f53db",
+  "runtime_scripts_changed_since_candidate": false,
+  "changes": [
+    "Style name recommendations follow creative direction ranking and feed production and first-draft review",
+    "Existing user choices and real method attempts carry forward through revision",
+    "Whole-series review binds the actual ordered artwork set and its substantive increment",
+    "AI supplies language and creative judgments; scripts bind sources, fields and execution state",
+    "Headline roles bind the current complete artwork before a ready-for-user-review receipt",
+    "Independent comparison uses the generated response schema and retains raw judgments and history",
+    "Candidate archive rechecks verify historical pixels and receipts for review only"
+  ],
+  "candidate_checks": {
+    "synthetic_pipeline_stages": 302,
+    "series_checks": 28,
+    "current_artwork_render_byte_and_pixel_equal": true,
+    "actual_structured_comparison_native_verified": true,
+    "candidate_review_production_and_delivery_negative_checks": 5
+  },
+  "real_workflow_observation": "A current print-ad artwork exercised selected style and copy handoff, target-render byte and pixel verification, fresh independent blind reading and schema-bound comparison. Its workflow history and approval scope remain separately recorded.",
+  "limits": [
+    "Model review and machine checks describe the reviewed evidence and scope.",
+    "Creative quality, audience understanding and competition outcomes require the corresponding actual evaluation."
+  ]
+}
